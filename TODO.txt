@@ -1,1 +1,13 @@
-sataisit coolspot
+sataisit coolspot:
+    mape kur redz spotus
+    recent spoti
+    search (tagi or smth) SIETS
+
+signle spots:
+    location
+    bilde
+    description
+
+accounti:
+    vards
+    bilde?
