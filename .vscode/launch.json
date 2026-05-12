@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "chrome",
+        "request": "launch",
+        "name": "Launch Chrome with disabled CORS",
+        "url": "http://localhost:3000",
+        "webRoot": "${workspaceFolder}",
+        "runtimeArgs": ["--disable-web-security", "--user-data-dir=/tmp/chrome-dev"]
+      }
+    ]
+  }
+  

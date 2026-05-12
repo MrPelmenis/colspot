@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import Map from './Map';
+import MapDiv from './Map';
 import SpotList from './SpotList';
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
       
       {/* Middle Section with Map and SpotList */}
       <div className="flex flex-col gap-8 my-8">
-        <Map />
+        <MapDiv />
         <SpotList />
       </div>
 
