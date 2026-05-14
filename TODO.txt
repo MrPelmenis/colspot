@@ -11,3 +11,11 @@ signle spots:
 accounti:
     vards
     bilde?
+
+
+
+Shot Term:
+    Front-End
+        Profile Page, var nomainit vardu un ielikt bildi, pectam var sakt pie postiem stradat
+    Back-End    
+        Vajag verifiot JWT un darit user darbibas tikai ja tas ir, ja nav logged in tad darit tikai to ko guest var darit

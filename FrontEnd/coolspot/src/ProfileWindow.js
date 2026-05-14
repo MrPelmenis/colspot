@@ -2,23 +2,24 @@ import React, { useContext } from 'react';
 import { WindowContext } from './WindowContext';
 import { ExtraFunctions } from './ExtraFunctions';
 
-function SignInWindow() {
+import { CurrentUserContext } from './CurrentUserContext';
+
+
+function ProfileWindow() {
   const { windowStates } = useContext(WindowContext);
   const { updateWindowState } = useContext(WindowContext);
 
-  const { email, visible } = windowStates.signInWindow;
+  const { currentUser } = useContext(CurrentUserContext);
+  const { updateCurrentUser } = useContext(CurrentUserContext);
+
+  const { email, visible } = windowStates.profileWindow;
 
   if (!visible) return null; 
 
   const onClose = ()=>{
-    updateWindowState('signInWindow', { email: "", visible: false });
-    localStorage.setItem("JWT", "");
-    window.location.reload();
+    updateWindowState('profileWindow', { email: "", visible: false });
   }
 
-  const handleSignInServer = ()=>{
-    updateWindowState('signInWindow', { email: "", visible: false });
-  }
 
   return (
     <div
@@ -34,31 +35,18 @@ function SignInWindow() {
         &times;
       </button>
   
-      <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">{currentUser.username}</h2>
   
-      <label className="block mb-2 text-sm font-medium text-gray-700">
-        Enter Username
-      </label>
-  
-      <input
-        type="text"
-        maxLength="20"
-        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
-                   focus:border-transparent transition-colors duration-300"
-        placeholder="Nickname"
-      />
-  
-      {/* Wrap the button in a flex container */}
       <div className="flex justify-end mt-2">
         <button
-          onClick={handleSignInServer}
           className="w-20 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"
         >
           Ok
         </button>
+
       </div>
     </div>
   );
 }
 
-export default SignInWindow;
+export default ProfileWindow;

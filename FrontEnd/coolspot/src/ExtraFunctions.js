@@ -1,11 +1,11 @@
 
 export class ExtraFunctions {
     static isUserLoggedIn() {
-        return ((localStorage.getItem("JWT") != "")
+        return Boolean((localStorage.getItem("JWT") != "")
             && (localStorage.getItem("JWT") != null)
             && (localStorage.getItem("JWT") != undefined)
             && (localStorage.getItem("JWT") != "undefined")
-            &&(localStorage.getItem("JWY") != "null")
+            &&(localStorage.getItem("JWT") != "null")
             && (localStorage.getItem("JWT")));
     }
 

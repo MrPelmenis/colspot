@@ -5,8 +5,8 @@ export const WindowContext = createContext();
 export const WindowProvider = ({ children }) => {
   const [windowStates, setWindowStates] = useState({
     signInWindow: { email: "example1@gmail.com", visible: false },
-    someOtherWindow: { email: "example2@gmail.com", visible: false },
-    anotherWindow: { email: "example3@gmail.com", visible: false }
+    profileWindow: { email: "", visible: false },
+    anotherWindow: { email: "", visible: false }
   });
 
   const updateWindowState = (windowName, newState) => {

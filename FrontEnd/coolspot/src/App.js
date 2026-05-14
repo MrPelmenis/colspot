@@ -4,12 +4,13 @@ import Footer from './Footer';
 import MapDiv from './Map';
 import SpotList from './SpotList';
 import { WindowProvider } from './WindowContext';
+import { CurrentUserProvider } from './CurrentUserContext';
 import SignInWindow from './SignInWindow';
+import ProfileWindow from './ProfileWindow';
 
 function App() {
   const [spots, setSpots] = useState([]);
 
-  // Fetch spots data from the Flask API
   useEffect(() => {
     const fetchSpots = async () => {
       try {
@@ -29,17 +30,20 @@ function App() {
   };
 
   return (
-    <WindowProvider>
-      <div className="flex flex-col items-center bg-gray-800 min-h-screen">
-        <SignInWindow />
-        <Header />
-        <div className="flex flex-col gap-8 my-8">
-          <MapDiv addSpot={addSpot} />
-          <SpotList spots={spots} />
+    <CurrentUserProvider> {/* Wrap with CurrentUserProvider */}
+      <WindowProvider>
+        <div className="flex flex-col items-center bg-gray-800 min-h-screen">
+          <SignInWindow />
+          <ProfileWindow />
+          <Header />
+          <div className="flex flex-col gap-8 my-8">
+            <MapDiv addSpot={addSpot} />
+            <SpotList spots={spots} />
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-    </WindowProvider>
+      </WindowProvider>
+    </CurrentUserProvider>
   );
 }
 
