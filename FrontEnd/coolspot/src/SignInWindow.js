@@ -13,7 +13,6 @@ function SignInWindow() {
   const onClose = ()=>{
     updateWindowState('signInWindow', { email: "", visible: false });
     localStorage.setItem("JWT", "");
-    window.location.reload();
   }
 
   const handleSignInServer = ()=>{

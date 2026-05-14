@@ -38,6 +38,7 @@ function Header() {
     setUserEmail(decodedToken.email);
     localStorage.setItem("JWT", jwtToken);
 
+    alert("fetch vai user ar sadu epastu eksiste, atgriez kip username un epastu vai false");
     updateWindowState('signInWindow', { email: userEmail, visible: true });
   };
 
