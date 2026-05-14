@@ -29,23 +29,49 @@ function MapDiv({ addSpot }) {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [description, setDescription] = useState("");
 
-  // atver modalu lai editotu markieri
   const handleMapClick = (latlng) => {
     setSelectedPosition(latlng);
     setShowModal(true); 
   };
 
-  // Ieliek markeri un aizsuta uz spotlistu
-  const publishMarker = () => {
-    const newMarker = { ...selectedPosition, description };
-    setMarkers([...markers, newMarker]);
-    addSpot(newMarker); 
-    setShowModal(false);
-    setIsAdding(false);
-    setDescription("");
+  const publishMarker = async () => {
+    const geolocation = `${selectedPosition.lat},${selectedPosition.lng}`;
+    
+    const newMarker = { 
+      Geolocation: geolocation,
+      Description: description,
+      Name: "Default Spot Name", // Default value for Name
+      Karma: 0, // Default value for Karma
+      UserId: 1, // Default value for UserId (update as needed)
+      Time: new Date().toISOString() // Current time
+    };
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/spots', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newMarker),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      console.log(result); // Log success message
+
+      setMarkers([...markers, newMarker]); // Add marker to local state
+      addSpot(newMarker); // Pass to parent component
+      setShowModal(false);
+      setIsAdding(false);
+      setDescription("");
+    } catch (error) {
+      console.error('Error adding spot:', error);
+    }
   };
 
-  // aizver
   const closeModal = () => {
     setShowModal(false);
     setIsAdding(false);
@@ -61,18 +87,15 @@ function MapDiv({ addSpot }) {
       <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} className="z-0">
         <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
       
-        {/*Markeri*/}
         {markers.map((markerPosition, index) => (
-          <Marker key={index} position={markerPosition} icon={customIcon}>
+          <Marker key={index} position={{ lat: markerPosition.Geolocation.split(',')[0], lng: markerPosition.Geolocation.split(',')[1] }} icon={customIcon}>
             <Popup>
-              {markerPosition.description} <br /> [{markerPosition.lat}, {markerPosition.lng}]
+              {markerPosition.Description} <br /> Geolocation: [{markerPosition.Geolocation}]
             </Popup>
           </Marker>
         ))}
 
-      {/*Modelis kursh addo markieri*/}
-      <AddMarker onAddMarker={handleMapClick} isAdding={isAdding} />
-      
+        <AddMarker onAddMarker={handleMapClick} isAdding={isAdding} />
       </MapContainer>
 
       <button
@@ -84,7 +107,6 @@ function MapDiv({ addSpot }) {
         {isAdding ? 'Click to add the spot' : 'Add Your Spot'}
       </button>
 
-      {/* Marker Lodzins */}
       {showModal && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-[50vw] h-[50vh] p-8 relative">

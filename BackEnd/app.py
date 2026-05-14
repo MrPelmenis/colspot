@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory, g
 from flask_cors import CORS
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
 CORS(app)  # Enables Cross-Origin Resource Sharing to allow requests from different ports (e.g., React on port 3000)
@@ -62,6 +63,23 @@ def get_spots():
     } for spot in spots]
 
     return jsonify(spots_list)
+
+@app.route('/api/spots', methods=['POST'])
+def add_spot():
+    data = request.json
+    name = data.get('Name')
+    description = data.get('Description')
+    geolocation = f"{data.get('lat')},{data.get('lng')}"
+    karma = 0  # Or whatever default you want
+    user_id = 666  # VAJAGA PEC TAM PIELIKT REALO
+    time = datetime.now().isoformat()
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, 'User id', Karma, Time) VALUES (?, ?, ?, ?, ?, ?)",
+                   (name, description, geolocation, user_id, karma, time))
+    db.commit()
+    return jsonify({'message': 'Spot added successfully!'}), 201
 
 if __name__ == '__main__':
     app.run(debug=True)
