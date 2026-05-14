@@ -11,6 +11,8 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row  # Set the row factory to return dictionaries
+    
     return db
 
 @app.teardown_appcontext
@@ -42,6 +44,24 @@ def get_users():
     users_list = [{'id': row[0], 'name': row[1], 'email': row[2]} for row in users]
 
     return jsonify(users_list) 
+
+@app.route('/api/spots', methods=['GET'])
+def get_spots():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM spots")
+    spots = cursor.fetchall()
+    spots_list = [{ 
+        "Id": spot["Id"],
+        "Name": spot["Name"],
+        "Description": spot["Description"],
+        "Geolocation": spot["Geolocation"],
+        "User id": spot["User id"],
+        "Karma": spot["Karma"],
+        "Time": spot["Time"]
+    } for spot in spots]
+
+    return jsonify(spots_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

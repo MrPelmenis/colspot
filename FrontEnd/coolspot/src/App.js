@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import MapDiv from './Map';
 import SpotList from './SpotList';
-import { WindowProvider } from './WindowContext'; // Import only the provider
+import { WindowProvider } from './WindowContext';
 import SignInWindow from './SignInWindow';
+
 function App() {
   const [spots, setSpots] = useState([]);
 
+  // Fetch spots data from the Flask API
+  useEffect(() => {
+    const fetchSpots = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/spots');
+        const data = await response.json();
+        setSpots(data);
+      } catch (error) {
+        console.error('Error fetching spots:', error);
+      }
+    };
+
+    fetchSpots();
+  }, []);
+
   const addSpot = (newSpot) => {
-    setSpots([...spots, newSpot]); // Add new spot to the state
+    setSpots([...spots, newSpot]);
   };
 
   return (
