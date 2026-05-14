@@ -2,6 +2,7 @@
   "name": "coolspot",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://127.0.0.1:5000",
   "dependencies": {
     "@react-leaflet/core": "^2.1.0",
     "@react-oauth/google": "^0.12.1",
