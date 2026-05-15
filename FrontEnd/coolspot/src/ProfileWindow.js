@@ -41,11 +41,75 @@ function ProfileWindow() {
   };
 
   const uploadImg = (event) => {
-    console.log("Upload image triggered");
-  };
+    let file = event.target.files[0];
+    console.log(file);
+    //pretty much getting an image src from the uploaded file and sending it to the server
+    if (file) {
+        let data = new FormData();
+        data.append('file', file);
+        
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const img = new Image();
+          img.src = reader.result;
+        
+          img.onload = async() => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            console.log("img params: W:" + img.width + " H: " + img.height);
+
+
+            // Set canvas dimensions to resize the image
+            let width = 500;
+            let height = 500;
+
+            canvas.width = width;
+            canvas.height = height;
+
+
+            let xOffset = 0;
+            let yOffset = 0;
+
+            // Check the aspect ratio of the image
+            if (img.width <= img.height) {
+                width = Math.round((img.width / img.height) * height);
+                xOffset = (height - width)/2;
+            } else {
+                height = Math.round((img.height / img.width) * width);
+                yOffset = (width - height)/2;
+            }
+//
+            console.log("image stuff:");
+            console.log("width: " + width);
+            console.log("height: " + height);
+
+
+            ctx.fillStyle = "white";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // Draw the image on the canvas and resize it
+            ctx.drawImage(img, xOffset, yOffset, width, height);
+        
+            // Get the resized image as a data URL
+            const resizedDataUrl = canvas.toDataURL('image/jpeg'); // Change 'image/jpeg' to desired format
+            console.log(resizedDataUrl);
+            setProfilePicSrc(resizedDataUrl);
+        
+            //let res = await fetchSpecial("profileImgUpdate", { clientName: currentUserState.name, imgSrc: resizedDataUrl }, false);
+            //window.location.href = "/";
+          };
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
   const updateProfile = () => {
     console.log(newUsername, " ", description);
+  };
+
+  const onLogOut = () => {
+    localStorage.setItem("JWT", "");
+    updateWindowState('profileWindow', { email: "", visible: false });
   };
 
   return (
@@ -67,7 +131,7 @@ function ProfileWindow() {
           <img
             src={profilePicSrc}
             alt="Profile"
-            className="w-12 h-12 rounded-full object-cover mr-3"
+            className="w-12 h-12 border border-black rounded-full object-cover mr-3"
           />
           <input
             onChange={uploadImg}
@@ -118,7 +182,13 @@ function ProfileWindow() {
         />
       </div>
   
-      <div className="flex justify-end mt-2">
+      <div className="flex justify-between items-center mt-2">
+        <button
+          onClick={onLogOut}
+          className="text-gray-500 hover:underline transition-colors"
+        >
+          Log Out
+        </button>
         <button
           onClick={updateProfile} 
           className="w-30 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"

@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { WindowContext } from './WindowContext';
-import { ExtraFunctions } from './ExtraFunctions';
 
 function SignInWindow() {
   const { windowStates } = useContext(WindowContext);
@@ -8,14 +7,17 @@ function SignInWindow() {
 
   const { email, visible } = windowStates.signInWindow;
 
+  const [username, setUsername] = useState(""); // State to store the username
+
   if (!visible) return null; 
 
-  const onClose = ()=>{
+  const onClose = () => {
     updateWindowState('signInWindow', { email: "", visible: false });
     localStorage.setItem("JWT", "");
   }
 
-  const handleSignInServer = ()=>{
+  const handleSignInServer = () => {
+    console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); // Log the username and email
     updateWindowState('signInWindow', { email: "", visible: false });
   }
 
@@ -45,6 +47,8 @@ function SignInWindow() {
         className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                    focus:border-transparent transition-colors duration-300"
         placeholder="Nickname"
+        value={username} // Controlled input value
+        onChange={(e) => setUsername(e.target.value)} // Update username state
       />
   
       {/* Wrap the button in a flex container */}
