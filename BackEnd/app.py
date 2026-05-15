@@ -85,6 +85,9 @@ def serve_static_files(path):
     return send_from_directory(app.static_folder + '/static', path)
 
 
+@app.route('/api/user', methods=['GET'])
+
+
 @app.route('/api/check_user', methods=['POST'])
 def check_user():
     data = request.json
