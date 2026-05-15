@@ -10,6 +10,9 @@ import ProfileWindow from './ProfileWindow';
 
 function App() {
   const [spots, setSpots] = useState([]);
+  const [token, setToken] = useState(null); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // To track if the user is logged in
+
 
   useEffect(() => {
     const fetchSpots = async () => {
@@ -28,6 +31,32 @@ function App() {
   const addSpot = (newSpot) => {
     setSpots([...spots, newSpot]);
   };
+
+  //  // Function to check for token in the URL
+  //  const checkForTokenInUrl = () => {
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   const tokenFromUrl = urlParams.get('token');
+
+  //   if (tokenFromUrl) {
+  //     // Save token to localStorage or sessionStorage
+  //     localStorage.setItem('jwtToken', tokenFromUrl);
+  //     setToken(tokenFromUrl);
+  //     setIsAuthenticated(true);
+  //     // Optionally, remove the token from the URL to clean it up
+  //     window.history.replaceState({}, document.title, "/");
+  //   } else {
+  //     // If no token in URL, check localStorage
+  //     const savedToken = localStorage.getItem('jwtToken');
+  //     if (savedToken) {
+  //       setToken(savedToken);
+  //       setIsAuthenticated(true);
+  //     }
+  //   }
+  // };
+
+  // // First check for token in URL
+  // checkForTokenInUrl();
+
 
   return (
     <CurrentUserProvider> {/* Wrap with CurrentUserProvider */}

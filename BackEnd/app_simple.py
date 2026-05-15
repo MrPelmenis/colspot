@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, request, send_from_directory, g, url_for, redirect
+from flask import Flask, url_for, jsonify, g, redirect
 from authlib.integrations.flask_client import OAuth
 from flask_jwt_extended import JWTManager, create_access_token
 import sqlite3
 from urllib.parse import urlencode
 
 DATABASE = "main_db.db"
-app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
+app = Flask(__name__)
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
 
 # JWT setup
@@ -35,7 +35,7 @@ def get_db():
     
     return db
 
-@app.route('/api/login')
+@app.route('/login')
 def login():
     redirect_uri = url_for('authorize', _external=True)
     return google.authorize_redirect(redirect_uri)
@@ -66,49 +66,16 @@ def authorize():
         conn.close()
         access_token = create_access_token(identity={'email': profile['email']})
     
-    redirect_url = url_for('serve_react_app', _external=True)  # Assuming your main page route is '/'
+    redirect_url = url_for('return_hi', _external=True)  # Assuming your main page route is '/'
     params = {'token': access_token}
     
     return redirect(f"{redirect_url}?{urlencode(params)}")  # Redirect to /?token=<jwt_token>
 
 
-@app.route('/')
-def serve_react_app():
-    return send_from_directory(app.template_folder, 'index.html')
+@app.route("/")
+def return_hi():
+    return f"hi {person['email'] }"
 
-@app.route('/static/<path:path>')
-def serve_static_files(path):
-    return send_from_directory(app.static_folder + '/static', path)
-
-
-@app.route('/api/check_user', methods=['POST'])
-def check_user():
-    data = request.json
-    email = data.get('email')
-    nickname = data.get('nickname')
-
-    # Check if user exists in the database
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-    user = cursor.fetchone()
-
-    if user:
-        # User exists, return user data
-        print("exists")
-        return jsonify(message="User exists", user={
-            "email": user[1],
-            "nickname": user[2]
-        }), 200
-    else:
-        print("trying create")
-        # User does not exist, create a new user
-        cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
-        conn.commit()
-        return jsonify(message="User created", user={
-            "email": email,
-            "name": nickname
-        }), 201  # HTTP status code for Created
 
 
 @app.teardown_appcontext
