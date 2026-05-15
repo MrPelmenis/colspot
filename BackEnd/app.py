@@ -3,10 +3,14 @@ from authlib.integrations.flask_client import OAuth
 from flask_jwt_extended import JWTManager, create_access_token
 import sqlite3
 from urllib.parse import urlencode
+from datetime import datetime
+from flask_cors import CORS
+
 
 DATABASE = "main_db.db"
 app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
+CORS(app) 
 
 # JWT setup
 app.config['JWT_SECRET_KEY'] = 'your-jwt-secret'
@@ -109,6 +113,44 @@ def check_user():
             "email": email,
             "name": nickname
         }), 201  # HTTP status code for Created
+    
+@app.route('/api/spots', methods=['GET'])
+def get_spots():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM spots")
+    spots = cursor.fetchall()
+    spots_list = [{ 
+        "Id": spot["Id"],
+        "Name": spot["Name"],
+        "Description": spot["Description"],
+        "Geolocation": spot["Geolocation"],
+        "User id": spot["User id"],
+        "Karma": spot["Karma"],
+        "Time": spot["Time"]
+    } for spot in spots]
+
+    return jsonify(spots_list)
+
+@app.route('/api/spots', methods=['POST'])
+def add_spot():
+    data = request.json
+    name = data.get('Name')
+    description = data.get('Description')
+    geolocation = data.get("Geolocation")
+    print(data)
+    # print(geolocation, description)
+    karma = 0  # Or whatever default you want
+    user_id = -1  # VAJAGA PEC TAM PIELIKT REALO
+    time = datetime.now().isoformat()
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, 'User id', Karma, Time) VALUES (?, ?, ?, ?, ?, ?)",
+                   (name, description, geolocation, user_id, karma, time))
+    db.commit()
+    return jsonify({'message': 'Spot added successfully!'}), 201
+
 
 
 @app.teardown_appcontext
@@ -119,6 +161,6 @@ def close_connection(exception):
         db.close()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5000)
 
 

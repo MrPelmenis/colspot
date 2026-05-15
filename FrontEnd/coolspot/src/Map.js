@@ -36,7 +36,7 @@ function MapDiv({ addSpot }) {
 
   const publishMarker = async () => {
     const geolocation = `${selectedPosition.lat},${selectedPosition.lng}`;
-    
+    //alert(geolocation)
     const newMarker = { 
       Geolocation: geolocation,
       Description: description,
@@ -54,6 +54,7 @@ function MapDiv({ addSpot }) {
         },
         body: JSON.stringify(newMarker),
       });
+      alert(JSON.stringify(newMarker))
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
