@@ -16,7 +16,6 @@ Represents the users who can be either administrators or regular users.
 | `id`        | INT     | Primary key, unique identifier for the user |
 | `nickname`  | STRING  | Username or nickname of the user |
 | `email`     | STRING  | User's email address |
-| `password`  | STRING  | Hashed password for user authentication |
 | `profile_pic`| BIN    | Binary data representing the user's profile picture |
 
 ---
