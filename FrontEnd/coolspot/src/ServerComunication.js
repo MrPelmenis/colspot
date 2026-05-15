@@ -3,7 +3,6 @@ import { useState } from 'react';
 import React from 'react';
 
 
-
 export async function fetchSpecial(request, variables, isUserAnonymus = false) {
     let argument;
     if (isUserAnonymus) {
@@ -27,7 +26,7 @@ export async function fetchSpecial(request, variables, isUserAnonymus = false) {
         body: formData,
     };
 
-    let res = await fetch(`${window.websiteSetting.SERVER_URL}/indexServer.php?${argument}=${request}`, options);
+    let res = await fetch(`${window.websiteSetting.SERVER_URL}?${argument}=${request}`, options);
     let finalResult = await res.json();
     
     return finalResult;
