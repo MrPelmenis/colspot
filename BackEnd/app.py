@@ -6,12 +6,12 @@ from urllib.parse import urlencode
 from datetime import datetime
 from flask_cors import CORS
 import os 
-
+from flask import make_response
 
 DATABASE = "main_db.db"
 app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
-CORS(app) 
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # JWT setup
 app.config['JWT_SECRET_KEY'] = 'your-jwt-secret'
@@ -40,6 +40,16 @@ def get_db():
         db.row_factory = sqlite3.Row  # Set the row factory to return dictionaries
     
     return db
+
+@app.after_request
+def set_headers(response):
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"  # Allow cross-origin interaction
+    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"  # Allow resources from other origins
+    response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"  # Allow cross-origin resources
+    response.headers["Access-Control-Allow-Origin"] = "*"  # Allow any origin to access your API
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"  # Allow specific HTTP methods
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"  # Allow necessary headers
+    return response
 
 @app.route('/api/login')
 def login():
@@ -90,6 +100,9 @@ def serve_static_files(path):
 def serve_image_files(filename):
     return send_from_directory("../Frontend/coolspot/build" + "/images" , filename)
 
+@app.route('/manifest.json')
+def serve_manifest():
+    return send_from_directory(app.static_folder, 'manifest.json')
 
 @app.route('/api/update_user_profile', methods=['POST'])
 def change():

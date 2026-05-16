@@ -32,56 +32,46 @@ function Header() {
   }, [currentUser.email, updateCurrentUser]);
 
   const handleLoginSuccess = async (response) => {
-    // try {
-    //   const response = await fetch('http://localhost:5000/api/update_user_profile');
-    //   const data = await response.json();
-    //   console.log(data);
-    // } catch (error) {
-    //   console.error('error getting shit', error);
-    // }
-
-    updateCurrentUser({nickname: "", email: ""});
-    const jwtToken = response.credential;
-    const decodedToken = jwtDecode(jwtToken);
-    const email = decodedToken.email;
-    const nickname = decodedToken.name;
-
-    setUserEmail(email);
-    localStorage.setItem("JWT", jwtToken);
-    const res = await fetch("http://localhost:5000/api/update_profile", 
-      {
-        method: 'POST',  // Change to POST since you're sending data
+    try {
+      // Decode JWT and update user info locally
+      const jwtToken = response.credential;
+      const decodedToken = jwtDecode(jwtToken);
+      const email = decodedToken.email;
+      const nickname = decodedToken.name;
+  
+      // Update current user and store token
+      setUserEmail(email);
+      localStorage.setItem("JWT", jwtToken);
+      updateCurrentUser({ nickname, email });
+  
+      // Send POST request to update profile in the backend
+      const res = await fetch("http://localhost:5000/api/update_profile", {
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json',  // Set content type as JSON
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(jwtDecode(jwtToken))  // Send JWT in request body
+        body: JSON.stringify({ email }), // Send email as part of the body
+      });
+  
+      if (!res.ok) {
+        throw new Error('Failed to fetch profile from the server.');
+      }
+  
+      const data = await res.json(); // Ensure proper response handling
+      console.log(data);
+  
+      // Update the state with the user's profile info if received
+      if (data.nickname) {
+        updateCurrentUser({
+          nickname: data.nickname,
+          email,
+        });
+      }
+    } catch (error) {
+      console.error('Error in login:', error);
     }
-    );
-    
-    if (!res.ok) {
-        throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    console.log(data);
-
-    // if (!res.ok) {
-    //   throw new Error('Network response was not ok');
-    // }
-
-    // const data = await res.json();
-    // console.log("tas kas no servera atnak:");
-    // console.log(data);
-    
-
-    // if(data.message == "User exists"){
-    //   console.log("exists");
-    //   updateCurrentUser({nickname: data.user.nickname, email: data.user.email});
-    // } else{
-    //   updateCurrentUser({nickname: data.user.name, email: data.user.email});
-    //   updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true });
-    // }  
   };
+  
 
   const onProfileClick = () => {
     updateWindowState('profileWindow', { email: "", visible: true });
