@@ -22,8 +22,8 @@ person = {"name": None, "email": None}
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
-    client_id="290935281964-h2ac2lf6j0q1vulpfiic65vsndvv90fo.apps.googleusercontent.com",
-    client_secret="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",
+    client_id="304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com",
+    client_secret="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",
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     access_token_url='https://accounts.google.com/o/oauth2/token',
     client_kwargs={'scope': 'email profile'},
@@ -130,8 +130,8 @@ def check_user():
         # User exists, return user data
         print("exists")
         return jsonify(message="User exists", user={
-            "email": user[1],
-            "nickname": user[2]
+            "email": user[2],
+            "nickname": user[1]
         }), 200
     else:
         print("trying create")

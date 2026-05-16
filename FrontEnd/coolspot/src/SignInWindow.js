@@ -7,7 +7,7 @@ function SignInWindow() {
 
   const { email, visible } = windowStates.signInWindow;
 
-  const [username, setUsername] = useState(""); // State to store the username
+  const [username, setUsername] = useState(""); 
 
   if (!visible) return null; 
 
@@ -17,14 +17,16 @@ function SignInWindow() {
   }
 
   const handleSignInServer = () => {
-    console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); // Log the username and email
+    console.log(windowStates.signInWindow);
+    alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
+    console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
     updateWindowState('signInWindow', { email: "", visible: false });
   }
 
   return (
     <div
       className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-100
-                 w-2/3 md:w-1/2 lg:w-1/3" // Wider on smaller screens
+                 w-2/3 md:w-1/2 lg:w-1/3"
       style={{ zIndex: 100 }}
     >
       <button
