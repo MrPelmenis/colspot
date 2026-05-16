@@ -31,6 +31,7 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
 )
 
+
 def get_db():
     # Connect to the SQLite database, creating a new connection if necessary
     db = getattr(g, '_database', None)
@@ -117,28 +118,36 @@ def change():
     return jsonify({"message": "Profile updated successfully"}), 200  # Return a success response
 
 
-@app.route('/api/update_user_profile', methods=['GET'])
+@app.route('/api/update_profile', methods=['POST'])
 def send():
-    # conn = get_db()  # Get the database connection
-    # cursor = conn.cursor()
-    # print(data)
-    # print(nickname, description, email)
-    # # SQL command to update the user's nickname and description based on email
-    # cursor.execute("""
-    #     UPDATE users
-    #     SET nickname = ?, description = ?
-    #     WHERE email = ?
-    # """, (nickname, description, email))
+    data = request.get_json() 
+    email = data["email"]
+    print("succesful sign in yahoo!", data["email"])
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT nickname, description, profile_pic FROM users WHERE email = ?", (email,))
+    user = cursor.fetchone()
+
+    if user:
+        # Return the user's profile data as JSON
+        return jsonify({
+            "nickname": user["nickname"],
+            "description": user["description"],
+            "profile_pic": user["profile_pic"]
+        }), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
 
     # conn.commit()  # Commit the changes to the database
     # conn.close()  # Close the connection
 
-    nickname = None
-    description = None
-    picture = None
-    email = None
+    # nickname = None
+    # description = None
+    # picture = None
+    # email = None
 
-    return jsonify({"nickname": nickname, "description": description, "picture": picture, "email": email}), 200  # Return a success response
+    # return jsonify({"nickname": nickname, "description": description, "picture": picture, "email": email}), 200  # Return a success response
 
 
 @app.route('/api/check_user', methods=['POST'])

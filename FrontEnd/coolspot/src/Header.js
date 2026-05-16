@@ -32,6 +32,14 @@ function Header() {
   }, [currentUser.email, updateCurrentUser]);
 
   const handleLoginSuccess = async (response) => {
+    // try {
+    //   const response = await fetch('http://localhost:5000/api/update_user_profile');
+    //   const data = await response.json();
+    //   console.log(data);
+    // } catch (error) {
+    //   console.error('error getting shit', error);
+    // }
+
     updateCurrentUser({nickname: "", email: ""});
     const jwtToken = response.credential;
     const decodedToken = jwtDecode(jwtToken);
@@ -40,32 +48,39 @@ function Header() {
 
     setUserEmail(email);
     localStorage.setItem("JWT", jwtToken);
-
-    const res = await fetch('/api/check_user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`, 
-      },
-      body: JSON.stringify({ email, nickname }), 
-    });
-
+    const res = await fetch("http://localhost:5000/api/update_profile", 
+      {
+        method: 'POST',  // Change to POST since you're sending data
+        headers: {
+            'Content-Type': 'application/json',  // Set content type as JSON
+        },
+        body: JSON.stringify(jwtDecode(jwtToken))  // Send JWT in request body
+    }
+    );
+    
     if (!res.ok) {
-      throw new Error('Network response was not ok');
+        throw new Error('Network response was not ok');
     }
 
-    const data = await res.json();
-    console.log("tas kas no servera atnak:");
+    const data = await response.json();
     console.log(data);
+
+    // if (!res.ok) {
+    //   throw new Error('Network response was not ok');
+    // }
+
+    // const data = await res.json();
+    // console.log("tas kas no servera atnak:");
+    // console.log(data);
     
 
-    if(data.message == "User exists"){
-      console.log("exists");
-      updateCurrentUser({nickname: data.user.nickname, email: data.user.email});
-    } else{
-      updateCurrentUser({nickname: data.user.name, email: data.user.email});
-      updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true });
-    }  
+    // if(data.message == "User exists"){
+    //   console.log("exists");
+    //   updateCurrentUser({nickname: data.user.nickname, email: data.user.email});
+    // } else{
+    //   updateCurrentUser({nickname: data.user.name, email: data.user.email});
+    //   updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true });
+    // }  
   };
 
   const onProfileClick = () => {
