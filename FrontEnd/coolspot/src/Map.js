@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,7 +21,7 @@ function AddMarker({ onAddMarker, isAdding }) {
   return null;
 }
 
-function MapDiv({ addSpot }) {
+function MapDiv() {
   const position = [56.95175272999896, 24.11406032025138];
   const [markers, setMarkers] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -29,23 +29,36 @@ function MapDiv({ addSpot }) {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [description, setDescription] = useState("");
 
+  useEffect(() => {
+    const fetchSpots = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/spots');
+        const data = await response.json();
+        setMarkers(data);
+      } catch (error) {
+        console.error('Error fetching spots:', error);
+      }
+    };
+
+    fetchSpots();
+  }, []);
+
   const handleMapClick = (latlng) => {
     setSelectedPosition(latlng);
-    setShowModal(true); 
+    setShowModal(true);
   };
 
   const publishMarker = async () => {
     const geolocation = `${selectedPosition.lat},${selectedPosition.lng}`;
-    //alert(geolocation)
     const newMarker = { 
       Geolocation: geolocation,
       Description: description,
-      Name: "Default Spot Name", // Default value for Name
-      Karma: 0, // Default value for Karma
-      UserId: 1, // Default value for UserId (update as needed)
-      Time: new Date().toISOString() // Current time
+      Name: "Default Spot Name", 
+      Karma: 0, 
+      UserId: 1, 
+      Time: new Date().toISOString() 
     };
-    
+
     try {
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
@@ -54,17 +67,15 @@ function MapDiv({ addSpot }) {
         },
         body: JSON.stringify(newMarker),
       });
-      alert(JSON.stringify(newMarker))
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
 
       const result = await response.json();
-      console.log(result); // Log success message
+      console.log(result);
 
-      setMarkers([...markers, newMarker]); // Add marker to local state
-      addSpot(newMarker); // Pass to parent component
+      setMarkers([...markers, newMarker]); // Add the new marker to the local state
       setShowModal(false);
       setIsAdding(false);
       setDescription("");
@@ -87,14 +98,24 @@ function MapDiv({ addSpot }) {
     <div className="relative w-[40vw] h-[40vw] md:w-[50vw] md:h-[50vw] sm:w-[90vw] sm:h-[90vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
       <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} className="z-0">
         <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-      
-        {markers.map((markerPosition, index) => (
-          <Marker key={index} position={{ lat: markerPosition.Geolocation.split(',')[0], lng: markerPosition.Geolocation.split(',')[1] }} icon={customIcon}>
-            <Popup>
-              {markerPosition.Description} <br /> Geolocation: [{markerPosition.Geolocation}]
-            </Popup>
-          </Marker>
-        ))}
+
+        {markers.map((markerPosition, index) => {
+          const [lat, lng] = markerPosition.Geolocation.split(',').map(Number);
+
+
+          if (isNaN(lat) || isNaN(lng)) {
+            console.error('Invalid Geolocation:', markerPosition.Geolocation);
+            return null; 
+          }
+
+          return (
+            <Marker key={index} position={{ lat, lng }} icon={customIcon}>
+              <Popup>
+                {markerPosition.Description} <br /> Geolocation: [{markerPosition.Geolocation}]
+              </Popup>
+            </Marker>
+          );
+        })}
 
         <AddMarker onAddMarker={handleMapClick} isAdding={isAdding} />
       </MapContainer>
