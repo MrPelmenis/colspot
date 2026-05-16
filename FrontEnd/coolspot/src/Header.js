@@ -64,7 +64,7 @@ function Header() {
       updateCurrentUser({nickname: data.user.nickname, email: data.user.email});
     } else{
       updateCurrentUser({nickname: data.user.name, email: data.user.email});
-      updateWindowState('signInWindow', { email: data.user.email, visible: true });
+      updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true });
     }  
   };
 

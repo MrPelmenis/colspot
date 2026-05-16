@@ -1,18 +1,25 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
+import { CurrentUserContext } from './CurrentUserContext';
 
 function SignInWindow() {
-  const { windowStates } = useContext(WindowContext);
-  const { updateWindowState } = useContext(WindowContext);
+  const { windowStates, updateWindowState } = useContext(WindowContext);
+  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
-  const { email, visible } = windowStates.signInWindow;
+  const { email, nickname, visible } = windowStates.signInWindow;
 
-  const [username, setUsername] = useState(""); 
+  const [username, setUsername] = useState(nickname); 
+
+  // Sync the username state with the nickname whenever it changes
+  useEffect(() => {
+    setUsername(nickname || '');
+  }, [nickname]);
 
   if (!visible) return null; 
 
   const onClose = () => {
     updateWindowState('signInWindow', { email: "", visible: false });
+    updateCurrentUser({nickname: '', email: ''});
     localStorage.setItem("JWT", "");
   }
 
@@ -20,7 +27,7 @@ function SignInWindow() {
     console.log(windowStates.signInWindow);
     alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
     console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
-    updateWindowState('signInWindow', { email: "", visible: false });
+    updateWindowState('signInWindow', { email: "", nickname:'', visible: false });
   }
 
   return (
