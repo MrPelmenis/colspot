@@ -85,7 +85,33 @@ def serve_static_files(path):
     return send_from_directory(app.static_folder + '/static', path)
 
 
-@app.route('/api/user', methods=['GET'])
+@app.route('/api/update_user_profile', methods=['POST'])
+def change():
+    data = request.get_json()  # Access the JSON data
+    if not data:
+        return jsonify({"error": "No data provided"}), 400  # Check if data is present
+
+
+
+    nickname = data.get("nickname")  # Extract username
+    description = data.get("description")  # Extract description
+    email = data.get("email")
+
+    conn = get_db()  # Get the database connection
+    cursor = conn.cursor()
+    print(nickname, description)
+    # SQL command to update the user's nickname and description based on email
+    cursor.execute("""
+        UPDATE users
+        SET nickname = ?, description = ?
+        WHERE email = ?
+    """, (nickname, description, email))
+
+    conn.commit()  # Commit the changes to the database
+    conn.close()  # Close the connection
+
+    return jsonify({"message": "Profile updated successfully"}), 200  # Return a success response
+
 
 
 @app.route('/api/check_user', methods=['POST'])

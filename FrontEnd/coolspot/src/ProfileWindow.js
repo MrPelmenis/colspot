@@ -7,14 +7,12 @@ import defaultProfilePic from './images/DefaultProfilePic.png';
 function ProfileWindow() {
   const { windowStates } = useContext(WindowContext);
   const { updateWindowState } = useContext(WindowContext);
-
-  const { currentUser } = useContext(CurrentUserContext);
-  const { updateCurrentUser } = useContext(CurrentUserContext);
+  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
   const { visible } = windowStates.profileWindow;
 
   const [profilePicSrc, setProfilePicSrc] = useState(defaultProfilePic); // State for profile picture
-  const [description, setDescription] = useState(""); // State for description input
+  const [description, setDescription] = useState(currentUser.description || ""); // State for description input
   const [isEditingUsername, setIsEditingUsername] = useState(false); // State to toggle edit mode for username
   const [newUsername, setNewUsername] = useState(currentUser.username); // State for new username
 
@@ -22,6 +20,11 @@ function ProfileWindow() {
   useEffect(() => {
     setNewUsername(currentUser.username);
   }, [currentUser.username]);
+
+  // Update the description state when currentUser changes
+  useEffect(() => {
+    setDescription(currentUser.description || ""); // Set initial description from currentUser
+  }, [currentUser.description]);
 
   if (!visible) return null;
 
@@ -34,8 +37,8 @@ function ProfileWindow() {
   };
 
   const handleUsernameSave = () => {
-    if (newUsername.trim() !== "") {
-      updateCurrentUser({ ...currentUser, username: newUsername });
+    if (newUsername.trim() !== "" && newUsername !== currentUser.username) {
+      updateCurrentUser({ ...currentUser, username: newUsername }); // Update context with new username
     }
     setIsEditingUsername(false);
   };
@@ -43,68 +46,56 @@ function ProfileWindow() {
   const uploadImg = (event) => {
     let file = event.target.files[0];
     console.log(file);
-    //pretty much getting an image src from the uploaded file and sending it to the server
     if (file) {
-        let data = new FormData();
-        data.append('file', file);
-        
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const img = new Image();
-          img.src = reader.result;
-        
-          img.onload = async() => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            console.log("img params: W:" + img.width + " H: " + img.height);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const img = new Image();
+        img.src = reader.result;
 
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
 
-            // Set canvas dimensions to resize the image
-            let width = 500;
-            let height = 500;
+          // Set canvas dimensions to resize the image
+          const width = 500;
+          const height = 500;
 
-            canvas.width = width;
-            canvas.height = height;
+          canvas.width = width;
+          canvas.height = height;
 
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, img.width, img.height);
 
-            let xOffset = 0;
-            let yOffset = 0;
-
-            // Check the aspect ratio of the image
-            if (img.width <= img.height) {
-                width = Math.round((img.width / img.height) * height);
-                xOffset = (height - width)/2;
-            } else {
-                height = Math.round((img.height / img.width) * width);
-                yOffset = (width - height)/2;
-            }
-//
-            console.log("image stuff:");
-            console.log("width: " + width);
-            console.log("height: " + height);
-
-
-            ctx.fillStyle = "white";
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-            // Draw the image on the canvas and resize it
-            ctx.drawImage(img, xOffset, yOffset, width, height);
-        
-            // Get the resized image as a data URL
-            const resizedDataUrl = canvas.toDataURL('image/jpeg'); // Change 'image/jpeg' to desired format
-            console.log(resizedDataUrl);
-            setProfilePicSrc(resizedDataUrl);
-        
-            //let res = await fetchSpecial("profileImgUpdate", { clientName: currentUserState.name, imgSrc: resizedDataUrl }, false);
-            //window.location.href = "/";
-          };
+          const resizedDataUrl = canvas.toDataURL('image/jpeg'); 
+          console.log(resizedDataUrl);
+          setProfilePicSrc(resizedDataUrl);
         };
-        reader.readAsDataURL(file);
+      };
+      reader.readAsDataURL(file);
     }
-}
+  };
 
-  const updateProfile = () => {
-    console.log(newUsername, " ", description);
+  const updateProfile = async () => {
+    console.log(JSON.stringify({ nickname: newUsername, description, email: currentUser.email }));
+    
+    const res = await fetch('/api/update_user_profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nickname: newUsername, description, email: currentUser.email }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to update profile');
+    }
+
+    const data = await res.json();
+    console.log("Profile updated response:", data);
+
+    // Update the current user context with new values
+    updateCurrentUser({ ...currentUser, username: newUsername, description });
   };
 
   const onLogOut = () => {
@@ -120,7 +111,6 @@ function ProfileWindow() {
     >
       <button
         className="absolute top-0 right-0 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500"
-        style={{ width: '30px', height: '30px' }}
         onClick={onClose}
       >
         &times;

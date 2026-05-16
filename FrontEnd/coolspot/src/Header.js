@@ -16,18 +16,38 @@ function Header() {
   const [userEmail, setUserEmail] = useState("");
 
 
-  const fetchUserData = () => {
-    // Simulate fetching user data (replace this with your API call)
-    return {
-      username: 'john_doe',
-      email: 'john@example.com'
-    };
-  };
+  // const fetchUserData = () => {
+  //   // Simulate fetching user data (replace this with your API call)
+  //   return {
+  //     username: 'john_doe',
+  //     email: 'john@example.com'
+  //   };
+  // };
+
+  // useEffect(() => {
+  //   const userData = fetchUserData();
+  //   updateCurrentUser(userData); 
+  // }, []);
 
   useEffect(() => {
-    const userData = fetchUserData();
-    updateCurrentUser(userData); 
-  }, []);
+    const jwtToken = localStorage.getItem('JWT');
+    if (jwtToken) {
+      try {
+        const decodedToken = jwtDecode(jwtToken);
+        const userData = {
+          username: decodedToken.name, // Or other fields from the token
+          email: decodedToken.email
+        };
+        updateCurrentUser(userData); // Update current user with decoded token data
+      } catch (error) {
+        console.error('Invalid token');
+        localStorage.removeItem('JWT'); // Clear token if it's invalid
+      }
+    } else {
+      // If no token, set a default state
+      updateCurrentUser({ username: null, email: null });
+    }
+  }, [updateCurrentUser]); // Runs once on component mount
 
 
 
