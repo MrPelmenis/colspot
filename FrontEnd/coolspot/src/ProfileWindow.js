@@ -17,7 +17,7 @@ function ProfileWindow() {
     const [newUsername, setNewUsername] = useState(currentUser?.username || ""); 
     const [errorMessage, setErrorMessage] = useState("");
 
-    console.log("ProfileWindow currentUser:", currentUser);
+    //console.log("ProfileWindow currentUser:", currentUser);
 
     useEffect(() => {
         // Ensure both description and username are synced when currentUser updates
@@ -47,7 +47,7 @@ function ProfileWindow() {
 
     const uploadImg = (event) => {
         let file = event.target.files[0];
-        console.log(file);
+        //console.log(file);
         if (file) {
             const reader = new FileReader();
             reader.onload = async () => {
@@ -70,7 +70,7 @@ function ProfileWindow() {
                     ctx.drawImage(img, 0, 0, img.width, img.height);
 
                     const resizedDataUrl = canvas.toDataURL('image/jpeg'); 
-                    console.log(resizedDataUrl);
+                    //console.log(resizedDataUrl);
                     setProfilePicSrc(resizedDataUrl);
                 };
             };
@@ -90,15 +90,15 @@ function ProfileWindow() {
         updateCurrentUser({ ...currentUser, username: newUsername, description: description });
 
         // Proceed with the API call to update the profile
-        console.log("Sending profile update to server:");
-        console.log(JSON.stringify({ nickname: newUsername, description: description, email: currentUser.email }));
-        
+        // console.log("Sending profile update to server:");
+        // onsole.log(JSON.stringify({ nickname: newUsername, description: description, email: currentUser.email }));
+        console.log(profilePicSrc)
         const res = await fetch('/api/update_user_profile', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ nickname: newUsername, description, email: currentUser.email }),
+            body: JSON.stringify({ nickname: newUsername, description, email: currentUser.email, profile_pic: profilePicSrc }),
         });
 
         if (!res.ok) {

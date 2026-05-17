@@ -23,10 +23,33 @@ function SignInWindow() {
     localStorage.setItem("JWT", "");
   }
 
-  const handleSignInServer = () => {
-    console.log(windowStates.signInWindow);
-    alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
-    console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
+  const handleSignInServer = async () => {
+    //console.log(windowStates.signInWindow);
+    console.log(" nickname:", username)
+    console.log( email)
+    const res = await fetch('/api/create_user', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nickname: username, email: email }),
+  });
+
+    if (!res.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await res.json();
+        console.log(data, data.message)
+      if (data.message == "took"){
+          alert("Choose other nickname, this one is taken")
+      
+          return;
+      }
+    //console.log(data);
+
+    //alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
+    //console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
     updateWindowState('signInWindow', { email: "", nickname:'', visible: false });
   }
 

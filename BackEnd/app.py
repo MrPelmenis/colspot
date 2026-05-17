@@ -111,19 +111,20 @@ def change():
         return jsonify({"error": "No data provided"}), 400  # Check if data is present
     
     nickname = data.get("nickname")  # Extract username
-    description = data.get("description")  # Extract description
+    description = data.get("description")  
     email = data.get("email")
+    profile_pic = data.get("profile_pic")
 
-    conn = get_db()  # Get the database connection
+    conn = get_db()  
     cursor = conn.cursor()
-    print(data)
-    print(nickname, description, email)
-    # SQL command to update the user's nickname and description based on email
+    print(profile_pic)
+    # print(data)
+    # print(nickname, description, email)
     cursor.execute("""
         UPDATE users
-        SET nickname = ?, description = ?
+        SET nickname = ?, description = ?, profile_pic = ?
         WHERE email = ?
-    """, (nickname, description, email))
+    """, (nickname, description, email, profile_pic))
 
     conn.commit()  # Commit the changes to the database
     conn.close()  # Close the connection
@@ -152,16 +153,6 @@ def send():
     else:
         return jsonify({"error": "User not found"}), 404
 
-    # conn.commit()  # Commit the changes to the database
-    # conn.close()  # Close the connection
-
-    # nickname = None
-    # description = None
-    # picture = None
-    # email = None
-
-    # return jsonify({"nickname": nickname, "description": description, "picture": picture, "email": email}), 200  # Return a success response
-
 
 @app.route('/api/check_user', methods=['POST'])
 def check_user():
@@ -179,20 +170,44 @@ def check_user():
         # User exists, return user data
         print("exists")
         return jsonify(message="User exists", user={
-            "email": user[2],
-            "nickname": user[1],
-            "description": user[5],
+            "email": user["email"],
+            "nickname": user["nickname"],
+            "description": user["description"],
         }), 200
-    else:
-        print("trying create")
-        # User does not exist, create a new user
-        cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
-        conn.commit()
+    else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
+        # print("trying create")
+        # # User does not exist, create a new user
+        # cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
+        # conn.commit()
         return jsonify(message="User created", user={
             "email": email,
             "name": nickname
         }), 201  # HTTP status code for Created
     
+@app.route('/api/create_user', methods=["POST"])
+def create_user():
+    data = request.json
+    print(data)
+    email = data.get('email')
+    nickname = data.get('nickname')
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        print("took")
+        return jsonify({"message": "took"}), 200  
+
+
+    cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
+    conn.commit()
+
+    return jsonify({"message": "User created succesfully "}), 200 
+
+
 @app.route('/api/spots', methods=['GET'])
 def get_spots():
     db = get_db()
