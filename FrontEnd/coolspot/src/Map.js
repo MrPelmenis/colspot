@@ -95,7 +95,7 @@ function MapDiv() {
   };
 
   return (
-    <div className="relative w-[40vw] h-[40vw] md:w-[50vw] md:h-[50vw] sm:w-[90vw] sm:h-[90vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
+    <div className="relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] md:w-[70vw] md:h-[70vw] lg:w-[60vw] lg:h-[60vw] xl:w-[50vw] xl:h-[50vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
       <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} className="z-0">
         <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
 

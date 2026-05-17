@@ -107,6 +107,8 @@ function Header() {
   };
 
   const onProfileClick = () => {
+    console.log("currentUser:");
+    console.log(currentUser);
     updateWindowState('profileWindow', { email: "", visible: true });
   }
 
