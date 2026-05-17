@@ -1,21 +1,13 @@
 from flask import Flask, jsonify, request, send_from_directory, g, url_for, redirect
 from authlib.integrations.flask_client import OAuth
-from flask_jwt_extended import JWTManager, create_access_token
 import sqlite3
-from urllib.parse import urlencode
 from datetime import datetime
 from flask_cors import CORS
-import os 
-from flask import make_response
 
 DATABASE = "main_db.db"
 app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-# JWT setup
-app.config['JWT_SECRET_KEY'] = 'your-jwt-secret'
-jwt = JWTManager(app)
 
 person = {"name": None, "email": None}
 
@@ -33,7 +25,6 @@ google = oauth.register(
 
 
 def get_db():
-    # Connect to the SQLite database, creating a new connection if necessary
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
@@ -50,43 +41,6 @@ def set_headers(response):
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"  # Allow specific HTTP methods
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"  # Allow necessary headers
     return response
-
-@app.route('/api/login')
-def login():
-    redirect_uri = url_for('authorize', _external=True)
-    return google.authorize_redirect(redirect_uri)
-
-@app.route('/authorize')
-def authorize():
-    token = google.authorize_access_token()
-    resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
-    resp.raise_for_status()
-    profile = resp.json()
-
-    person['email'] = profile['email']
-    person['name'] = profile.get('name', '')
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (person['email'] ,))
-    user = cursor.fetchone()
-
-    if user:
-        print(user['email'])
-        conn.close()
-        access_token = create_access_token(identity={'email': profile['email']})
-    else:
-        print("creating user")
-        cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (person['email'] , person['name'] ))
-        conn.commit()
-        conn.close()
-        access_token = create_access_token(identity={'email': profile['email']})
-    
-    redirect_url = url_for('serve_react_app', _external=True)  # Assuming your main page route is '/'
-    params = {'token': access_token}
-    
-    return redirect(f"{redirect_url}?{urlencode(params)}")  # Redirect to /?token=<jwt_token>
-
 
 @app.route('/')
 def serve_react_app():
@@ -106,30 +60,35 @@ def serve_manifest():
 
 @app.route('/api/update_user_profile', methods=['POST'])
 def change():
-    data = request.get_json()  # Access the JSON data
+    data = request.get_json()  
     if not data:
-        return jsonify({"error": "No data provided"}), 400  # Check if data is present
+        return jsonify({"error": "No data provided"}), 400  
     
-    nickname = data.get("nickname")  # Extract username
+    nickname = data.get("nickname") 
     description = data.get("description")  
     email = data.get("email")
     profile_pic = data.get("profile_pic")
 
     conn = get_db()  
     cursor = conn.cursor()
-    print(profile_pic)
-    # print(data)
-    # print(nickname, description, email)
+
+    #check if nickname is took
+    cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        print("took")
+        return jsonify({"message": "took"}), 200 
+
     cursor.execute("""
         UPDATE users
         SET nickname = ?, description = ?, profile_pic = ?
         WHERE email = ?
-    """, (nickname, description, email, profile_pic))
+    """, (nickname, description, profile_pic, email))
 
-    conn.commit()  # Commit the changes to the database
-    conn.close()  # Close the connection
+    conn.commit()  
 
-    return jsonify({"message": "Profile updated successfully"}), 200  # Return a success response
+    return jsonify({"message": "Profile updated successfully"}), 200  
 
 
 @app.route('/api/update_profile', methods=['POST'])
@@ -144,7 +103,6 @@ def send():
     user = cursor.fetchone()
 
     if user:
-        # Return the user's profile data as JSON
         return jsonify({
             "nickname": user["nickname"],
             "description": user["description"],
@@ -160,14 +118,13 @@ def check_user():
     email = data.get('email')
     nickname = data.get('nickname')
 
-    # Check if user exists in the database
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
     user = cursor.fetchone()
+    conn.commit()
 
     if user:
-        # User exists, return user data
         print("exists")
         return jsonify(message="User exists", user={
             "email": user["email"],
@@ -178,7 +135,6 @@ def check_user():
         # print("trying create")
         # # User does not exist, create a new user
         # cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
-        # conn.commit()
         return jsonify(message="User created", user={
             "email": email,
             "name": nickname
@@ -249,7 +205,6 @@ def add_spot():
 
 @app.teardown_appcontext
 def close_connection(exception):
-    # Close the database connection when the context is destroyed
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
