@@ -19,7 +19,7 @@ function SignInWindow() {
 
   const onClose = () => {
     updateWindowState('signInWindow', { email: "", visible: false });
-    updateCurrentUser({nickname: '', email: ''});
+    updateCurrentUser({nickname: '', description:'', email: ''});
     localStorage.setItem("JWT", "");
   }
 
@@ -50,6 +50,9 @@ function SignInWindow() {
 
     //alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
     //console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
+    console.log("jauns username, email");
+    console.log(username, email);
+    updateCurrentUser({ ...currentUser, username: username, email: email });
     updateWindowState('signInWindow', { email: "", nickname:'', visible: false });
   }
 
