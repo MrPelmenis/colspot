@@ -8,52 +8,45 @@ function SignInWindow() {
 
   const { email, nickname, visible } = windowStates.signInWindow;
 
-  const [username, setUsername] = useState(nickname); 
+  const [username, setUsername] = useState(nickname);
+  const [errorMessage, setErrorMessage] = useState(''); // State for error message
 
   // Sync the username state with the nickname whenever it changes
   useEffect(() => {
     setUsername(nickname || '');
+    setErrorMessage(''); // Reset error message when nickname changes
   }, [nickname]);
 
-  if (!visible) return null; 
+  if (!visible) return null;
 
   const onClose = () => {
     updateWindowState('signInWindow', { email: "", visible: false });
-    updateCurrentUser({nickname: '', description:'', email: ''});
+    updateCurrentUser({ nickname: '', description: '', email: '' });
     localStorage.setItem("JWT", "");
   }
 
   const handleSignInServer = async () => {
-    //console.log(windowStates.signInWindow);
-    console.log(" nickname:", username)
-    console.log( email)
     const res = await fetch('/api/create_user', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({ nickname: username, email: email }),
-  });
+    });
 
     if (!res.ok) {
       throw new Error('Network response was not ok');
     }
-
+    
     const data = await res.json();
-        console.log(data, data.message)
-      if (data.message == "took"){
-          alert("Choose other nickname, this one is taken")
-      
-          return;
-      }
-    //console.log(data);
+    
+    if (data.message === "took") {
+      setErrorMessage("Choose another nickname, this one is taken"); // Set error message
+      return;
+    }
 
-    //alert("seit jaatuuta uz serveri kip requests ka jauns users sign up, un iedot vinam nickname ko vins ievadija un atsutit atpakal un tad frontend var nomainiit userename uz to kas ir");
-    //console.log("new client login: un:" + username + " email:" + windowStates.signInWindow.email); 
-    console.log("jauns username, email");
-    console.log(username, email);
     updateCurrentUser({ ...currentUser, username: username, email: email });
-    updateWindowState('signInWindow', { email: "", nickname:'', visible: false });
+    updateWindowState('signInWindow', { email: "", nickname: '', visible: false });
   }
 
   return (
@@ -85,6 +78,10 @@ function SignInWindow() {
         value={username} // Controlled input value
         onChange={(e) => setUsername(e.target.value)} // Update username state
       />
+  
+      {errorMessage && ( // Conditionally render error message
+        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+      )}
   
       {/* Wrap the button in a flex container */}
       <div className="flex justify-end mt-2">
