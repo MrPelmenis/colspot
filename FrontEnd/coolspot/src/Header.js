@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import {jwtDecode} from 'jwt-decode'; // Fix import to correctly decode
+import {jwtDecode} from 'jwt-decode';
 
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
@@ -13,65 +13,98 @@ function Header() {
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    const jwtToken = localStorage.getItem('JWT');
-    if (jwtToken) {
-      try {
-        const decodedToken = jwtDecode(jwtToken);
-        if (currentUser.email !== decodedToken.email) {
+    const fetchUserData = async () => {
+      const jwtToken = localStorage.getItem('JWT');
+      
+      if (jwtToken) {
+        try {
+          const decodedToken = jwtDecode(jwtToken);
+          const email = decodedToken.email;
+  
+          //skatos kaads ir users
+          const res = await fetch('/api/update_profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({ email }),
+          });
+  
+          if (!res.ok) {
+            throw new Error('Failed to fetch user profile');
+          }
+  
+          // Get the server's response
+          const data = await res.json();
+          console.log("Response from server:", data);
+  
           const userData = {
-            username: decodedToken.name,
-            email: decodedToken.email
+            username: data.nickname,
+            email: data.email || email, 
+            description: data.description,  
           };
-          updateCurrentUser(userData);;
+
+          updateCurrentUser(userData);
+
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          localStorage.removeItem('JWT');  // Remove invalid JWT
         }
-      } catch (error) {
-        console.error('Invalid token');
-        localStorage.removeItem('JWT'); 
       }
-    }
-  }, [currentUser.email, updateCurrentUser]);
+    };
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    console.log("currentUser after state update:", currentUser);
+  }, [currentUser]);
 
   const handleLoginSuccess = async (response) => {
-    try {
-      // Decode JWT and update user info locally
-      const jwtToken = response.credential;
-      const decodedToken = jwtDecode(jwtToken);
-      const email = decodedToken.email;
-      const nickname = decodedToken.name;
-  
-      // Update current user and store token
-      setUserEmail(email);
-      localStorage.setItem("JWT", jwtToken);
-      updateCurrentUser({ nickname, email });
-  
-      // Send POST request to update profile in the backend
-      const res = await fetch("http://localhost:5000/api/update_profile", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }), // Send email as part of the body
-      });
-  
-      if (!res.ok) {
-        throw new Error('Failed to fetch profile from the server.');
-      }
-  
-      const data = await res.json(); // Ensure proper response handling
-      console.log(data);
-  
-      // Update the state with the user's profile info if received
-      if (data.nickname) {
-        updateCurrentUser({
-          nickname: data.nickname,
-          email,
-        });
-      }
-    } catch (error) {
-      console.error('Error in login:', error);
+    updateCurrentUser({nickname: "", email: ""});
+    const jwtToken = response.credential;
+    const decodedToken = jwtDecode(jwtToken);
+    const email = decodedToken.email;
+    const nickname = decodedToken.name;
+
+    setUserEmail(email);
+    localStorage.setItem("JWT", jwtToken);
+
+    const res = await fetch('/api/check_user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({ email, nickname }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Network response was not ok');
     }
+
+    const data = await res.json();
+    console.log("tas kas no servera atnak:");
+    console.log(data.user);
+    
+
+    if(data.message == "User exists"){
+      console.log("exists");
+      updateCurrentUser({
+        username: data.user.nickname, 
+        description: data.user.description, 
+        email: data.user.email
+      });
+    } else{
+      console.log("create");
+      updateCurrentUser({
+        username: data.user.name, 
+        description: data.user.description, 
+        email: data.user.email
+      });
+      updateWindowState('signInWindow', { email: data.user.email, visible: true });
+    } 
   };
-  
 
   const onProfileClick = () => {
     updateWindowState('profileWindow', { email: "", visible: true });

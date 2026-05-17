@@ -17,6 +17,7 @@ function SpotList() {
     fetchSpots();
   }, []);
 
+
   return (
     <div className="w-[60vw] bg-red-500 rounded-lg shadow-md mx-auto p-4">
       {spots.length === 0 ? (

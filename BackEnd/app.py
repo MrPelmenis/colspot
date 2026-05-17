@@ -180,7 +180,8 @@ def check_user():
         print("exists")
         return jsonify(message="User exists", user={
             "email": user[2],
-            "nickname": user[1]
+            "nickname": user[1],
+            "description": user[5],
         }), 200
     else:
         print("trying create")

@@ -8,6 +8,7 @@ export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({
     username: '',
     email: '',
+    description: '',
   });
 
   const updateCurrentUser = (userData) => {
