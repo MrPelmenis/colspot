@@ -8,7 +8,8 @@ function SignInWindow() {
 
   const { email, nickname, visible } = windowStates.signInWindow;
 
-  const [username, setUsername] = useState(nickname);
+
+  const [username, setUsername] = useState(windowStates.signInWindow.nickname);
   const [errorMessage, setErrorMessage] = useState(''); // State for error message
 
   // Sync the username state with the nickname whenever it changes
@@ -23,13 +24,18 @@ function SignInWindow() {
     updateWindowState('signInWindow', { email: "", visible: false });
     updateCurrentUser({ nickname: '', description: '', email: '' });
     localStorage.setItem("JWT", "");
-  }
+  };
 
   const handleSignInServer = async () => {
+    if (username.trim().length < 3) {
+      setErrorMessage("Username must be at least 3 characters long");
+      return;
+    }
+
     const res = await fetch('/api/create_user', {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ nickname: username, email: email }),
     });
@@ -37,9 +43,9 @@ function SignInWindow() {
     if (!res.ok) {
       throw new Error('Network response was not ok');
     }
-    
+
     const data = await res.json();
-    
+
     if (data.message === "took") {
       setErrorMessage("Choose another nickname, this one is taken"); // Set error message
       return;
@@ -47,7 +53,19 @@ function SignInWindow() {
 
     updateCurrentUser({ ...currentUser, username: username, email: email });
     updateWindowState('signInWindow', { email: "", nickname: '', visible: false });
-  }
+  };
+
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+
+    // Check if the username is less than 3 characters long
+    if (value.trim().length < 3) {
+      setErrorMessage("Username must be at least 3 characters long");
+    } else {
+      setErrorMessage(''); // Clear the error message when valid
+    }
+  };
 
   return (
     <div
@@ -64,7 +82,7 @@ function SignInWindow() {
       </button>
   
       <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
-  
+
       <label className="block mb-2 text-sm font-medium text-gray-700">
         Enter Username
       </label>
@@ -76,7 +94,7 @@ function SignInWindow() {
                    focus:border-transparent transition-colors duration-300"
         placeholder="Nickname"
         value={username} // Controlled input value
-        onChange={(e) => setUsername(e.target.value)} // Update username state
+        onChange={handleUsernameChange} // Updated onChange handler
       />
   
       {errorMessage && ( // Conditionally render error message

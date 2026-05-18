@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
 import { FaPencilAlt } from 'react-icons/fa'; // Import a pencil icon from react-icons
-import defaultProfilePic from './images/DefaultProfilePic.png'; 
+import defaultProfilePic from './images/DefaultProfilePic.png';
 
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -13,27 +13,32 @@ function ProfileWindow() {
     const [profilePicSrc, setProfilePicSrc] = useState(defaultProfilePic);
     const [description, setDescription] = useState(currentUser?.description || "");
     const [isEditingUsername, setIsEditingUsername] = useState(false);
-    
-    const [newUsername, setNewUsername] = useState(currentUser?.username || ""); 
+    const [newUsername, setNewUsername] = useState(currentUser?.username || "");
     const [errorMessage, setErrorMessage] = useState("");
-
-    //console.log("ProfileWindow currentUser:", currentUser);
+    const [isSaved, setIsSaved] = useState(false); // New state variable
 
     useEffect(() => {
         // Ensure both description and username are synced when currentUser updates
         setDescription(currentUser?.description || "");
         setNewUsername(currentUser?.username || "");
-    }, [currentUser]); // Trigger when currentUser changes
+    }, [currentUser]);
 
     if (!visible) return null;
 
     const onClose = () => {
+        setIsSaved(false);
         updateWindowState('profileWindow', { email: "", visible: false });
     };
 
     const onNameChange = () => {
+        setIsSaved(false);
         setIsEditingUsername(true);
     };
+
+    const handleDecChange = (value)=>{
+        setDescription(value);
+        setIsSaved(false);
+    }
 
     const handleUsernameSave = () => {
         if (newUsername.trim().length < 3) {
@@ -46,8 +51,8 @@ function ProfileWindow() {
     };
 
     const uploadImg = (event) => {
+        setIsSaved(false);
         let file = event.target.files[0];
-        //console.log(file);
         if (file) {
             const reader = new FileReader();
             reader.onload = async () => {
@@ -69,8 +74,7 @@ function ProfileWindow() {
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(img, 0, 0, img.width, img.height);
 
-                    const resizedDataUrl = canvas.toDataURL('image/jpeg'); 
-                    //console.log(resizedDataUrl);
+                    const resizedDataUrl = canvas.toDataURL('image/jpeg');
                     setProfilePicSrc(resizedDataUrl);
                 };
             };
@@ -85,14 +89,9 @@ function ProfileWindow() {
             return;
         }
 
-        setErrorMessage("");
-
-        updateCurrentUser({ ...currentUser, username: newUsername, description: description });
+        setErrorMessage(""); // Clear any previous error message
 
         // Proceed with the API call to update the profile
-        // console.log("Sending profile update to server:");
-        // onsole.log(JSON.stringify({ nickname: newUsername, description: description, email: currentUser.email }));
-        //console.log(profilePicSrc)
         const res = await fetch('/api/update_user_profile', {
             method: 'POST',
             headers: {
@@ -106,7 +105,15 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
-        //console.log("Profile updated response:", data);
+        if (data.message === 'took') {
+            setErrorMessage("This nickname is already taken.");
+            setIsSaved(false);
+        } else {
+            // Profile updated successfully
+            console.log("Profile updated successfully!");
+            updateCurrentUser({ ...currentUser, username: newUsername, description: description });
+            setIsSaved(true); // Only set to true after successful update
+        }
     };
 
     const onLogOut = () => {
@@ -127,8 +134,7 @@ function ProfileWindow() {
                 &times;
             </button>
 
-            <div className="flex flex-wrap items-center mb-4 mt-1">
-                {/* Profile picture */}
+            <div className="flex flex-wrap items-center mt-1">
                 <div className="relative mr-3 mb-3">
                     <img
                         src={profilePicSrc}
@@ -168,13 +174,10 @@ function ProfileWindow() {
                                 onBlur={handleUsernameSave}
                                 autoFocus
                             />
-                            {errorMessage && (
-                                <span className="text-red-500 text-sm mt-1">{errorMessage}</span>
-                            )}
                         </div>
                     ) : (
-                        <h2 
-                            className="text-2xl font-bold inline-flex items-center cursor-pointer break-words"  // Allows the text to break into a new line
+                        <h2
+                            className="text-2xl font-bold inline-flex items-center cursor-pointer break-words"
                         >
                             {newUsername}
                             <FaPencilAlt className="ml-2 text-gray-500 hover:text-gray-700" onClick={onNameChange} />
@@ -182,6 +185,11 @@ function ProfileWindow() {
                     )}
                 </div>
             </div>
+
+            {/* Error message should now be shown regardless of editing state */}
+            {errorMessage && (
+                <span className="text-red-500 text-sm">{errorMessage}</span>
+            )}
 
             <div className="mb-4 mt-4">
                 <label className="block text-gray-700 mb-2" htmlFor="description">
@@ -193,7 +201,7 @@ function ProfileWindow() {
                     className="w-full p-2 border rounded-lg"
                     placeholder="Enter your bio"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => handleDecChange(e.target.value)}
                 />
             </div>
 
@@ -208,11 +216,10 @@ function ProfileWindow() {
                     onClick={updateProfile}
                     className="w-30 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"
                 >
-                    Save Changes
+                    {!isSaved ? "Save Changes" : "Changes Saved"}
                 </button>
             </div>
         </div>
-
     );
 }
 
