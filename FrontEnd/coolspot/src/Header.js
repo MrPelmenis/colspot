@@ -77,7 +77,7 @@ function Header() {
     const nickname = decodedToken.name;
 
     setUserEmail(email);
-    localStorage.setItem("JWT", jwtToken);
+    //localStorage.setItem("JWT", jwtToken);
 
     const res = await fetch('/api/check_user', {
       method: 'POST',
@@ -99,6 +99,7 @@ function Header() {
 
     if(data.message == "User exists"){
       //console.log("exists");
+      localStorage.setItem("JWT", jwtToken);
       updateCurrentUser({
         nickname: data.user.nickname, 
         description: data.user.description, 
@@ -112,7 +113,7 @@ function Header() {
         description: data.user.description, 
         email: data.user.email
       });
-      updateWindowState('signInWindow', { email: data.user.email, visible: true });
+      updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true, jwt: jwtToken});
     } 
   };
 
