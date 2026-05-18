@@ -1,14 +1,14 @@
 import React, { createContext, useState } from 'react';
 
-
 export const CurrentUserContext = createContext();
 
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({
-    username: '',
+    nickname: '',
     email: '',
     description: '',
+    profile_pic: "",
   });
 
   const updateCurrentUser = (userData) => {

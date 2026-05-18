@@ -7,16 +7,27 @@ import { CurrentUserContext } from './CurrentUserContext';
 
 import { ExtraFunctions } from './ExtraFunctions';
 
+
+
+import ProfileImage from './ProfileImage'; 
+
 function Header() {
   const { updateWindowState } = useContext(WindowContext);
   const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
   const [userEmail, setUserEmail] = useState("");
 
+  const [profileImage, setProfileImage] = useState("");
+  const [profilePic, setProfilePic] = useState(currentUser.profile_pic || "/images/DefaultProfilePic.png");
+
+  useEffect(()=>{
+    console.log("current user:", currentUser);
+  }, [currentUser])
+
   useEffect(() => {
     const fetchUserData = async () => {
       const jwtToken = localStorage.getItem('JWT');
       
-      if (jwtToken) {
+      if (ExtraFunctions.isUserLoggedIn()) {
         try {
           const decodedToken = jwtDecode(jwtToken);
           const email = decodedToken.email;
@@ -40,9 +51,10 @@ function Header() {
           console.log("Response from server:", data);
   
           const userData = {
-            username: data.nickname,
+            nickname: data.nickname,
             email: data.email || email, 
-            description: data.description,  
+            description: data.description,
+            profile_pic: data.profile_pic,  
           };
 
           updateCurrentUser(userData);
@@ -55,10 +67,7 @@ function Header() {
     };
     fetchUserData();
   }, []);
-
-  useEffect(() => {
-    //console.log("currentUser after state update:", currentUser);
-  }, [currentUser]);
+ 
 
   const handleLoginSuccess = async (response) => {
     updateCurrentUser({nickname: "", email: ""});
@@ -91,20 +100,22 @@ function Header() {
     if(data.message == "User exists"){
       //console.log("exists");
       updateCurrentUser({
-        username: data.user.nickname, 
+        nickname: data.user.nickname, 
         description: data.user.description, 
-        email: data.user.email
+        email: data.user.email,
+        profile_pic: data.user.profile_pic,
       });
     } else{
       //console.log("create");
       updateCurrentUser({
-        username: data.user.name, 
+        nickname: data.user.name, 
         description: data.user.description, 
         email: data.user.email
       });
       updateWindowState('signInWindow', { email: data.user.email, visible: true });
     } 
   };
+
 
   const onProfileClick = () => {
     //console.log("currentUser:");
@@ -119,8 +130,13 @@ function Header() {
       <header className="bg-gray-200 py-4 w-full flex justify-between items-center px-4 rounded-b-lg shadow-md sticky top-0 z-10">
         <h1 className="text-4xl font-bold text-gray-800 flex-grow text-center md:text-left">CoolSpot</h1>
         {isLoggedIn ? (
-          <div className="flex items-center">
-            <h2 onClick={onProfileClick} className="text-lg text-gray-800 font-semibold ml-4">{currentUser.username}</h2>
+          <div onClick={onProfileClick} title="View Profile" className="flex items-center mr-2 cursor-pointer">
+            <h2
+              className="text-lg text-gray-800 font-semibold ml-4"
+            >
+              {currentUser.nickname}
+            </h2>
+            <ProfileImage nickname={currentUser.nickname}></ProfileImage>
           </div>
         ) : (
           <GoogleLogin

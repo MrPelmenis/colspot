@@ -4,6 +4,9 @@ import sqlite3
 from datetime import datetime
 from flask_cors import CORS
 
+import os
+import base64
+
 DATABASE = "main_db.db"
 app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
@@ -204,6 +207,36 @@ def add_spot():
                    (name, description, geolocation, user_id, karma, time))
     db.commit()
     return jsonify({'message': 'Spot added successfully!'}), 201
+
+
+
+
+
+@app.route('/api/get_profile_image', methods=['GET'])
+def get_profile_image():
+    nickname = request.args.get('nickname') 
+
+    if not nickname:
+        return jsonify({"error": "Nickname is required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT profile_pic FROM users WHERE nickname = ?", (nickname,))
+    user = cursor.fetchone()
+
+    if user and user[0]:
+        return jsonify({"profile_pic": user[0]}), 200 
+    else:
+        default_image_path = "DefaultProfilePic.png"
+        if os.path.exists(default_image_path):
+            with open(default_image_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                print("encoded data:")
+                print(encoded_string)
+                return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
+        else:
+            return jsonify({"error": "Default image not found"}), 500
 
 
 

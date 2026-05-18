@@ -51,7 +51,7 @@ function SignInWindow() {
       return;
     }
 
-    updateCurrentUser({ ...currentUser, username: username, email: email });
+    updateCurrentUser({ ...currentUser, nickname: username, email: email });
     updateWindowState('signInWindow', { email: "", nickname: '', visible: false });
   };
 

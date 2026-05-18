@@ -2,7 +2,11 @@ import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
 import { FaPencilAlt } from 'react-icons/fa'; // Import a pencil icon from react-icons
+
 import defaultProfilePic from './images/DefaultProfilePic.png';
+import ProfileImage from './ProfileImage';
+
+
 
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -10,17 +14,19 @@ function ProfileWindow() {
 
     const { visible } = windowStates.profileWindow;
 
-    const [profilePicSrc, setProfilePicSrc] = useState(defaultProfilePic);
+    const [profilePicSrc, setProfilePicSrc] = useState(currentUser.profile_pic || defaultProfilePic);
     const [description, setDescription] = useState(currentUser?.description || "");
     const [isEditingUsername, setIsEditingUsername] = useState(false);
-    const [newUsername, setNewUsername] = useState(currentUser?.username || "");
+    const [newUsername, setNewUsername] = useState(currentUser?.nickname || "");
     const [errorMessage, setErrorMessage] = useState("");
-    const [isSaved, setIsSaved] = useState(false); // New state variable
+    const [isSaved, setIsSaved] = useState(false); 
+
 
     useEffect(() => {
         // Ensure both description and username are synced when currentUser updates
         setDescription(currentUser?.description || "");
-        setNewUsername(currentUser?.username || "");
+        setNewUsername(currentUser?.nickname || "");
+        setProfilePicSrc(currentUser.profile_pic || defaultProfilePic);
     }, [currentUser]);
 
     if (!visible) return null;
@@ -46,8 +52,8 @@ function ProfileWindow() {
             return;
         }
 
-        setErrorMessage(""); // Clear the error message
-        setIsEditingUsername(false); // Close the editing mode
+        setErrorMessage(""); 
+        setIsEditingUsername(false);
     };
 
     const uploadImg = (event) => {
@@ -63,7 +69,6 @@ function ProfileWindow() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Set canvas dimensions to resize the image
                     const width = 500;
                     const height = 500;
 
@@ -75,6 +80,7 @@ function ProfileWindow() {
                     ctx.drawImage(img, 0, 0, img.width, img.height);
 
                     const resizedDataUrl = canvas.toDataURL('image/jpeg');
+                    console.log("image data:", resizedDataUrl);
                     setProfilePicSrc(resizedDataUrl);
                 };
             };
@@ -83,15 +89,13 @@ function ProfileWindow() {
     };
 
     const updateProfile = async () => {
-        // Check the length of the new username before updating
         if (newUsername.trim().length < 3) {
-            setErrorMessage("Username must be at least 3 characters long.");
+            setErrorMessage("Nickname must be at least 3 characters long.");
             return;
         }
 
-        setErrorMessage(""); // Clear any previous error message
+        setErrorMessage(""); 
 
-        // Proceed with the API call to update the profile
         const res = await fetch('/api/update_user_profile', {
             method: 'POST',
             headers: {
@@ -105,20 +109,22 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
+        console.log("data from update:", data);
         if (data.message === 'took') {
             setErrorMessage("This nickname is already taken.");
             setIsSaved(false);
         } else {
             // Profile updated successfully
             console.log("Profile updated successfully!");
-            updateCurrentUser({ ...currentUser, username: newUsername, description: description });
-            setIsSaved(true); // Only set to true after successful update
+            updateCurrentUser({ ...currentUser, nickname: newUsername, description: description, profile_pic: profilePicSrc });
+            setIsSaved(true);
         }
     };
 
     const onLogOut = () => {
         localStorage.setItem("JWT", "");
         updateWindowState('profileWindow', { email: "", visible: false });
+        updateCurrentUser({  nickname: "", email: "", description: "", profile_pic: "" });
     };
 
     return (
@@ -136,11 +142,13 @@ function ProfileWindow() {
 
             <div className="flex flex-wrap items-center mt-1">
                 <div className="relative mr-3 mb-3">
+                    
                     <img
                         src={profilePicSrc}
                         alt="Profile"
                         className="w-12 h-12 border border-black rounded-full object-cover"
                     />
+                    
                     <input
                         onChange={uploadImg}
                         type="file"
@@ -166,7 +174,7 @@ function ProfileWindow() {
                                 onChange={(e) => {
                                     setNewUsername(e.target.value);
                                     if (e.target.value.trim().length < 3) {
-                                        setErrorMessage("Username must be at least 3 characters long.");
+                                        setErrorMessage("Nickname must be at least 3 characters long.");
                                     } else {
                                         setErrorMessage("");
                                     }
