@@ -5,8 +5,11 @@ import 'leaflet/dist/leaflet.css';
 import { WindowContext } from './WindowContext';
 import AddSpotWindow from './AddSpotWindow'; 
 
-import { CurrentUserContext } from './CurrentUserContext';
+import streetViewIMG from './images/street-view.png';
+import sateliteViewIMG from './images/satelite-view.png';
 
+
+import { CurrentUserContext } from './CurrentUserContext';
 import { ExtraFunctions } from './ExtraFunctions';
 
 const customIcon = new L.Icon({
@@ -32,11 +35,10 @@ function MapDiv() {
   const [markers, setMarkers] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const { updateWindowState } = useContext(WindowContext);
-
   const [buttonMessage, setButtonMessage] = useState("Click to add the spot");
   const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
-
-  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+  const { currentUser } = useContext(CurrentUserContext);
+  const [mapView, setMapView] = useState('satellite'); // new state to toggle between views
 
   useEffect(() => {
     const fetchSpots = async () => {
@@ -51,13 +53,8 @@ function MapDiv() {
     fetchSpots();
   }, []);
 
-
   useEffect(() => {
-    if(ExtraFunctions.isUserLoggedIn()){
-      setIsLoggedIn(true);
-    }else{
-      setIsLoggedIn(false);
-    }
+    setIsLoggedIn(ExtraFunctions.isUserLoggedIn());
   }, [currentUser]);
 
   const handleMapClick = (latlng) => {
@@ -79,17 +76,51 @@ function MapDiv() {
     return isAdding ? buttonMessage : "Click to add the spot";
   };
 
+  const toggleMapView = (viewType) => {
+    setMapView(viewType);
+  };
+
   return (
     <div className="relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] md:w-[70vw] md:h-[70vw] lg:w-[60vw] lg:h-[60vw] xl:w-[50vw] xl:h-[50vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
-      <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} className="z-0">
-        <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+      <MapContainer
+        center={position}
+        zoom={13}
+        style={{ height: '100%', width: '100%' }}
+        className="z-0 leaflet-grab"
+        whenReady={(map) => {
+          /*kartei lai kursors normaali izskataas*/
+          const container = map.target.getContainer();
+          container.style.cursor = "default"; 
+
+          map.target.on('dragstart', () => {
+            container.style.cursor = "grabbing"; 
+          });
+
+          map.target.on('dragend', () => {
+            container.style.cursor = "pointer"; 
+          });
+
+          map.target.on('movestart', () => {
+            container.style.cursor = "grabbing"; 
+          });
+
+          map.target.on('moveend', () => {
+            container.style.cursor = "pointer"; 
+          });
+        }}
+      >
+        {mapView === 'satellite' ? (
+          <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+        ) : (
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        )}
 
         {markers.map((markerPosition, index) => {
           const [lat, lng] = markerPosition.Geolocation.split(',').map(Number);
 
           if (isNaN(lat) || isNaN(lng)) {
             console.error('Invalid Geolocation:', markerPosition.Geolocation);
-            return null; 
+            return null;
           }
 
           return (
@@ -113,6 +144,22 @@ function MapDiv() {
       >
         {getButtonMessage()}
       </button>
+
+      {/* Buttons to toggle map view */}
+      <div className="absolute bottom-4 left-4 flex flex-col space-y-2">
+        <img
+          src={streetViewIMG}
+          alt="Street View"
+          className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-gray-300 hover:border-gray-400 transition-all"
+          onClick={() => toggleMapView('street')}
+        />
+        <img
+          src={sateliteViewIMG}
+          alt="Satellite View"
+          className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-gray-300 hover:border-gray-400 transition-all"
+          onClick={() => toggleMapView('satellite')}
+        />
+      </div>
 
       <AddSpotWindow />
     </div>
