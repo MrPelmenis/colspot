@@ -71,14 +71,17 @@ def change():
 
     conn = get_db()  
     cursor = conn.cursor()
+    cursor.execute("SELECT nickname, description, profile_pic FROM users WHERE email = ?", (email,))
+    userdb = cursor.fetchone()
+    nicknamedb = userdb["nickname"]
 
-    #check if nickname is took
-    cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
-    existing_user = cursor.fetchone()
+    if nicknamedb != nickname:
+        cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
+        existing_user = cursor.fetchone()
 
-    if existing_user:
-        print("took")
-        return jsonify({"message": "took"}), 200 
+        if existing_user:
+            print("took")
+            return jsonify({"message": "took"}), 200     
 
     cursor.execute("""
         UPDATE users
@@ -130,6 +133,7 @@ def check_user():
             "email": user["email"],
             "nickname": user["nickname"],
             "description": user["description"],
+            "profile_pic": user["profile_pic"],
         }), 200
     else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
         # print("trying create")

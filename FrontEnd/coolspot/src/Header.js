@@ -37,7 +37,7 @@ function Header() {
   
           // Get the server's response
           const data = await res.json();
-          //console.log("Response from server:", data);
+          console.log("Response from server:", data);
   
           const userData = {
             username: data.nickname,

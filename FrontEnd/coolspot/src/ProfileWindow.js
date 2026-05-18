@@ -106,7 +106,7 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
-        //("Profile updated response:", data);
+        //console.log("Profile updated response:", data);
     };
 
     const onLogOut = () => {
