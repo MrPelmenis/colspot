@@ -3,7 +3,11 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { WindowContext } from './WindowContext';
-import AddSpotWindow from './AddSpotWindow'; // Ensure you import your AddSpotWindow component
+import AddSpotWindow from './AddSpotWindow'; 
+
+import { CurrentUserContext } from './CurrentUserContext';
+
+import { ExtraFunctions } from './ExtraFunctions';
 
 const customIcon = new L.Icon({
   iconUrl: '/images/map_marker.png',
@@ -29,6 +33,11 @@ function MapDiv() {
   const [isAdding, setIsAdding] = useState(false);
   const { updateWindowState } = useContext(WindowContext);
 
+  const [buttonMessage, setButtonMessage] = useState("Click to add the spot");
+  const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
+
+  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+
   useEffect(() => {
     const fetchSpots = async () => {
       try {
@@ -39,16 +48,35 @@ function MapDiv() {
         console.error('Error fetching spots:', error);
       }
     };
-
     fetchSpots();
   }, []);
 
+
+  useEffect(() => {
+    if(ExtraFunctions.isUserLoggedIn()){
+      setIsLoggedIn(true);
+    }else{
+      setIsLoggedIn(false);
+    }
+  }, [currentUser]);
+
   const handleMapClick = (latlng) => {
     updateWindowState('addSpotWindow', { visible: true, geoLocation: latlng });
+    setIsAdding(!isAdding);
   };
 
   const toggleAddMarkerMode = () => {
-    setIsAdding(!isAdding);
+    if (isLoggedIn) {
+      setIsAdding(!isAdding);
+      setButtonMessage(isAdding ? "Click to add the spot" : "Click on spot location");
+    }
+  };
+
+  const getButtonMessage = () => {
+    if (!isLoggedIn) {
+      return "You must be logged in to add spots";
+    }
+    return isAdding ? buttonMessage : "Click to add the spot";
   };
 
   return (
@@ -78,11 +106,12 @@ function MapDiv() {
 
       <button
         onClick={toggleAddMarkerMode}
+        disabled={!isLoggedIn}
         className={`absolute bottom-4 right-4 text-white py-2 px-4 rounded-lg shadow-lg transition-all ${
           isAdding ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
-        }`}
+        } ${!isLoggedIn && 'opacity-50 cursor-not-allowed'}`}
       >
-        {isAdding ? 'Click to add the spot' : 'Add Your Spot'}
+        {getButtonMessage()}
       </button>
 
       <AddSpotWindow />
