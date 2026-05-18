@@ -92,7 +92,7 @@ function ProfileWindow() {
         // Proceed with the API call to update the profile
         // console.log("Sending profile update to server:");
         // onsole.log(JSON.stringify({ nickname: newUsername, description: description, email: currentUser.email }));
-        console.log(profilePicSrc)
+        //console.log(profilePicSrc)
         const res = await fetch('/api/update_user_profile', {
             method: 'POST',
             headers: {
@@ -106,7 +106,7 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
-        console.log("Profile updated response:", data);
+        //("Profile updated response:", data);
     };
 
     const onLogOut = () => {

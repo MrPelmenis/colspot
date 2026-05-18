@@ -37,7 +37,7 @@ function Header() {
   
           // Get the server's response
           const data = await res.json();
-          console.log("Response from server:", data);
+          //console.log("Response from server:", data);
   
           const userData = {
             username: data.nickname,
@@ -57,7 +57,7 @@ function Header() {
   }, []);
 
   useEffect(() => {
-    console.log("currentUser after state update:", currentUser);
+    //console.log("currentUser after state update:", currentUser);
   }, [currentUser]);
 
   const handleLoginSuccess = async (response) => {
@@ -84,19 +84,19 @@ function Header() {
     }
 
     const data = await res.json();
-    console.log("tas kas no servera atnak:");
-    console.log(data.user);
+    //console.log("tas kas no servera atnak:");
+    //console.log(data.user);
     
 
     if(data.message == "User exists"){
-      console.log("exists");
+      //console.log("exists");
       updateCurrentUser({
         username: data.user.nickname, 
         description: data.user.description, 
         email: data.user.email
       });
     } else{
-      console.log("create");
+      //console.log("create");
       updateCurrentUser({
         username: data.user.name, 
         description: data.user.description, 
@@ -107,8 +107,8 @@ function Header() {
   };
 
   const onProfileClick = () => {
-    console.log("currentUser:");
-    console.log(currentUser);
+    //console.log("currentUser:");
+    //console.log(currentUser);
     updateWindowState('profileWindow', { email: "", visible: true });
   }
 
