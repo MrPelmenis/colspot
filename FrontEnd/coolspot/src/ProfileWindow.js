@@ -1,12 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
-import { FaPencilAlt } from 'react-icons/fa'; // Import a pencil icon from react-icons
+import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Import the trash icon
 
 import defaultProfilePic from './images/DefaultProfilePic.png';
 import ProfileImage from './ProfileImage';
-
-
 
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -21,7 +19,6 @@ function ProfileWindow() {
     const [errorMessage, setErrorMessage] = useState("");
     const [isSaved, setIsSaved] = useState(false); 
 
-
     useEffect(() => {
         // Ensure both description and username are synced when currentUser updates
         setDescription(currentUser?.description || "");
@@ -34,6 +31,7 @@ function ProfileWindow() {
     const onClose = () => {
         setIsSaved(false);
         updateWindowState('profileWindow', { email: "", visible: false });
+        updateWindowState('deleteProfile', { visible: false, nickname:"" });
     };
 
     const onNameChange = () => {
@@ -41,7 +39,7 @@ function ProfileWindow() {
         setIsEditingUsername(true);
     };
 
-    const handleDecChange = (value)=>{
+    const handleDecChange = (value) => {
         setDescription(value);
         setIsSaved(false);
     }
@@ -114,7 +112,6 @@ function ProfileWindow() {
             setErrorMessage("This nickname is already taken.");
             setIsSaved(false);
         } else {
-            // Profile updated successfully
             console.log("Profile updated successfully!");
             updateCurrentUser({ ...currentUser, nickname: newUsername, description: description, profile_pic: profilePicSrc });
             setIsSaved(true);
@@ -125,6 +122,10 @@ function ProfileWindow() {
         localStorage.setItem("JWT", "");
         updateWindowState('profileWindow', { email: "", visible: false });
         updateCurrentUser({  nickname: "", email: "", description: "", profile_pic: "" });
+    };
+
+    const onDeleteProfile = () => {
+        updateWindowState('deleteProfile', { visible: true, nickname:currentUser.nickname });
     };
 
     return (
@@ -142,13 +143,11 @@ function ProfileWindow() {
 
             <div className="flex flex-wrap items-center mt-1">
                 <div className="relative mr-3 mb-3">
-                    
                     <img
                         src={profilePicSrc}
                         alt="Profile"
                         className="w-12 h-12 border border-black rounded-full object-cover"
                     />
-                    
                     <input
                         onChange={uploadImg}
                         type="file"
@@ -164,7 +163,7 @@ function ProfileWindow() {
                 </div>
 
                 {/* Username input */}
-                <div className="flex-1 min-w-0"> {/* This allows the input to take remaining space and wrap */}
+                <div className="flex-1 min-w-0">
                     {isEditingUsername ? (
                         <div className="flex flex-col">
                             <input
@@ -194,7 +193,6 @@ function ProfileWindow() {
                 </div>
             </div>
 
-            {/* Error message should now be shown regardless of editing state */}
             {errorMessage && (
                 <span className="text-red-500 text-sm">{errorMessage}</span>
             )}
@@ -214,12 +212,23 @@ function ProfileWindow() {
             </div>
 
             <div className="flex justify-between items-center mt-2">
-                <button
-                    onClick={onLogOut}
-                    className="text-gray-500 hover:underline transition-colors"
-                >
-                    Log Out
-                </button>
+                <span className='flex'>
+                    <FaTrash
+                        className="text-red-500 cursor-pointer hover:text-red-700 ml-2"
+                        size={20}
+                        description="Delete Profile"
+                        onClick={onDeleteProfile}
+                    />
+
+                    
+                    <button
+                        onClick={onLogOut}
+                        className="text-gray-500 hover:underline transition-colors ml-2"
+                    >
+                        Log Out
+                    </button>
+                </span>
+                                
                 <button
                     onClick={updateProfile}
                     className="w-30 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"
