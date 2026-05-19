@@ -8,7 +8,7 @@ import os
 import base64
 
 DATABASE = "main_db.db"
-app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folder='../Frontend/coolspot/build')
+app = Flask(__name__, static_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
@@ -47,7 +47,7 @@ def set_headers(response):
 
 @app.route('/')
 def serve_react_app():
-    return send_from_directory(app.template_folder, 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/static/<path:path>')
 def serve_static_files(path):
@@ -60,6 +60,11 @@ def serve_image_files(filename):
 @app.route('/manifest.json')
 def serve_manifest():
     return send_from_directory(app.static_folder, 'manifest.json')
+
+@app.route('/config.js')
+def serve_config():
+    return send_from_directory(app.static_folder, 'config.js')
+
 
 @app.route('/api/update_user_profile', methods=['POST'])
 def change():
