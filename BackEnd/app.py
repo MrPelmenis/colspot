@@ -197,10 +197,10 @@ def get_spots():
 @app.route('/api/spots', methods=['POST'])
 def add_spot():
     data = request.json
+    print(data)
     name = data.get('Name')
     description = data.get('Description')
     geolocation = data.get("Geolocation")
-    print(data)
     # print(geolocation, description)
     karma = 0  # Or whatever default you want
     user_id = -1  # VAJAGA PEC TAM PIELIKT REALO

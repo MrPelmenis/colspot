@@ -45,17 +45,24 @@ function AddSpotWindow() {
     }
 
     const formData = new FormData();
-    formData.append('spotName', spotName);
-    formData.append('description', description);
+    formData.append('Name', spotName);
+    formData.append('Description', description);
     images.forEach((image, index) => formData.append(`images[${index}]`, image));
 
     alert("upload spot");
+    console.log(formData)
 
     try {
+      const jsonData = JSON.stringify(formData);
+    
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json', 
+        },
+        body: jsonData, 
       });
+    
       if (!response.ok) {
         throw new Error('Error publishing spot');
       }
