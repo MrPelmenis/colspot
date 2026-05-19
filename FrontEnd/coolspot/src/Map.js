@@ -34,7 +34,7 @@ function MapDiv() {
   const position = [56.95175272999896, 24.11406032025138];
   const [markers, setMarkers] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
-  const { updateWindowState } = useContext(WindowContext);
+  const { windowStates, updateWindowState } = useContext(WindowContext);
   const [buttonMessage, setButtonMessage] = useState("Click to add the spot");
   const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
   const { currentUser } = useContext(CurrentUserContext);
@@ -50,8 +50,10 @@ function MapDiv() {
         console.error('Error fetching spots:', error);
       }
     };
-    fetchSpots();
-  }, []);
+    if(!windowStates.addSpotWindow.visible){
+      fetchSpots();
+    }
+  }, [windowStates.addSpotWindow.visible]);
 
   useEffect(() => {
     setIsLoggedIn(ExtraFunctions.isUserLoggedIn());
