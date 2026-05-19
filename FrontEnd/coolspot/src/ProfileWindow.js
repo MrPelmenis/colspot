@@ -78,7 +78,7 @@ function ProfileWindow() {
                     ctx.drawImage(img, 0, 0, img.width, img.height);
 
                     const resizedDataUrl = canvas.toDataURL('image/jpeg');
-                    console.log("image data:", resizedDataUrl);
+                    //console.log("image data:", resizedDataUrl);
                     setProfilePicSrc(resizedDataUrl);
                 };
             };
@@ -107,12 +107,12 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
-        console.log("data from update:", data);
+        //console.log("data from update:", data);
         if (data.message === 'took') {
             setErrorMessage("This nickname is already taken.");
             setIsSaved(false);
         } else {
-            console.log("Profile updated successfully!");
+            //console.log("Profile updated successfully!");
             updateCurrentUser({ ...currentUser, nickname: newUsername, description: description, profile_pic: profilePicSrc });
             setIsSaved(true);
         }

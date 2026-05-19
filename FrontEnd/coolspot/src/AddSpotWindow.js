@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
+import { CurrentUserContext } from './CurrentUserContext';
 
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -8,6 +9,9 @@ function AddSpotWindow() {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+
+  const addSpotWindow = windowStates.addSpotWindow;
 
   useEffect(() => {
     if (visible) {
@@ -43,26 +47,40 @@ function AddSpotWindow() {
       setErrorMessage('Please provide a description and upload at least one image.');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('Name', spotName);
-    formData.append('Description', description);
-    images.forEach((image, index) => formData.append(`images[${index}]`, image));
-
-    alert("upload spot");
-    console.log(formData)
-
+  
     try {
-      const jsonData = JSON.stringify(formData);
-    
+      const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+      };
+  
+      const base64Images = await Promise.all(
+        images.map((image) => convertToBase64(image))
+      );
+  
+      const jsonData = {
+        spotName,
+        description,
+        images: base64Images,
+        userName: currentUser.nickname,
+        userEmail: currentUser.email,
+        coordinates: addSpotWindow.geoLocation,
+      };
+  
+      console.log("jsonData:", jsonData);
+  
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', 
+          'Content-Type': 'application/json',
         },
-        body: jsonData, 
+        body: JSON.stringify(jsonData), // Send the data including the Base64 images
       });
-    
+  
       if (!response.ok) {
         throw new Error('Error publishing spot');
       }
@@ -72,6 +90,7 @@ function AddSpotWindow() {
       setErrorMessage('An error occurred while publishing your spot.');
     }
   };
+  
 
   // Close window on click outside
   const handleClickOutside = (e) => {
@@ -89,7 +108,7 @@ function AddSpotWindow() {
     >
       <div
         className={`relative bg-white p-6 rounded-lg shadow-lg z-100 
-        w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transform scale-95 opacity-0 transition-transform transition-opacity duration-500 
+        w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transform scale-95 opacity-0 transition-opacity duration-500 
         ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
       >
         <button
