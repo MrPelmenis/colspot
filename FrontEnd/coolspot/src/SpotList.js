@@ -8,6 +8,7 @@ function SpotList() {
       try {
         const response = await fetch('http://localhost:5000/api/spots');
         const data = await response.json();
+        console.log(data)
         setSpots(data);
       } catch (error) {
         console.error('Error fetching spots:', error);

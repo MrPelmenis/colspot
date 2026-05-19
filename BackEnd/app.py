@@ -12,7 +12,13 @@ app = Flask(__name__, static_folder='../Frontend/coolspot/build')
 app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-person = {"name": None, "email": None}
+
+UPLOAD_FOLDER = 'uploads/spot_images/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 # OAuth setup
 oauth = OAuth(app)
@@ -177,23 +183,63 @@ def create_user():
     return jsonify({"message": "User created succesfully "}), 200 
 
 
+def save_base64_image(base64_image, spot_id, index):
+    # Extract image type and base64 data
+    header, base64_data = base64_image.split(';base64,')
+    image_extension = header.split('/')[-1]  # Example: 'jpeg', 'png'
+
+    # Generate a unique file name using spot_id and image index
+    image_filename = f'spot_{spot_id}_{index}.{image_extension}'
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+
+    # Decode base64 data
+    with open(image_path, 'wb') as f:
+        f.write(base64.b64decode(base64_data))
+
+    return image_path
+
+
 @app.route('/api/spots', methods=['GET'])
 def get_spots():
     db = get_db()
     cursor = db.cursor()
+    
+    # Fetch all spots
     cursor.execute("SELECT * FROM spots")
     spots = cursor.fetchall()
-    spots_list = [{ 
-        "Id": spot["id"],
-        "Name": spot["name"],
-        "Description": spot["description"],
-        "Geolocation": spot["geolocation"],
-        "userName": spot["userName"],
-        "userEmail": spot["userEmail"],
-        "images": spot["images"],
-        "likes": spot["likes"],
-        "Time": spot["timestamp"]
-    } for spot in spots]
+
+    spots_list = []
+    
+    for spot in spots:
+        cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot["id"],))
+        images = cursor.fetchall()
+
+        # Convert image files to Base64 and store them in a list
+        base64_images = []
+        for image in images:
+            image_path = image["file_path"]
+            try:
+                with open(image_path, "rb") as image_file:
+                    # Read the image file and encode it in base64
+                    encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                    # Prepend the appropriate data URL prefix
+                    mime_type = image_path.split('.')[-1]  # Extract file extension
+                    base64_image = f"data:image/{mime_type};base64,{encoded_image}"
+                    base64_images.append(base64_image)
+            except FileNotFoundError:
+                print(f"Image file {image_path} not found.")
+
+        spots_list.append({ 
+            "Id": spot["id"],
+            "Name": spot["name"],
+            "Description": spot["description"],
+            "Geolocation": spot["geolocation"],
+            "userName": spot["userName"],
+            "userEmail": spot["userEmail"],
+            "likes": spot["likes"],
+            "Time": spot["timestamp"],
+            "Images": base64_images 
+        })
 
     return jsonify(spots_list)
 
@@ -205,16 +251,25 @@ def add_spot():
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
     userName = data.get('userName')
     userEmail = data.get('userEmail')
-    # images = data.get('images')
-    images = 'not yet'
+    images = data.get('images')
     likes = "not yet"
     timestamp = datetime.now().isoformat()
 
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userName, userEmail,  images, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                   (name, description, geolocation, userName, userEmail, images, likes, timestamp))
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userName, userEmail, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                   (name, description, geolocation, userName, userEmail, likes, timestamp))
+    spot_id = cursor.lastrowid
     db.commit()
+
+    image_paths = []
+    for index, base64_image in enumerate(images):
+        image_path = save_base64_image(base64_image, spot_id, index)
+        image_paths.append(image_path)
+        cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
+
+    db.commit()
+
     return jsonify({'message': 'Spot added successfully!'}), 201
 
 
@@ -257,5 +312,4 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
-
 
