@@ -3,9 +3,8 @@ import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Import the trash icon
 
-import "./ProfileWindow.css"
-
 import defaultProfilePic from './images/DefaultProfilePic.png';
+import ProfileImage from './ProfileImage';
 
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -26,8 +25,6 @@ function ProfileWindow() {
         setNewUsername(currentUser?.nickname || "");
         setProfilePicSrc(currentUser.profile_pic || defaultProfilePic);
     }, [currentUser]);
-
-    
 
     const onClose = () => {
         setIsSaved(false);
@@ -79,7 +76,7 @@ function ProfileWindow() {
                     ctx.drawImage(img, 0, 0, img.width, img.height);
 
                     const resizedDataUrl = canvas.toDataURL('image/jpeg');
-                    console.log("image data:", resizedDataUrl);
+                    //console.log("image data:", resizedDataUrl);
                     setProfilePicSrc(resizedDataUrl);
                 };
             };
@@ -108,12 +105,12 @@ function ProfileWindow() {
         }
 
         const data = await res.json();
-        console.log("data from update:", data);
+        //console.log("data from update:", data);
         if (data.message === 'took') {
             setErrorMessage("This nickname is already taken.");
             setIsSaved(false);
         } else {
-            console.log("Profile updated successfully!");
+            //console.log("Profile updated successfully!");
             updateCurrentUser({ ...currentUser, nickname: newUsername, description: description, profile_pic: profilePicSrc });
             setIsSaved(true);
         }
@@ -136,7 +133,7 @@ function ProfileWindow() {
     };
 
     return (
-        <div
+    <div
       id="modal-overlay"
       className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 
       transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
@@ -154,103 +151,102 @@ function ProfileWindow() {
                 &times;
             </button>
 
-
-                <div className="flex flex-wrap items-center mt-1">
-                    <div className="relative mr-3 mb-3">
-                        <img
-                            src={profilePicSrc}
-                            alt="Profile"
-                            className="w-12 h-12 border border-black rounded-full object-cover"
-                        />
-                        <input
-                            onChange={uploadImg}
-                            type="file"
-                            id="imgInput"
-                            accept="image/png, image/jpeg"
-                            className="hidden"
-                        />
-                        <label htmlFor="imgInput">
-                            <div className="absolute bottom-0 right-0 bg-gray-300 p-1 w-6 h-6 text-center rounded-full leading-5 cursor-pointer">
-                                <FaPencilAlt className="text-gray-500 hover:text-gray-700" />
-                            </div>
-                        </label>
-                    </div>
-
-                    {/* Username input */}
-                    <div className="flex-1 min-w-0">
-                        {isEditingUsername ? (
-                            <div className="flex flex-col">
-                                <input
-                                    type="text"
-                                    className="w-full text-2xl font-bold border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-300"
-                                    value={newUsername}
-                                    onChange={(e) => {
-                                        setNewUsername(e.target.value);
-                                        if (e.target.value.trim().length < 3) {
-                                            setErrorMessage("Nickname must be at least 3 characters long.");
-                                        } else {
-                                            setErrorMessage("");
-                                        }
-                                    }}
-                                    onBlur={handleUsernameSave}
-                                    autoFocus
-                                />
-                            </div>
-                        ) : (
-                            <h2
-                                className="text-2xl font-bold inline-flex items-center cursor-pointer break-words"
-                            >
-                                {newUsername}
-                                <FaPencilAlt className="ml-2 text-gray-500 hover:text-gray-700" onClick={onNameChange} />
-                            </h2>
-                        )}
-                    </div>
-                </div>
-
-                {errorMessage && (
-                    <span className="text-red-500 text-sm">{errorMessage}</span>
-                )}
-
-                <div className="mb-4 mt-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="description">
-                        Description:
-                    </label>
-                    <input
-                        type="text"
-                        id="description"
-                        className="w-full p-2 border rounded-lg"
-                        placeholder="Enter your bio"
-                        value={description}
-                        onChange={(e) => handleDecChange(e.target.value)}
+            <div className="flex flex-wrap items-center mt-1">
+                <div className="relative mr-3 mb-3">
+                    <img
+                        src={profilePicSrc}
+                        alt="Profile"
+                        className="w-12 h-12 border border-black rounded-full object-cover"
                     />
+                    <input
+                        onChange={uploadImg}
+                        type="file"
+                        id="imgInput"
+                        accept="image/png, image/jpeg"
+                        className="hidden"
+                    />
+                    <label htmlFor="imgInput">
+                        <div className="absolute bottom-0 right-0 bg-gray-300 p-1 w-6 h-6 text-center rounded-full leading-5 cursor-pointer">
+                            <FaPencilAlt className="text-gray-500 hover:text-gray-700" />
+                        </div>
+                    </label>
                 </div>
 
-                <div className="flex justify-between items-center mt-2">
-                    <span className='flex'>
-                        <FaTrash
-                            className="text-red-500 cursor-pointer hover:text-red-700 ml-2"
-                            size={20}
-                            description="Delete Profile"
-                            onClick={onDeleteProfile}
-                        />
-
-                        
-                        <button
-                            onClick={onLogOut}
-                            className="text-gray-500 hover:underline transition-colors ml-2"
+                {/* Username input */}
+                <div className="flex-1 min-w-0">
+                    {isEditingUsername ? (
+                        <div className="flex flex-col">
+                            <input
+                                type="text"
+                                className="w-full text-2xl font-bold border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-300"
+                                value={newUsername}
+                                onChange={(e) => {
+                                    setNewUsername(e.target.value);
+                                    if (e.target.value.trim().length < 3) {
+                                        setErrorMessage("Nickname must be at least 3 characters long.");
+                                    } else {
+                                        setErrorMessage("");
+                                    }
+                                }}
+                                onBlur={handleUsernameSave}
+                                autoFocus
+                            />
+                        </div>
+                    ) : (
+                        <h2
+                            className="text-2xl font-bold inline-flex items-center cursor-pointer break-words"
                         >
-                            Log Out
-                        </button>
-                    </span>
-                                    
-                    <button
-                        onClick={updateProfile}
-                        className="w-30 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"
-                    >
-                        {!isSaved ? "Save Changes" : "Changes Saved"}
-                    </button>
+                            {newUsername}
+                            <FaPencilAlt className="ml-2 text-gray-500 hover:text-gray-700" onClick={onNameChange} />
+                        </h2>
+                    )}
                 </div>
             </div>
+
+            {errorMessage && (
+                <span className="text-red-500 text-sm">{errorMessage}</span>
+            )}
+
+            <div className="mb-4 mt-4">
+                <label className="block text-gray-700 mb-2" htmlFor="description">
+                    Description:
+                </label>
+                <input
+                    type="text"
+                    id="description"
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Enter your bio"
+                    value={description}
+                    onChange={(e) => handleDecChange(e.target.value)}
+                />
+            </div>
+
+            <div className="flex justify-between items-center mt-2">
+                <span className='flex'>
+                    <FaTrash
+                        className="text-red-500 cursor-pointer hover:text-red-700 ml-2"
+                        size={20}
+                        description="Delete Profile"
+                        onClick={onDeleteProfile}
+                    />
+
+                    
+                    <button
+                        onClick={onLogOut}
+                        className="text-gray-500 hover:underline transition-colors ml-2"
+                    >
+                        Log Out
+                    </button>
+                </span>
+                                
+                <button
+                    onClick={updateProfile}
+                    className="w-30 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition-colors"
+                >
+                    {!isSaved ? "Save Changes" : "Changes Saved"}
+                </button>
+            </div>
+        </div>
     </div>
     );
 }

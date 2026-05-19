@@ -138,14 +138,19 @@ function MapDiv() {
       </MapContainer>
 
       <button
-        onClick={toggleAddMarkerMode}
-        disabled={!isLoggedIn}
-        className={`absolute bottom-4 right-4 text-white py-2 px-4 rounded-lg shadow-lg transition-all ${
-          isAdding ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
-        } ${!isLoggedIn && 'opacity-50 cursor-not-allowed'}`}
-      >
-        {getButtonMessage()}
-      </button>
+  onClick={toggleAddMarkerMode}
+  disabled={!isLoggedIn}
+  className={`absolute bottom-4 right-4 text-black py-2 px-4 rounded-lg shadow-lg border-2 border-black transition-all ${
+    isAdding ? 'bg-gray-300 hover:bg-gray-400' : 'bg-white hover:bg-gray-100'
+  } ${!isLoggedIn && 'opacity-50 cursor-not-allowed'}`}
+>
+  {getButtonMessage()}
+</button>
+
+
+
+
+
 
       {/* Buttons to toggle map view */}
       <div className="absolute bottom-4 left-4 flex flex-col space-y-2">

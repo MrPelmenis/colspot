@@ -25,8 +25,6 @@ function DeleteProfileWindow() {
     }
   }, [visible]);
 
-  if (!visible) return null;
-
   const onClose = () => {
     updateWindowState('deleteProfile', { visible: false });
   };
@@ -62,12 +60,24 @@ function DeleteProfileWindow() {
     }
   };
 
+  const handleClickOutside = (e) => {
+    if (e.target.id === 'modal-overlay') {
+      onClose();
+    }
+  };
+
   return (
     <div
-      className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-100
-                 w-2/3 md:w-1/2 lg:w-1/3"
-      style={{ zIndex: 100 }}
+      id="modal-overlay"
+      className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 
+      transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+      onClick={handleClickOutside}
     >
+      <div
+        className={`relative bg-white p-6 rounded-lg shadow-lg z-100 
+        w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transform scale-95 opacity-0 transition-opacity duration-500 
+        ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+      >
       <button
         className="absolute top-0 right-0 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500"
         style={{ width: '30px', height: '30px' }}
@@ -118,6 +128,7 @@ function DeleteProfileWindow() {
         </button>
       </div>
     </div>
+  </div>
   );
 }
 
