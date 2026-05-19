@@ -64,11 +64,11 @@ function AddSpotWindow() {
   
       const jsonData = {
         spotName,
-        description,
+        Description: description,
         images: base64Images,
         userName: currentUser.nickname,
         userEmail: currentUser.email,
-        coordinates: addSpotWindow.geoLocation,
+        Geolocation: addSpotWindow.geoLocation,
       };
   
       console.log("jsonData:", jsonData);

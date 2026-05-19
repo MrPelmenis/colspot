@@ -66,6 +66,7 @@ def serve_config():
     return send_from_directory(app.static_folder, 'config.js')
 
 
+
 @app.route('/api/update_user_profile', methods=['POST'])
 def change():
     data = request.get_json()  
@@ -183,13 +184,15 @@ def get_spots():
     cursor.execute("SELECT * FROM spots")
     spots = cursor.fetchall()
     spots_list = [{ 
-        "Id": spot["Id"],
-        "Name": spot["Name"],
-        "Description": spot["Description"],
-        "Geolocation": spot["Geolocation"],
-        "User id": spot["User id"],
-        "Karma": spot["Karma"],
-        "Time": spot["Time"]
+        "Id": spot["id"],
+        "Name": spot["name"],
+        "Description": spot["description"],
+        "Geolocation": spot["geolocation"],
+        "userName": spot["userName"],
+        "userEmail": spot["userEmail"],
+        "images": spot["images"],
+        "likes": spot["likes"],
+        "Time": spot["timestamp"]
     } for spot in spots]
 
     return jsonify(spots_list)
@@ -197,19 +200,20 @@ def get_spots():
 @app.route('/api/spots', methods=['POST'])
 def add_spot():
     data = request.json
-    print(data)
-    name = data.get('Name')
+    name = data.get('spotName')
     description = data.get('Description')
-    geolocation = data.get("Geolocation")
-    # print(geolocation, description)
-    karma = 0  # Or whatever default you want
-    user_id = -1  # VAJAGA PEC TAM PIELIKT REALO
-    time = datetime.now().isoformat()
+    geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
+    userName = data.get('userName')
+    userEmail = data.get('userEmail')
+    # images = data.get('images')
+    images = 'not yet'
+    likes = "not yet"
+    timestamp = datetime.now().isoformat()
 
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, 'User id', Karma, Time) VALUES (?, ?, ?, ?, ?, ?)",
-                   (name, description, geolocation, user_id, karma, time))
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userName, userEmail,  images, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                   (name, description, geolocation, userName, userEmail, images, likes, timestamp))
     db.commit()
     return jsonify({'message': 'Spot added successfully!'}), 201
 
