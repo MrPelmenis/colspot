@@ -34,5 +34,5 @@ lerna-debug.log*
 # Other system files
 Thumbs.db
 
-
-BackEnd/uploads
+/Backend/main_db.db
+/Backend/uploads

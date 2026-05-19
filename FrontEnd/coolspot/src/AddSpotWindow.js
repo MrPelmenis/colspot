@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
 
+import { SpotsContext } from './SpotsContext';
+
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
   const { visible } = windowStates.addSpotWindow;
@@ -10,6 +12,8 @@ function AddSpotWindow() {
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+
+  const { spots, setSpots } = useContext(SpotsContext);
 
   const addSpotWindow = windowStates.addSpotWindow;
 
@@ -57,11 +61,11 @@ function AddSpotWindow() {
           reader.onerror = (error) => reject(error);
         });
       };
-  
+    
       const base64Images = await Promise.all(
         images.map((image) => convertToBase64(image))
       );
-  
+    
       const jsonData = {
         spotName,
         Description: description,
@@ -70,25 +74,41 @@ function AddSpotWindow() {
         userEmail: currentUser.email,
         Geolocation: addSpotWindow.geoLocation,
       };
-  
-      console.log("jsonData:", jsonData);
-  
+    
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(jsonData), // Send the data including the Base64 images
+        body: JSON.stringify(jsonData),
       });
-  
+    
       if (!response.ok) {
         throw new Error('Error publishing spot');
       }
+    
+
+      const newSpot = {
+        Name: jsonData.spotName,
+        Description: jsonData.Description,
+        Geolocation: jsonData.Geolocation,
+        Images: jsonData.images,
+        userName: jsonData.userName,
+        userEmail: jsonData.userEmail,
+        Time: new Date().toISOString(), 
+        likes: 0, 
+      };
+    
       updateWindowState('addSpotWindow', { visible: false });
+      setSpots((prevSpots) => [...prevSpots, newSpot]);
+      
     } catch (error) {
       console.error('Error uploading spot:', error);
       setErrorMessage('An error occurred while publishing your spot.');
     }
+
+
+
   };
   
 
