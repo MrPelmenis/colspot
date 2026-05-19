@@ -33,3 +33,6 @@ lerna-debug.log*
 
 # Other system files
 Thumbs.db
+
+
+BackEnd/uploads
