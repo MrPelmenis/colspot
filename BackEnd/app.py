@@ -273,6 +273,68 @@ def add_spot():
     return jsonify({'message': 'Spot added successfully!'}), 201
 
 
+@app.route('/api/spots/<int:spot_id>/like', methods=['POST'])
+def like_spot(spot_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    # Check if the spot exists
+    cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
+    spot = cursor.fetchone()
+
+    if spot is None:
+        return jsonify({"error": "Spot not found"}), 404
+
+    # Increment the number of likes
+    new_likes = spot['likes'] + 1
+    cursor.execute("UPDATE spots SET likes = ? WHERE id = ?", (new_likes, spot_id))
+    db.commit()
+
+    return jsonify({"message": "Spot liked", "likes": new_likes}), 200
+
+@app.route('/api/spots/<int:spot_id>/comment', methods=['POST'])
+def add_comment(spot_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    data = request.json
+    userName = data.get('userName')
+    userEmail = data.get('userEmail')
+    comment = data.get('comment')
+
+    # Check if the spot exists
+    cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
+    spot = cursor.fetchone()
+
+    if spot is None:
+        return jsonify({"error": "Spot not found"}), 404
+
+    # Insert the new comment into the comments table
+    cursor.execute(
+        "INSERT INTO comments (spot_id, userName, userEmail, comment) VALUES (?, ?, ?, ?)",
+        (spot_id, userName, userEmail, comment)
+    )
+    db.commit()
+
+    return jsonify({"message": "Comment added successfully"}), 201
+
+@app.route('/api/spots/<int:spot_id>/comments', methods=['GET'])
+def get_comments(spot_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM comments WHERE spot_id = ? ORDER BY timestamp ASC", (spot_id,))
+    comments = cursor.fetchall()
+
+    comments_list = [{
+        "id": comment["id"],
+        "userName": comment["userName"],
+        "userEmail": comment["userEmail"],
+        "comment": comment["comment"],
+        "timestamp": comment["timestamp"]
+    } for comment in comments]
+
+    return jsonify(comments_list)
 
 
 
@@ -302,7 +364,35 @@ def get_profile_image():
         else:
             return jsonify({"error": "Default image not found"}), 500
 
+@app.route('/api/spots/<int:spot_id>', methods=['DELETE'])
+def delete_spot(spot_id):
+    db = get_db()
+    cursor = db.cursor()
 
+    cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot_id,))
+    images = cursor.fetchall()
+
+    cursor.execute("DELETE FROM comments WHERE spot_id = ?", (spot_id, ))
+    db.commit()
+
+    cursor.execute("DELETE FROM spots WHERE id = ?", (spot_id,))
+    db.commit()
+
+    for image in images:
+        file_path = image['file_path']
+        if os.path.exists(file_path):
+            os.remove(file_path)  # Remove the file from the file system
+
+    return jsonify({"message": "Spot and associated images deleted successfully."}), 200
+
+@app.route('/api/delete_user/<string:email>', methods=['DELETE'])
+def delete_user(email):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("DELETE FROM users WHERE email = ?", (email, ))
+    db.commit()
+    return jsonify({"message": "user deleted succesfully"})
 
 @app.teardown_appcontext
 def close_connection(exception):
