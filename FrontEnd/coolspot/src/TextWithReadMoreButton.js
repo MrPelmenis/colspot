@@ -1,9 +1,15 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TextWithReadMoreButton(props) {
   const maxTextLength = props.maxLength;
   const [maxLength, setLength] = useState(maxTextLength);
+
+  useEffect(() => {
+    if (props.spotClose) {
+      setLength(maxTextLength);
+    }
+  }, [props.spotClose]);
 
   const textShortener = (inputText, maxLength) => {
     if (inputText) {
@@ -25,8 +31,7 @@ export default function TextWithReadMoreButton(props) {
       setLength(maxTextLength);
     } else {
       setLength(-1);
-      
-      props.onReadMoreClick(); 
+      props.onReadMoreClick();
     }
   };
 
@@ -34,7 +39,7 @@ export default function TextWithReadMoreButton(props) {
     if (props.text.length > maxTextLength) {
       return (
         <button
-          className="readMoreOrLess text-blue-500 hover:underline ml-1" // Small margin for spacing
+          className="readMoreOrLess text-blue-500 hover:underline ml-1"
           onClick={changeLength}
         >
           {maxLength === -1 ? "Read Less" : "Read More"}

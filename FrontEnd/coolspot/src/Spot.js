@@ -14,10 +14,11 @@ function Spot({ spot }) {
 
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
+  
+  useEffect(() => {
+    console.log(isShrinking);
+  }, [isShrinking]);
 
-  const HEADER_HEIGHT = 200;
-
-  // Generate a unique ID for each spot using useMemo to avoid re-calculating on each render
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${spot.Name}-${spot.Description}-${randomNumber}`;
@@ -73,6 +74,7 @@ function Spot({ spot }) {
         setExpanded(true);
         if (spotRef.current) {
           const spotPosition = spotRef.current.getBoundingClientRect().top;
+          //if anyone knows how to make this scroll work please
           /*window.scrollTo({
               top: spotPosition + window.innerHeight/2,
               behavior: 'smooth',
@@ -91,7 +93,7 @@ function Spot({ spot }) {
       id={uniqueId}
       ref={spotRef}
       className={`relative w-full bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer 
-                  ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[100px]'}`} hover:bg-gray-200`}
+                  ${expanded ? 'h-auto' : 'h-[150px]'} hover:bg-gray-200`} // Set fixed height for non-expanded state
       onClick={handleSpotClick}
     >
       <button
@@ -125,30 +127,31 @@ function Spot({ spot }) {
       <TextWithReadMoreButton
         text={spot.Description}
         onReadMoreClick={handleSpotClick}
+        spotClose={isShrinking}
         maxLength={20}
       />
 
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden 
-                    ${expanded && !isShrinking ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+        className={`transition-all flex justify-start duration-500 ease-in-out gap-2 overflow-x-auto overflow-y-hidden mt-1
+                    ${expanded && !isShrinking ? 'max-h-[500px] opacity-100' : 'max-h-[100px]'}`}
         style={{ transitionProperty: 'max-height, opacity', transitionDuration: '0.5s' }}
       >
-        <div
-          className={`flex space-x-2 overflow-x-auto transition-transform duration-500 ease-in-out 
-                      ${expanded && !isShrinking ? 'scale-100' : 'scale-0'}`}
-        >
-          {spot.Images.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt={`Spot ${spot.Name} - Image ${index + 1}`}
-              className="h-[200px] object-contain rounded-md transition-transform duration-500 ease-in-out"
-              style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }} // Scale effect on images
-            />
-          ))}
-        </div>
+        {spot.Images.map((image, index) => (
+          <img
+            key={index}
+            src={image}
+            alt={`Spot ${spot.Name} - Image ${index + 1}`}
+            className="h-[200px] w-[200px] object-contain rounded-md transition-scale duration-500 ease-in-out" // Added fixed width
+            style={{ 
+              scale: `${expanded && !isShrinking ? "1" : '0.25'}`,
+              transformOrigin: 'top left'
+            }}
+          />
+        ))}
       </div>
+
+
 
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
