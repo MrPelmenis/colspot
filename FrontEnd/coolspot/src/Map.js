@@ -45,7 +45,6 @@ function MapDiv() {
   
   useEffect(() => {
     setMarkers(spots);
-    console.log("spot Update");
   }, [spots]);
 
   useEffect(() => {

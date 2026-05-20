@@ -5,21 +5,12 @@ import { CurrentUserContext } from './CurrentUserContext';
 import { FaFilter } from 'react-icons/fa';
 
 function SpotList() {
-  const { spots, setSpots } = useContext(SpotsContext);
+  const { spots, setSpots, fetchSpots  } = useContext(SpotsContext);
   const { currentUser } = useContext(CurrentUserContext);
-  const [sortOption, setSortOption] = useState('recent'); // Track selected sorting option
+  const [sortOption, setSortOption] = useState('recent');
 
   // Fetch spots on component mount
   useEffect(() => {
-    const fetchSpots = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/spots');
-        const data = await response.json();
-        setSpots(data); // Set spots in context
-      } catch (error) {
-        console.error('Error fetching spots:', error);
-      }
-    };
     fetchSpots();
   }, [setSpots]);
 

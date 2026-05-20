@@ -6,9 +6,13 @@ import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Import the trash icon
 import defaultProfilePic from './images/DefaultProfilePic.png';
 import ProfileImage from './ProfileImage';
 
+import { SpotsContext } from './SpotsContext';
+
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
     const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+
+    const { spots, setSpots, fetchSpots } = useContext(SpotsContext);
 
     const { visible } = windowStates.profileWindow;
 
@@ -121,6 +125,7 @@ function ProfileWindow() {
         } else {
             //console.log("Profile updated successfully!");
             updateCurrentUser({ ...currentUser, nickname: newUsername, description: description, profile_pic: profilePicSrc });
+            fetchSpots();
             setIsSaved(true);
         }
     };

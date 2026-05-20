@@ -5,12 +5,14 @@ import { SpotsContext } from './SpotsContext';
 
 function EditSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+  const { spots, setSpots, fetchSpots } = useContext(SpotsContext);
+
   const { visible, spotToEdit } = windowStates.editSpotWindow || {};
   const [spotName, setSpotName] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const { setSpots } = useContext(SpotsContext);
 
   useEffect(() => {
     if (visible && spotToEdit) {
@@ -44,33 +46,58 @@ function EditSpotWindow() {
       return;
     }
 
-    try {
-        const convertToBase64 = (file) =>
-            new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => reject(error);
-            });
-        const base64Images = await Promise.all(
-            images.map((image) => (image instanceof File ? convertToBase64(image) : image))
-        );
+      try {
+          const convertToBase64 = (file) =>
+              new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onload = () => resolve(reader.result);
+                  reader.onerror = (error) => reject(error);
+              });
+      
+          const base64Images = await Promise.all(
+              images.map((image) => (image instanceof File ? convertToBase64(image) : image))
+          );
 
-        let newEditedSpot = {name: spotName, description, images: base64Images, id: spotToEdit.Id, likes: spotToEdit.likes, time: new Date().toISOString(), geolocation: spotToEdit.Geolocation};
-        alert("fetch edit spot! ar jauno name, description, images un laiku, console.log jaunais info izmetaas:");
-        console.log(newEditedSpot);
-    
 
-        //sito man palibom vajadzes
-        /* setSpots((prevSpots) =>
-            prevSpots.map((spot) => (spot.id === spotToEdit.id ? updatedSpot : spot))
-        );
-        onClose(); */
-    
-    } catch (error) {
-        console.error('Error updating spot:', error);
-        setErrorMessage('An error occurred while updating the spot.');
-    }
+          //es so daru jo mans backend fujaks lowkey nemaak stringu apstradas serverii
+          let geoLoc = spotToEdit.Geolocation.split(",");
+          let geoCoordJSON = {lat:geoLoc[0], lng:geoLoc[1]};
+      
+          // Create the edited spot object
+          let newEditedSpot = {
+              spotName: spotName,
+              Description: description,
+              images: base64Images,
+              Geolocation: geoCoordJSON,
+              userEmail: spotToEdit.userEmail, // Assuming userEmail is part of spotToEdit
+          };
+      
+          console.log("Sending updated spot data to server:", newEditedSpot);
+      
+          // Send the updated spot to the server with PUT request
+          const response = await fetch(`http://localhost:5000/api/spots/${spotToEdit.Id}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(newEditedSpot),
+          });
+      
+          if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+      
+          const result = await response.json();
+          console.log(result.message);
+      
+          // Optional: Update spots in context or state here
+          fetchSpots();
+          onClose(); // Close the modal or form if necessary
+      } catch (error) {
+          console.error('Error updating spot:', error);
+      }
+  
   };
 
   const handleClickOutside = (e) => {
