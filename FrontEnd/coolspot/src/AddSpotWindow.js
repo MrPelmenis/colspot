@@ -100,7 +100,7 @@ function AddSpotWindow() {
       };
     
       updateWindowState('addSpotWindow', { visible: false });
-      setSpots((prevSpots) => [...prevSpots, newSpot]);
+      setSpots((prevSpots) => [newSpot, ...prevSpots,]);
       
     } catch (error) {
       console.error('Error uploading spot:', error);

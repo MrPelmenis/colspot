@@ -1,13 +1,16 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { FaHeart, FaComment, FaTrash } from 'react-icons/fa'; // Importing the icons
+import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
+import { FaHeart, FaComment, FaTrash, FaEdit } from 'react-icons/fa'; // Importing the icons
 import TextWithReadMoreButton from './TextWithReadMoreButton';
+import { ExtraFunctions } from './ExtraFunctions';
+import { CurrentUserContext } from './CurrentUserContext'; // Import CurrentUserContext
 
 function Spot({ spot }) {
   const [expanded, setExpanded] = useState(false);
   const [isShrinking, setIsShrinking] = useState(false); // State to handle shrinking delay
   const spotRef = useRef(null);
+  const { currentUser } = useContext(CurrentUserContext); // Access the current user context
 
-  // Assuming your header height is 100px, you can adjust this value as needed
+  // Assuming your header height is 200px, you can adjust this value as needed
   const HEADER_HEIGHT = 200;
 
   // Generate a unique ID for each spot using useMemo to avoid re-calculating on each render
@@ -54,9 +57,14 @@ function Spot({ spot }) {
     alert('Deleted!');
   };
 
+  const handleEditClick = (event) => {
+    event.stopPropagation();
+    alert('Edit Spot!');
+  };
+
   const handleSpotClick = () => {
     if (!expanded) {
-      setExpanded(true); // Instantly expand when clicked
+      setExpanded(true);
 
       // Scroll the spot into view with an offset to account for the header
       const spotPosition = spotRef.current.getBoundingClientRect().top + window.scrollY;
@@ -84,12 +92,24 @@ function Spot({ spot }) {
     >
       {/* X button in the top-right corner */}
       <button
-        className={`absolute top-0 right-0 w-8 h-8 rounded-tr-md rounded-bl-md text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500 transition-opacity duration-500 ${expanded ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-0 right-0 w-8 h-8 rounded-tr-md rounded-bl-md text-2xl bg-red-600 text-white font-bold flex items-center justify-center 
+                    transform transition-transform duration-500 
+                    ${expanded && !isShrinking ? 'scale-100' : 'scale-0'}`}
         onClick={handleCloseSpot}
-        style={{ transition: 'opacity 0.5s ease' }} // Smooth transition for the button
+        style={{ transformOrigin: 'top right' }} // Ensure scaling originates from the top right corner
       >
         &times;
       </button>
+
+      {/* Time Ago text */}
+      <p
+        className={`absolute right-1 text-xs text-gray-500 transition-all duration-500 
+                    ${expanded && !isShrinking ? 'top-8' : 'top-2'} 
+                    ${isShrinking ? 'transition-transform duration-500 translate-y-[-0px]' : ''}`} // Move up while shrinking
+        style={{ transition: 'top 0.5s ease, transform 0.5s ease' }} // Moves the time below the red X when expanded
+      >
+        {ExtraFunctions.getTimeAgo(spot.Time)}
+      </p>
 
       <div className="flex justify-between items-center mb-2">
         <div>
@@ -142,16 +162,32 @@ function Spot({ spot }) {
           >
             <FaComment className="text-gray-600 hover:text-blue-600" />
           </button>
+
         </div>
 
-        {/* Trash bin button on the right side */}
-        <button
-          onClick={handleDeleteClick}
-          className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-red-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
-          title="Delete"
-        >
-          <FaTrash className="text-gray-600 hover:text-red-600" />
-        </button>
+        <div className='flex'>
+          {/* Edit button */}
+          {spot.userName === currentUser.nickname && ( // Conditional rendering for edit button
+              <button
+                onClick={handleEditClick}
+                className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+                title="Edit"
+              >
+                <FaEdit className="text-gray-600 hover:text-green-600" />
+              </button>
+          )}
+          
+          {/* Trash bin button on the right side, only show if the current user is the spot owner */}
+          {spot.userName === currentUser.nickname && ( // Conditional rendering for delete button
+            <button
+              onClick={handleDeleteClick}
+              className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-red-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+              title="Delete"
+            >
+              <FaTrash className="text-gray-600 hover:text-red-600" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
