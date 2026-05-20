@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { WindowContext } from './WindowContext';
-import { CurrentUserContext } from './CurrentUserContext';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Import the trash icon
+import { WindowContext } from '../ContextProviders/WindowContext';
+import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
+import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 
-import defaultProfilePic from './images/DefaultProfilePic.png';
-import ProfileImage from './ProfileImage';
+import defaultProfilePic from '../images/DefaultProfilePic.png';
+import ProfileImage from '../ProfileImage';
 
-import { SpotsContext } from './SpotsContext';
+import { SpotsContext } from '../ContextProviders/SpotsContext';
 
 function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);

@@ -1,7 +1,7 @@
 import React, { useEffect, useContext, useState } from 'react';
 import Spot from './Spot';
-import { SpotsContext } from './SpotsContext';
-import { CurrentUserContext } from './CurrentUserContext';
+import { SpotsContext } from './ContextProviders/SpotsContext';
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { FaFilter } from 'react-icons/fa';
 
 function SpotList() {

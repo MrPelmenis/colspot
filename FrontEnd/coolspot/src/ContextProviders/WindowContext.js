@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import EditSpotWindow from './EditSpotWindow';
+import EditSpotWindow from '../Windows/EditSpotWindow';
 
 export const WindowContext = createContext();
 

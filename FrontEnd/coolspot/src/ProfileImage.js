@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { ExtraFunctions } from './ExtraFunctions';
-import { CurrentUserContext } from './CurrentUserContext';
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
 
 const ProfileImage = ({ nickname }) => {

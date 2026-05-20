@@ -2,15 +2,19 @@ import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
 import { FaHeart, FaComment, FaTrash, FaEdit } from 'react-icons/fa'; // Importing the icons
 import TextWithReadMoreButton from './TextWithReadMoreButton';
 import { ExtraFunctions } from './ExtraFunctions';
-import { CurrentUserContext } from './CurrentUserContext'; // Import CurrentUserContext
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext'; // Import CurrentUserContext
 
-import { WindowContext } from './WindowContext';
+import { WindowContext } from './ContextProviders/WindowContext';
+
+import { CommentContext } from './ContextProviders/CommentProvider';
 
 function Spot({ spot }) {
   const [expanded, setExpanded] = useState(false);
   const [isShrinking, setIsShrinking] = useState(false);
   const spotRef = useRef(null);
   const { currentUser } = useContext(CurrentUserContext); 
+
+  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo } = useContext(CommentContext);
 
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
@@ -49,7 +53,9 @@ function Spot({ spot }) {
 
   const handleCommentClick = (event) => {
     event.stopPropagation();
-    alert('Commented!');
+    startShrinking();
+    fetchComment(spot.Id);
+    setVisibleComments(true);
   };
 
   const handleDeleteClick = (event) => {

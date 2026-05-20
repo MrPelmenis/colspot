@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { WindowContext } from './WindowContext';
-import { CurrentUserContext } from './CurrentUserContext';
+import { WindowContext } from '../ContextProviders/WindowContext';
+import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 
-import { SpotsContext } from './SpotsContext';
+import { SpotsContext } from '../ContextProviders/SpotsContext';
 
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);

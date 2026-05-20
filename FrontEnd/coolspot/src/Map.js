@@ -2,15 +2,15 @@ import React, { useState, useEffect, useContext } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { WindowContext } from './WindowContext';
-import AddSpotWindow from './AddSpotWindow'; 
+import { WindowContext } from './ContextProviders/WindowContext';
+import AddSpotWindow from './Windows/AddSpotWindow'; 
 
 import streetViewIMG from './images/street-view.png';
 import sateliteViewIMG from './images/satelite-view.png';
 
-import { SpotsContext } from './SpotsContext';
+import { SpotsContext } from './ContextProviders/SpotsContext';
 
-import { CurrentUserContext } from './CurrentUserContext';
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { ExtraFunctions } from './ExtraFunctions';
 
 const customIcon = new L.Icon({

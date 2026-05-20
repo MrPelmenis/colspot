@@ -1,38 +1,44 @@
-import React, { useState } from 'react';
+// App.js
+import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import MapDiv from './Map';
 import SpotList from './SpotList';
-import { WindowProvider } from './WindowContext';
-import { CurrentUserProvider } from './CurrentUserContext';
-import SignInWindow from './SignInWindow';
-import ProfileWindow from './ProfileWindow';
-import DeleteProfileWindow from './DeleteProfileWindow';
-import AddSpotWindow from './AddSpotWindow';
-import { SpotsProvider } from './SpotsContext';
-import DeleteSpotWindow from './DeleteSpotWindow';
-import EditSpotWindow from './EditSpotWindow';
+import { WindowProvider } from './ContextProviders/WindowContext.js';
+import { CurrentUserProvider } from './ContextProviders/CurrentUserContext.js';
+import SignInWindow from './Windows/SignInWindow';
+import ProfileWindow from './Windows/ProfileWindow.js';
+import DeleteProfileWindow from './Windows/DeleteProfileWindow.js';
+import AddSpotWindow from './Windows/AddSpotWindow.js';
+import { SpotsProvider } from './ContextProviders/SpotsContext.js';
+import DeleteSpotWindow from './Windows/DeleteSpotWindow.js';
+import EditSpotWindow from './Windows/EditSpotWindow.js';
+import { CommentProvider } from './ContextProviders/CommentProvider.js';
+import CommentListWindow from './Windows/CommentListWindow.js';
 
 function App() {
   return (
     <CurrentUserProvider>
       <WindowProvider>
-        <SpotsProvider> {/* Providing spots context to all components */}
-          <div className="flex flex-col items-center bg-gray-800 min-h-screen">
-            <SignInWindow />
-            <ProfileWindow />
-            <DeleteProfileWindow />
-            <AddSpotWindow />
-            <DeleteSpotWindow />
-            <EditSpotWindow />
+        <SpotsProvider> 
+          <CommentProvider>
+            <div className="flex flex-col items-center bg-gray-800 min-h-screen">
+              <SignInWindow />
+              <ProfileWindow />
+              <DeleteProfileWindow />
+              <AddSpotWindow />
+              <DeleteSpotWindow />
+              <EditSpotWindow />
+              <CommentListWindow />
 
-            <Header />
-            <div className="flex flex-col gap-8 my-8">
-              <MapDiv />
-              <SpotList /> {/* SpotList now fetches and renders spots using context */}
+              <Header />
+              <div className="flex flex-col gap-8 my-8">
+                <MapDiv />
+                <SpotList /> {/* SpotList now fetches and renders spots using context */}
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
+          </CommentProvider>
         </SpotsProvider>
       </WindowProvider>
     </CurrentUserProvider>

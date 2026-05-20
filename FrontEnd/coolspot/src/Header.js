@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import {jwtDecode} from 'jwt-decode';
 
-import { WindowContext } from './WindowContext';
-import { CurrentUserContext } from './CurrentUserContext';
+import { WindowContext } from './ContextProviders/WindowContext';
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
 import { ExtraFunctions } from './ExtraFunctions';
 

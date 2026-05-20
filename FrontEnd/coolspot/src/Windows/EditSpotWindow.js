@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { WindowContext } from './WindowContext';
-import { CurrentUserContext } from './CurrentUserContext';
-import { SpotsContext } from './SpotsContext';
+import { WindowContext } from '../ContextProviders/WindowContext';
+import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
+import { SpotsContext } from '../ContextProviders/SpotsContext';
 
 function EditSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);

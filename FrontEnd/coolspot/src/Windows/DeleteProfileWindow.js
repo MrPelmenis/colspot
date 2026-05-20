@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { WindowContext } from './WindowContext';
-import { CurrentUserContext } from './CurrentUserContext';
+import { WindowContext } from '../ContextProviders/WindowContext';
+import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 
 function DeleteProfileWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);

@@ -4,9 +4,8 @@ import React, { createContext, useState } from 'react';
 export const SpotsContext = createContext();
 
 export const SpotsProvider = ({ children }) => {
-  const [spots, setSpots] = useState([]); // This will hold the fetched spots
+  const [spots, setSpots] = useState([]); 
 
-  // Function to fetch spots
   const fetchSpots = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/spots');
