@@ -8,6 +8,7 @@ import AddSpotWindow from './AddSpotWindow';
 import streetViewIMG from './images/street-view.png';
 import sateliteViewIMG from './images/satelite-view.png';
 
+import { SpotsContext } from './SpotsContext';
 
 import { CurrentUserContext } from './CurrentUserContext';
 import { ExtraFunctions } from './ExtraFunctions';
@@ -38,22 +39,14 @@ function MapDiv() {
   const [buttonMessage, setButtonMessage] = useState("Click to add the spot");
   const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
   const { currentUser } = useContext(CurrentUserContext);
-  const [mapView, setMapView] = useState('satellite'); // new state to toggle between views
+  const [mapView, setMapView] = useState('satellite'); 
 
+  const { spots, setSpots } = useContext(SpotsContext);
+  
   useEffect(() => {
-    const fetchSpots = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/spots');
-        const data = await response.json();
-        setMarkers(data);
-      } catch (error) {
-        console.error('Error fetching spots:', error);
-      }
-    };
-    if(!windowStates.addSpotWindow.visible){
-      fetchSpots();
-    }
-  }, [windowStates.addSpotWindow.visible]);
+    setMarkers(spots);
+    console.log("spot Update");
+  }, [spots]);
 
   useEffect(() => {
     setIsLoggedIn(ExtraFunctions.isUserLoggedIn());
@@ -118,10 +111,10 @@ function MapDiv() {
         )}
 
         {markers.map((markerPosition, index) => {
-          const [lat, lng] = markerPosition.Geolocation.split(',').map(Number);
+          const [lat, lng] = String(markerPosition.Geolocation).split(',').map(Number);
 
           if (isNaN(lat) || isNaN(lng)) {
-            console.error('Invalid Geolocation:', markerPosition.Geolocation);
+            console.error('Invalid Geolocation:', markerPosition);
             return null;
           }
 

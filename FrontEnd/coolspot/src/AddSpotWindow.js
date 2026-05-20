@@ -86,18 +86,22 @@ function AddSpotWindow() {
       if (!response.ok) {
         throw new Error('Error publishing spot');
       }
+
+      
     
 
       const newSpot = {
         Name: jsonData.spotName,
         Description: jsonData.Description,
-        Geolocation: jsonData.Geolocation,
+        Geolocation: `${jsonData.Geolocation.lat},${jsonData.Geolocation.lng}`,
         Images: jsonData.images,
         userName: jsonData.userName,
         userEmail: jsonData.userEmail,
         Time: new Date().toISOString(), 
         likes: 0, 
       };
+
+      console.log("ko es pielieku,", newSpot);
     
       updateWindowState('addSpotWindow', { visible: false });
       setSpots((prevSpots) => [newSpot, ...prevSpots,]);

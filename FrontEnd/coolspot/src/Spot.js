@@ -107,19 +107,22 @@ function Spot({ spot }) {
         <img
           src={spot.Images[0]}
           alt={`Thumbnail for ${spot.Name}`}
-          className={`absolute top-10 right-2 w-12 h-12 rounded-md transition-all duration-500
+          className={`absolute top-8 right-2 h-14 rounded-md transition-all duration-500
                       ${expanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
-          style={{ transitionProperty: 'opacity, transform' }}
+          style={{
+            width: 'auto',             // Set width to auto to maintain aspect ratio
+            height: '3.5rem',           // Equivalent to h-14
+            objectFit: 'contain',       // Adjusts the image within the defined height
+            transitionProperty: 'opacity, transform',
+          }}
         />
       )}
 
-
-      {/* Time Ago text */}
       <p
-        className={`absolute right-1 text-xs text-gray-500 transition-all duration-500 
-                    ${expanded && !isShrinking ? 'top-8' : 'top-2'} 
-                    ${isShrinking ? 'transition-transform duration-500 translate-y-[-0px]' : ''}`} // Move up while shrinking
-        style={{ transition: 'top 0.5s ease, transform 0.5s ease' }} // Moves the time below the red X when expanded
+        className={`absolute right-1 top-2 text-xs text-gray-500 transition-all duration-500 
+                    ${expanded && !isShrinking ? 'right-10' : 'right-1'} 
+                    ${isShrinking ? 'transition-transform duration-500 translate-x-[-0px]' : ''}`}
+        style={{ transition: 'right 0.5s ease, transform 0.5s ease' }}
       >
         {ExtraFunctions.getTimeAgo(spot.Time)}
       </p>

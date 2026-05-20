@@ -20,7 +20,6 @@ function ProfileWindow() {
     const [isSaved, setIsSaved] = useState(false); 
 
     useEffect(() => {
-        // Ensure both description and username are synced when currentUser updates
         setDescription(currentUser?.description || "");
         setNewUsername(currentUser?.nickname || "");
         setProfilePicSrc(currentUser.profile_pic || defaultProfilePic);
@@ -53,36 +52,46 @@ function ProfileWindow() {
     };
 
     const uploadImg = (event) => {
-        setIsSaved(false);
         let file = event.target.files[0];
         if (file) {
+            let data = new FormData();
+            data.append('file', file);
+            
             const reader = new FileReader();
             reader.onload = async () => {
-                const img = new Image();
-                img.src = reader.result;
+              const img = new Image();
+              img.src = reader.result;
+              img.onload = async() => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                let width = 500;
+                let height = 500;
 
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+                canvas.width = width;
+                canvas.height = height;
 
-                    const width = 500;
-                    const height = 500;
 
-                    canvas.width = width;
-                    canvas.height = height;
+                let xOffset = 0;
+                let yOffset = 0;
 
-                    ctx.fillStyle = "white";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-
-                    const resizedDataUrl = canvas.toDataURL('image/jpeg');
-                    //console.log("image data:", resizedDataUrl);
-                    setProfilePicSrc(resizedDataUrl);
-                };
+                if (img.width <= img.height) {
+                    width = Math.round((img.width / img.height) * height);
+                    xOffset = (height - width)/2;
+                } else {
+                    height = Math.round((img.height / img.width) * width);
+                    yOffset = (width - height)/2;
+                }
+                ctx.fillStyle = "white";
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.drawImage(img, xOffset, yOffset, width, height);
+                const resizedDataUrl = canvas.toDataURL('image/jpeg');
+            
+                setProfilePicSrc(resizedDataUrl);
+              };
             };
             reader.readAsDataURL(file);
         }
-    };
+    }
 
     const updateProfile = async () => {
         if (newUsername.trim().length < 3) {
@@ -156,7 +165,7 @@ function ProfileWindow() {
                     <img
                         src={profilePicSrc}
                         alt="Profile"
-                        className="w-12 h-12 border border-black rounded-full object-cover"
+                        className="w-12 h-12 border border-black rounded-full object-cover justify-center align-center"
                     />
                     <input
                         onChange={uploadImg}
