@@ -2,7 +2,7 @@ import './App.css';
 import { useState } from 'react';
 
 export default function TextWithReadMoreButton(props) {
-  const maxTextLength = 50;
+  const maxTextLength = props.maxLength;
   const [maxLength, setLength] = useState(maxTextLength);
 
   const textShortener = (inputText, maxLength) => {
@@ -20,13 +20,13 @@ export default function TextWithReadMoreButton(props) {
   };
 
   const changeLength = (event) => {
-    event.stopPropagation(); // Prevent click event from bubbling up
+    event.stopPropagation();
     if (maxLength === -1) {
       setLength(maxTextLength);
     } else {
       setLength(-1);
-      // Call the function to toggle the spot if clicking "Read More"
-      props.onReadMoreClick(); // Ensure you pass this function from the parent component
+      
+      props.onReadMoreClick(); 
     }
   };
 

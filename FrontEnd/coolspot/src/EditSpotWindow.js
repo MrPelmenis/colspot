@@ -1,33 +1,28 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { WindowContext } from './WindowContext';
 import { CurrentUserContext } from './CurrentUserContext';
-
 import { SpotsContext } from './SpotsContext';
 
-function AddSpotWindow() {
+function EditSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
-  const { visible } = windowStates.addSpotWindow;
+  const { visible, spotToEdit } = windowStates.editSpotWindow || {};
   const [spotName, setSpotName] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
-
-  const { spots, setSpots } = useContext(SpotsContext);
-
-  const addSpotWindow = windowStates.addSpotWindow;
+  const { setSpots } = useContext(SpotsContext);
 
   useEffect(() => {
-    if (visible) {
-      setSpotName('');
-      setDescription('');
-      setImages([]);
+    if (visible && spotToEdit) {
+      setSpotName(spotToEdit.Name);
+      setDescription(spotToEdit.Description);
+      setImages(spotToEdit.Images || []);
       setErrorMessage('');
     }
-  }, [visible]);
+  }, [visible, spotToEdit]);
 
   const onClose = () => {
-    updateWindowState('addSpotWindow', { visible: false });
+    updateWindowState('editSpotWindow', { visible: false });
   };
 
   const handleImageChange = (e) => {
@@ -39,78 +34,45 @@ function AddSpotWindow() {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const handlePublishSpot = async () => {
-    if (spotName.length < 3) {
-      setErrorMessage('Spot name must be at least 3 characters long.');
-      return;
-    } else if (spotName.length > 30) {
-      setErrorMessage('Spot name must not exceed 30 characters.');
+  const handleUpdateSpot = async () => {
+    if (spotName.length < 3 || spotName.length > 30) {
+      setErrorMessage('Spot name must be between 3 and 30 characters.');
       return;
     }
     if (!description || images.length === 0) {
       setErrorMessage('Please provide a description and upload at least one image.');
       return;
     }
-  
+
     try {
-      const convertToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = (error) => reject(error);
-        });
-      };
-    
-      const base64Images = await Promise.all(
-        images.map((image) => convertToBase64(image))
-      );
-    
-      const jsonData = {
-        spotName,
-        Description: description,
-        images: base64Images,
-        userName: currentUser.nickname,
-        userEmail: currentUser.email,
-        Geolocation: addSpotWindow.geoLocation,
-      };
-    
-      const response = await fetch('http://localhost:5000/api/spots', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonData),
-      });
-    
-      if (!response.ok) {
-        throw new Error('Error publishing spot');
-      }
+        const convertToBase64 = (file) =>
+            new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        const base64Images = await Promise.all(
+            images.map((image) => (image instanceof File ? convertToBase64(image) : image))
+        );
+
+        let newEditedSpot = {name: spotName, description, images: base64Images, id: spotToEdit.Id, likes: spotToEdit.likes, time: new Date().toISOString(), geolocation: spotToEdit.Geolocation};
+        alert("fetch edit spot! ar jauno name, description, images un laiku, console.log jaunais info izmetaas:");
+        console.log(newEditedSpot);
     
 
-      const newSpot = {
-        Name: jsonData.spotName,
-        Description: jsonData.Description,
-        Geolocation: jsonData.Geolocation,
-        Images: jsonData.images,
-        userName: jsonData.userName,
-        userEmail: jsonData.userEmail,
-        Time: new Date().toISOString(), 
-        likes: 0, 
-      };
+        //sito man palibom vajadzes
+        /* setSpots((prevSpots) =>
+            prevSpots.map((spot) => (spot.id === spotToEdit.id ? updatedSpot : spot))
+        );
+        onClose(); */
     
-      updateWindowState('addSpotWindow', { visible: false });
-      setSpots((prevSpots) => [newSpot, ...prevSpots,]);
-      
     } catch (error) {
-      console.error('Error uploading spot:', error);
-      setErrorMessage('An error occurred while publishing your spot.');
+        console.error('Error updating spot:', error);
+        setErrorMessage('An error occurred while updating the spot.');
     }
-
   };
-  
 
-  // Close window on click outside
   const handleClickOutside = (e) => {
     if (e.target.id === 'modal-overlay') {
       onClose();
@@ -136,7 +98,7 @@ function AddSpotWindow() {
         >
           &times;
         </button>
-        <h2 className="text-2xl font-bold mb-4 text-center">Add New Spot</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Edit Spot</h2>
 
         <input
           type="text"
@@ -158,7 +120,7 @@ function AddSpotWindow() {
           <div className="flex flex-nowrap gap-4">
             {images.map((image, index) => (
               <div key={index} className="relative flex-shrink-0 border border-gray-300 rounded-lg" style={{ height: '100px' }}>
-                <img src={URL.createObjectURL(image)} alt={`Uploaded ${index}`} className="object-cover" style={{ height: '100px', width: 'auto' }} />
+                <img src={typeof image === 'string' ? image : URL.createObjectURL(image)} alt={`Uploaded ${index}`} className="object-cover" style={{ height: '100px', width: 'auto' }} />
 
                 <button
                   onClick={() => handleRemoveImage(index)}
@@ -201,10 +163,10 @@ function AddSpotWindow() {
             Cancel
           </button>
           <button
-            onClick={handlePublishSpot}
+            onClick={handleUpdateSpot}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors"
           >
-            Publish Spot
+            Update Spot
           </button>
         </div>
       </div>
@@ -212,4 +174,4 @@ function AddSpotWindow() {
   );
 }
 
-export default AddSpotWindow;
+export default EditSpotWindow;

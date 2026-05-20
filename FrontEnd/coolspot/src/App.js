@@ -10,11 +10,10 @@ import ProfileWindow from './ProfileWindow';
 import DeleteProfileWindow from './DeleteProfileWindow';
 import AddSpotWindow from './AddSpotWindow';
 import { SpotsProvider } from './SpotsContext';
+import DeleteSpotWindow from './DeleteSpotWindow';
+import EditSpotWindow from './EditSpotWindow';
 
 function App() {
-  const [token, setToken] = useState(null); 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   return (
     <CurrentUserProvider>
       <WindowProvider>
@@ -24,6 +23,9 @@ function App() {
             <ProfileWindow />
             <DeleteProfileWindow />
             <AddSpotWindow />
+            <DeleteSpotWindow />
+            <EditSpotWindow />
+
             <Header />
             <div className="flex flex-col gap-8 my-8">
               <MapDiv />

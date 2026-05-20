@@ -4,13 +4,17 @@ import TextWithReadMoreButton from './TextWithReadMoreButton';
 import { ExtraFunctions } from './ExtraFunctions';
 import { CurrentUserContext } from './CurrentUserContext'; // Import CurrentUserContext
 
+import { WindowContext } from './WindowContext';
+
 function Spot({ spot }) {
   const [expanded, setExpanded] = useState(false);
-  const [isShrinking, setIsShrinking] = useState(false); // State to handle shrinking delay
+  const [isShrinking, setIsShrinking] = useState(false);
   const spotRef = useRef(null);
-  const { currentUser } = useContext(CurrentUserContext); // Access the current user context
+  const { currentUser } = useContext(CurrentUserContext); 
 
-  // Assuming your header height is 200px, you can adjust this value as needed
+  const { windowStates, updateWindowState } = useContext(WindowContext);
+
+
   const HEADER_HEIGHT = 200;
 
   // Generate a unique ID for each spot using useMemo to avoid re-calculating on each render
@@ -54,43 +58,42 @@ function Spot({ spot }) {
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
-    alert('Deleted!');
+    startShrinking();
+    updateWindowState('deleteSpot', { visible: true, spotID: spot.Id });
   };
 
   const handleEditClick = (event) => {
     event.stopPropagation();
-    alert('Edit Spot!');
+    startShrinking();
+    updateWindowState('editSpotWindow', { visible: true, spotToEdit:spot });
   };
 
   const handleSpotClick = () => {
     if (!expanded) {
-      setExpanded(true);
-
-      // Scroll the spot into view with an offset to account for the header
-      const spotPosition = spotRef.current.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = spotPosition - HEADER_HEIGHT;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-    }
+        setExpanded(true);
+        if (spotRef.current) {
+          const spotPosition = spotRef.current.getBoundingClientRect().top;
+          /*window.scrollTo({
+              top: spotPosition + window.innerHeight/2,
+              behavior: 'smooth',
+          });*/
+        }
+    };
   };
 
   const handleCloseSpot = (event) => {
     event.stopPropagation();
-    startShrinking(); // Call the shrinking function
+    startShrinking();
   };
 
   return (
     <div
-      id={uniqueId} // Assign the unique ID to the div
+      id={uniqueId}
       ref={spotRef}
       className={`relative w-full bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer 
                   ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[100px]'}`} hover:bg-gray-200`}
       onClick={handleSpotClick}
     >
-      {/* X button in the top-right corner */}
       <button
         className={`absolute top-0 right-0 w-8 h-8 rounded-tr-md rounded-bl-md text-2xl bg-red-600 text-white font-bold flex items-center justify-center 
                     transform transition-transform duration-500 
@@ -118,10 +121,13 @@ function Spot({ spot }) {
         </div>
       </div>
 
+
       <TextWithReadMoreButton
         text={spot.Description}
         onReadMoreClick={handleSpotClick}
+        maxLength={20}
       />
+
 
       <div
         className={`transition-all duration-500 ease-in-out overflow-hidden 
@@ -152,6 +158,7 @@ function Spot({ spot }) {
             onClick={handleLikeClick}
             className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
             title="Like"
+            disabled={!expanded}
           >
             <FaHeart className="text-gray-600 hover:text-red-600" />
           </button>
@@ -159,6 +166,7 @@ function Spot({ spot }) {
             onClick={handleCommentClick}
             className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
             title="Comment"
+            disabled={!expanded}
           >
             <FaComment className="text-gray-600 hover:text-blue-600" />
           </button>
@@ -166,23 +174,23 @@ function Spot({ spot }) {
         </div>
 
         <div className='flex'>
-          {/* Edit button */}
-          {spot.userName === currentUser.nickname && ( // Conditional rendering for edit button
+          {spot.userName === currentUser.nickname && ( 
               <button
                 onClick={handleEditClick}
                 className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
                 title="Edit"
+                disabled={!expanded}
               >
                 <FaEdit className="text-gray-600 hover:text-green-600" />
               </button>
           )}
           
-          {/* Trash bin button on the right side, only show if the current user is the spot owner */}
-          {spot.userName === currentUser.nickname && ( // Conditional rendering for delete button
+          {spot.userName === currentUser.nickname && (
             <button
               onClick={handleDeleteClick}
               className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-red-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
               title="Delete"
+              disabled={!expanded}
             >
               <FaTrash className="text-gray-600 hover:text-red-600" />
             </button>

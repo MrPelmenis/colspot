@@ -6,42 +6,39 @@ import { FaFilter } from 'react-icons/fa';
 
 function SpotList() {
   const { spots, setSpots } = useContext(SpotsContext);
-  const [sortOption, setSortOption] = useState('recent'); // State to track the selected sorting option
   const { currentUser } = useContext(CurrentUserContext);
+  const [sortOption, setSortOption] = useState('recent'); // Track selected sorting option
 
+  // Fetch spots on component mount
   useEffect(() => {
     const fetchSpots = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/spots');
         const data = await response.json();
-        console.log('Fetched spots:', data); // Log fetched data for debugging
-        setSpots(data); // Set the spots in the context
+        setSpots(data); // Set spots in context
       } catch (error) {
         console.error('Error fetching spots:', error);
       }
     };
-
     fetchSpots();
   }, [setSpots]);
 
+  // Sort and filter spots based on the selected option
   const sortSpots = (spots, option) => {
-    console.log(spots)
     switch (option) {
       case 'mostLiked':
-        return [...spots].sort((a, b) => b.likes - a.likes); // Sort by most liked
+        return [...spots].sort((a, b) => b.likes - a.likes); 
       case 'recent':
-        return [...spots].sort((a, b) => new Date(b.Time) - new Date(a.Time)); // Sort by most recent
+        return [...spots].sort((a, b) => new Date(b.Time) - new Date(a.Time)); 
       case 'mySpots':
-        return spots.filter((spot) => spot.userName === currentUser.nickname);
+        let mySpots =[...spots].sort((a, b) => new Date(b.Time) - new Date(a.Time));  
+        return mySpots.filter((spot) => spot.userName === currentUser.nickname);
       default:
         return spots;
     }
   };
 
-  const handleSortChange = (e) => {
-    setSortOption(e.target.value);
-  };
-
+  const handleSortChange = (e) => setSortOption(e.target.value);
   const sortedSpots = sortSpots(spots, sortOption);
 
   return (
@@ -50,7 +47,7 @@ function SpotList() {
       <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300">
         {/* Menu Title */}
         <div className="text-gray-700 font-semibold text-lg flex items-center">
-          <FaFilter className="mr-2 text-blue-500" /> {/* Decorative filter icon */}
+          <FaFilter className="mr-2 text-blue-500" />
           <span>Filter Spots</span>
         </div>
         {/* Sort Dropdown */}
@@ -65,10 +62,13 @@ function SpotList() {
         </select>
       </div>
 
+      {/* Display Spots or Message */}
       {sortedSpots.length === 0 ? (
-        <p className='text-white'>No available spots D:</p>
+        <p className="text-white">No available spots D:</p>
       ) : (
-        sortedSpots.map((spot) => <Spot key={spot.Id} spot={spot} />)
+        sortedSpots.map((spot, index) => (
+          <Spot key={spot.Id || `${spot.userName}-${index}`} spot={spot} />
+        ))
       )}
     </div>
   );
