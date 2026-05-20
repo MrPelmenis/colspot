@@ -207,13 +207,18 @@ def get_spots():
     # Fetch all spots
     cursor.execute("SELECT * FROM spots")
     spots = cursor.fetchall()
+    
+
 
     spots_list = []
     
     for spot in spots:
         cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot["id"],))
         images = cursor.fetchall()
-
+        cursor.execute("SELECT nickname FROM users WHERE email = ?", (spot["userEmail"],))
+        nickName_result = cursor.fetchone()
+        nickName = nickName_result[0] if nickName_result else "Unknown"
+        print(nickName)
         # Convert image files to Base64 and store them in a list
         base64_images = []
         for image in images:
@@ -229,12 +234,14 @@ def get_spots():
             except FileNotFoundError:
                 print(f"Image file {image_path} not found.")
 
+
+
         spots_list.append({ 
             "Id": spot["id"],
             "Name": spot["name"],
             "Description": spot["description"],
             "Geolocation": spot["geolocation"],
-            "userName": spot["userName"],
+            "userName": nickName,
             "userEmail": spot["userEmail"],
             "likes": spot["likes"],
             "Time": spot["timestamp"],
@@ -249,7 +256,6 @@ def add_spot():
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
-    userName = data.get('userName')
     userEmail = data.get('userEmail')
     images = data.get('images')
     likes = "not yet"
@@ -257,8 +263,8 @@ def add_spot():
 
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userName, userEmail, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                   (name, description, geolocation, userName, userEmail, likes, timestamp))
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userEmail, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+                   (name, description, geolocation, userEmail, likes, timestamp))
     spot_id = cursor.lastrowid
     db.commit()
 
@@ -272,6 +278,41 @@ def add_spot():
 
     return jsonify({'message': 'Spot added successfully!'}), 201
 
+
+@app.route('/api/spots/<int:spot_id>', methods=['PUT'])
+def update_spot(spot_id):
+    data = request.json
+    name = data.get('spotName')
+    description = data.get('Description')
+    geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
+    userEmail = data.get('userEmail')
+    images = data.get('images')  # Assuming images are optional
+    timestamp = datetime.now().isoformat()
+
+    db = get_db()
+    cursor = db.cursor()
+
+    # Update the main spot fields
+    cursor.execute("""
+        UPDATE spots
+        SET Name = ?, Description = ?, Geolocation = ?, userEmail = ?, timestamp = ?
+        WHERE id = ?
+    """, (name, description, geolocation, userEmail, timestamp, spot_id))
+
+    # Handle images update if new images are provided
+    if images:
+        # Optional: Remove old images if replacing them entirely
+        cursor.execute("DELETE FROM spot_images WHERE spot_id = ?", (spot_id,))
+        db.commit()
+        
+        # Save each new image and add it to the database
+        for index, base64_image in enumerate(images):
+            image_path = save_base64_image(base64_image, spot_id, index)
+            cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
+
+    db.commit()
+
+    return jsonify({'message': 'Spot updated successfully!'}), 200
 
 @app.route('/api/spots/<int:spot_id>/like', methods=['POST'])
 def like_spot(spot_id):
