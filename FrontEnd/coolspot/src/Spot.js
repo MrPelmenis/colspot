@@ -14,11 +14,6 @@ function Spot({ spot }) {
 
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
-  
-  useEffect(() => {
-    console.log(isShrinking);
-  }, [isShrinking]);
-
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${spot.Name}-${spot.Description}-${randomNumber}`;
@@ -27,7 +22,7 @@ function Spot({ spot }) {
   const handleClickOutside = (event) => {
     if (spotRef.current && !spotRef.current.contains(event.target)) {
       if (expanded) {
-        startShrinking(); // Start shrinking if clicked outside when expanded
+        startShrinking();
       }
     }
   };
@@ -42,9 +37,9 @@ function Spot({ spot }) {
   const startShrinking = () => {
     setIsShrinking(true);
     setTimeout(() => {
-      setExpanded(false); // Collapse after the scale-down animation
+      setExpanded(false);
       setIsShrinking(false);
-    }, 500); // Matches the duration of scale-down animation (0.5s)
+    }, 500);
   };
 
   const handleLikeClick = (event) => {
@@ -74,7 +69,9 @@ function Spot({ spot }) {
         setExpanded(true);
         if (spotRef.current) {
           const spotPosition = spotRef.current.getBoundingClientRect().top;
-          //if anyone knows how to make this scroll work please
+          
+          //if anyone knows how to make this scroll work please help
+
           /*window.scrollTo({
               top: spotPosition + window.innerHeight/2,
               behavior: 'smooth',
@@ -93,7 +90,7 @@ function Spot({ spot }) {
       id={uniqueId}
       ref={spotRef}
       className={`relative w-full bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer 
-                  ${expanded ? 'h-auto' : 'h-[150px]'} hover:bg-gray-200`} // Set fixed height for non-expanded state
+                  ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[100px]'}`} hover:bg-gray-200`}
       onClick={handleSpotClick}
     >
       <button
@@ -105,6 +102,17 @@ function Spot({ spot }) {
       >
         &times;
       </button>
+
+      {spot.Images[0] && (
+        <img
+          src={spot.Images[0]}
+          alt={`Thumbnail for ${spot.Name}`}
+          className={`absolute top-10 right-2 w-12 h-12 rounded-md transition-all duration-500
+                      ${expanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
+          style={{ transitionProperty: 'opacity, transform' }}
+        />
+      )}
+
 
       {/* Time Ago text */}
       <p
@@ -128,30 +136,30 @@ function Spot({ spot }) {
         text={spot.Description}
         onReadMoreClick={handleSpotClick}
         spotClose={isShrinking}
-        maxLength={20}
+        maxLength={50}
       />
 
 
       <div
-        className={`transition-all flex justify-start duration-500 ease-in-out gap-2 overflow-x-auto overflow-y-hidden mt-1
-                    ${expanded && !isShrinking ? 'max-h-[500px] opacity-100' : 'max-h-[100px]'}`}
+        className={`transition-all duration-500 ease-in-out overflow-hidden 
+                    ${expanded && !isShrinking ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
         style={{ transitionProperty: 'max-height, opacity', transitionDuration: '0.5s' }}
       >
-        {spot.Images.map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`Spot ${spot.Name} - Image ${index + 1}`}
-            className="h-[200px] w-[200px] object-contain rounded-md transition-scale duration-500 ease-in-out" // Added fixed width
-            style={{ 
-              scale: `${expanded && !isShrinking ? "1" : '0.25'}`,
-              transformOrigin: 'top left'
-            }}
-          />
-        ))}
+        <div
+          className={`flex space-x-2 overflow-x-auto transition-transform duration-500 ease-in-out 
+                      ${expanded && !isShrinking ? 'scale-100' : 'scale-0'}`}
+        >
+          {spot.Images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Spot ${spot.Name} - Image ${index + 1}`}
+              className="h-[200px] object-contain rounded-md transition-transform duration-500 ease-in-out"
+              style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }} // Scale effect on images
+            />
+          ))}
+        </div>
       </div>
-
-
 
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
