@@ -1,59 +1,36 @@
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import { useState, useEffect } from 'react';
 
-export default function TextWithReadMoreButton(props) {
-  const maxTextLength = props.maxLength;
-  const [maxLength, setLength] = useState(maxTextLength);
+export default function TextWithReadMoreButton({ text, maxLength, onReadMoreClick, spotClose }) {
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
-    if (props.spotClose) {
-      setLength(maxTextLength);
+    if (spotClose) {
+      setIsExpanded(false);
     }
-  }, [props.spotClose]);
+  }, [spotClose]);
 
-  const textShortener = (inputText, maxLength) => {
-    if (inputText) {
-      if (maxLength === -1) {
-        return inputText;
-      } else {
-        return inputText.length < maxLength
-          ? inputText
-          : inputText.substring(0, maxLength) + "...";
-      }
-    } else {
-      return "";
-    }
-  };
-
-  const changeLength = (event) => {
+  const handleToggle = (event) => {
     event.stopPropagation();
-    if (maxLength === -1) {
-      setLength(maxTextLength);
-    } else {
-      setLength(-1);
-      props.onReadMoreClick();
+    setIsExpanded((prev) => !prev);
+    if (!isExpanded && onReadMoreClick) {
+      onReadMoreClick();
     }
   };
 
-  const buttonChecker = () => {
-    if (props.text.length > maxTextLength) {
-      return (
-        <button
-          className="readMoreOrLess text-blue-500 hover:underline ml-1"
-          onClick={changeLength}
-        >
-          {maxLength === -1 ? "Read Less" : "Read More"}
-        </button>
-      );
-    }
-  };
+  const displayText = isExpanded ? text : `${text.substring(0, maxLength)}...`;
 
   return (
     <div className="text-gray-700 text-sm mt-2 overflow-hidden">
-      <p className="break-words overflow-wrap inline">
-        {textShortener(props.text, maxLength)}
-      </p>
-      {buttonChecker()}
+      <p className="break-words overflow-wrap inline">{displayText}</p>
+      {text.length > maxLength && (
+        <button
+          className="readMoreOrLess text-blue-500 hover:underline ml-1"
+          onClick={handleToggle}
+        >
+          {isExpanded ? "Read Less" : "Read More"}
+        </button>
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ function Spot({ spot }) {
   const spotRef = useRef(null);
   const { currentUser } = useContext(CurrentUserContext); 
 
-  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo } = useContext(CommentContext);
+  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
 
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
@@ -54,6 +54,7 @@ function Spot({ spot }) {
   const handleCommentClick = (event) => {
     event.stopPropagation();
     startShrinking();
+    setCommentSpotID(spot.Id);
     fetchComment(spot.Id);
     setVisibleComments(true);
   };
@@ -185,7 +186,7 @@ function Spot({ spot }) {
           <button
             onClick={handleCommentClick}
             className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
-            title="Comment"
+            title="View Comments"
             disabled={!expanded}
           >
             <FaComment className="text-gray-600 hover:text-blue-600" />
