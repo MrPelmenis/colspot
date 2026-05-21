@@ -109,6 +109,7 @@ def change():
     return jsonify({"message": "Profile updated successfully"}), 200  
 
 
+
 @app.route('/api/update_profile', methods=['POST'])
 def send():
     data = request.get_json() 
@@ -130,11 +131,27 @@ def send():
         return jsonify({"error": "User not found"}), 404
 
 
+def get_user_info_by_email(email):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    user = cursor.fetchone()
+    conn.commit()
+    return user
+
+def get_user_info_by_id(user_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    conn.commit()
+    return user
+
 @app.route('/api/check_user', methods=['POST'])
 def check_user():
     data = request.json
-    email = data.get('email')
     nickname = data.get('nickname')
+    email = data.get('email')
 
     conn = get_db()
     cursor = conn.cursor()
@@ -149,6 +166,7 @@ def check_user():
             "nickname": user["nickname"],
             "description": user["description"],
             "profile_pic": user["profile_pic"],
+            "user_id": user["user_id"],
         }), 200
     else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
         # print("trying create")
@@ -158,11 +176,13 @@ def check_user():
             "email": email,
             "name": nickname
         }), 201  # HTTP status code for Created
+
+    
     
 @app.route('/api/create_user', methods=["POST"])
 def create_user():
     data = request.json
-    print(data)
+    # print(data)
     email = data.get('email')
     nickname = data.get('nickname')
 
@@ -203,22 +223,18 @@ def save_base64_image(base64_image, spot_id, index):
 def get_spots():
     db = get_db()
     cursor = db.cursor()
-    
     # Fetch all spots
     cursor.execute("SELECT * FROM spots")
     spots = cursor.fetchall()
     
-
-
     spots_list = []
     
     for spot in spots:
         cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot["id"],))
         images = cursor.fetchall()
-        cursor.execute("SELECT nickname FROM users WHERE user_id = ?", (spot["user_id"],))
+        cursor.execute("SELECT nickname FROM users WHERE id = ?", (spot["user_id"],))
         nickName_result = cursor.fetchone()
         nickName = nickName_result[0] if nickName_result else "Unknown"
-        print(nickName)
         # Convert image files to Base64 and store them in a list
         base64_images = []
         for image in images:
@@ -245,7 +261,6 @@ def get_spots():
             "Time": spot["timestamp"],
             "Images": base64_images 
         })
-
     return jsonify(spots_list)
 
 @app.route('/api/spots', methods=['POST'])
@@ -254,7 +269,9 @@ def add_spot():
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
-    user_id = data.get('user_id')
+    email = data.get('userEmail')
+    user = get_user_info_by_email(email)
+    user_id = user["id"]
     images = data.get('images')
     timestamp = datetime.now().isoformat()
 
@@ -336,8 +353,9 @@ def add_comment(spot_id):
     cursor = db.cursor()
 
     data = request.json
-    userName = data.get('userName')
     userEmail = data.get('userEmail')
+    user = get_user_info_by_email(userEmail)
+    user_id = user["id"]
     comment = data.get('comment')
     timestamp = data.get('timestamp')
 
@@ -350,8 +368,8 @@ def add_comment(spot_id):
 
     # Insert the new comment into the comments table
     cursor.execute(
-        "INSERT INTO comments (spot_id, userName, userEmail, comment, timestamp) VALUES (?, ?, ?, ?, ?)",
-        (spot_id, userName, userEmail, comment, timestamp)
+        "INSERT INTO comments (spot_id, user_id, comment, timestamp) VALUES (?, ?, ?, ?)",
+        (spot_id, user_id, comment, timestamp)
     )
     db.commit()
 
@@ -365,16 +383,33 @@ def get_comments(spot_id):
     cursor.execute("SELECT * FROM comments WHERE spot_id = ? ORDER BY timestamp ASC", (spot_id,))
     comments = cursor.fetchall()
 
-    comments_list = [{
-        "id": comment["id"],
-        "userName": comment["userName"],
-        "userEmail": comment["userEmail"],
-        "comment": comment["comment"],
-        "timestamp": comment["timestamp"]
-    } for comment in comments]
+    comments_list = []
+    for comment in comments:
+        user_id = comment["user_id"]
+        user = get_user_info_by_id(user_id)
+        comment_data = {
+            "id": comment["id"],
+            "userName": user["nickname"],
+            "userEmail": user["email"],
+            "comment": comment["comment"],
+            "timestamp": comment["timestamp"]
+        }
+        comments_list.append(comment_data)
 
     return jsonify(comments_list)
 
+@app.route('/api/spots/<int:comment_id>/comment', methods=['DELETE'])
+def delete_comment(comment_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
+    conn.commit()
+    
+    if cursor.rowcount > 0:
+        return jsonify({"message": "Comment deleted successfully"}), 200
+    else:
+        return jsonify({"error": "Comment not found"}), 404
 
 
 @app.route('/api/get_profile_image', methods=['GET'])
@@ -397,8 +432,8 @@ def get_profile_image():
         if os.path.exists(default_image_path):
             with open(default_image_path, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                print("encoded data:")
-                print(encoded_string)
+                # print("encoded data:")
+                # print(encoded_string)
                 return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
         else:
             return jsonify({"error": "Default image not found"}), 500
@@ -424,14 +459,28 @@ def delete_spot(spot_id):
 
     return jsonify({"message": "Spot and associated images deleted successfully."}), 200
 
-@app.route('/api/delete_user/<string:email>', methods=['DELETE'])
-def delete_user(email):
+@app.route('/api/delete_user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("DELETE FROM users WHERE email = ?", (email, ))
-    db.commit()
-    return jsonify({"message": "user deleted succesfully"})
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user:
+        user_id = user['id']
+
+        # Reassign related records to the "deleted" user
+        cursor.execute("UPDATE spots SET user_id = 0 WHERE user_id = ?", (user_id,))
+        cursor.execute("UPDATE comments SET user_id = 0 WHERE user_id = ?", (user_id,))
+        db.commit()
+
+        # Now delete the user
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        db.commit()
+
+        return jsonify({"message": "User deleted successfully; related records reassigned to 'deleted' user"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
 
 @app.teardown_appcontext
 def close_connection(exception):
