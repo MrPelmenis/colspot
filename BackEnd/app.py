@@ -215,7 +215,7 @@ def get_spots():
     for spot in spots:
         cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot["id"],))
         images = cursor.fetchall()
-        cursor.execute("SELECT nickname FROM users WHERE email = ?", (spot["userEmail"],))
+        cursor.execute("SELECT nickname FROM users WHERE user_id = ?", (spot["user_id"],))
         nickName_result = cursor.fetchone()
         nickName = nickName_result[0] if nickName_result else "Unknown"
         print(nickName)
@@ -241,9 +241,7 @@ def get_spots():
             "Name": spot["name"],
             "Description": spot["description"],
             "Geolocation": spot["geolocation"],
-            "userName": nickName,
-            "userEmail": spot["userEmail"],
-            "likes": spot["likes"],
+            "user_id": spot["user_id"],
             "Time": spot["timestamp"],
             "Images": base64_images 
         })
@@ -256,15 +254,14 @@ def add_spot():
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
-    userEmail = data.get('userEmail')
+    user_id = data.get('user_id')
     images = data.get('images')
-    likes = "not yet"
     timestamp = datetime.now().isoformat()
 
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, userEmail, likes, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
-                   (name, description, geolocation, userEmail, likes, timestamp))
+    cursor.execute("INSERT INTO spots (Name, Description, Geolocation, user_id, timestamp) VALUES (?, ?, ?, ?, ?)",
+                   (name, description, geolocation, user_id, timestamp))
     spot_id = cursor.lastrowid
     db.commit()
 
