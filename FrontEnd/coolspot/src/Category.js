@@ -6,7 +6,7 @@ const categoryStyles = {
   Socializing: { color: 'yellow', icon: <FaUsers /> },
   Dangerous: { color: 'red', icon: <FaExclamationTriangle /> },
   Scenic: { color: 'green', icon: <FaMountain /> },
-  'Free/Pay': { color: 'gray', icon: <FaDollarSign /> },
+  'Pay': { color: 'gray', icon: <FaDollarSign /> },
   Historical: { color: 'brown', icon: <FaHistory /> },
   Foodie: { color: 'orange', icon: <FaUtensils /> },
   'Hidden Gem': { color: 'purple', icon: <FaGem /> },
@@ -18,23 +18,26 @@ const categoryStyles = {
   Romantic: { color: 'pink', icon: <FaHeart /> }
 };
 
-const Category = ({ name }) => {
+const Category = ({ name, isVisible }) => {
   const { color, icon } = categoryStyles[name] || { color: 'lightgray', icon: null };
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: color,
-      color: 'white',
-      padding: '5px 10px',
-      borderRadius: '15px',
-      width: '100px',
-      height: '30px',
-      fontWeight: 'bold',
-      fontSize: '14px',
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: color,
+        color: 'white',
+        padding: '5px 10px',
+        borderRadius: '15px',
+        width: '100px',
+        height: '30px',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      }}
+      className={`transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+    >
       <span>{name}</span>
       <span style={{ marginLeft: '5px' }}>{icon}</span>
     </div>

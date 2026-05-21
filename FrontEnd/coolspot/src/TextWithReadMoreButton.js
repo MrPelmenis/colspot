@@ -23,7 +23,7 @@ export default function TextWithReadMoreButton({ text, maxLength, onReadMoreClic
     : `${text.substring(0, maxLength)}...`;
 
   return (
-    <div className="text-gray-700 text-sm mt-2 overflow-hidden">
+    <div className="text-gray-700 text-sm mt-2 w-auto overflow-hidden">
       <p className="break-words overflow-wrap inline">{displayText}</p>
       {text.length > maxLength && (
         <button

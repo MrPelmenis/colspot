@@ -82,15 +82,15 @@ function Comment({ comment }) {
 
       <div className="flex justify-between items-center mt-2 space-x-2">
         {!isEditing && (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center">
             <button
               onClick={handleLikeClick}
-              className="flex items-center justify-center w-8 h-8 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300"
+              className="flex items-center justify-center w-12 gap-1 h-8 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300"
               title="Like"
             >
               <FaHeart className="text-gray-600 hover:text-red-600" />
+              <span className="text-sm text-gray-600">7</span>
             </button>
-            <span className="text-sm text-gray-600">7</span>
           </div>
         )}
 

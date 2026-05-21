@@ -95,8 +95,8 @@ function Spot({ spot }) {
     <div
       id={uniqueId}
       ref={spotRef}
-      className={`relative w-full bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer 
-                  ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} hover:bg-gray-200`} // Updated height here
+      className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer
+        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} hover:bg-gray-200`} 
       onClick={handleSpotClick}
     >
       <button
@@ -108,12 +108,6 @@ function Spot({ spot }) {
       >
         &times;
       </button>
-
-      <div className="flex flex-wrap sm:flex-col gap-2 mb-2">
-        {exampleCategories.map((categoryName, index) => (
-          <Category key={index} name={categoryName} />
-        ))}
-      </div>
 
       {spot.Images[0] && (
         <img
@@ -139,10 +133,23 @@ function Spot({ spot }) {
         {ExtraFunctions.getTimeAgo(spot.Time)}
       </p>
 
-      <div className="flex justify-between items-center mb-2">
-        <div>
-          <p className="text-xl font-semibold">{spot.Name}</p>
-          <p className="text-sm text-gray-500">{spot.userName}</p>
+      <div className="flex justify-between items-center mb-1">
+        <div className="sm:items-start">
+          <p className="text-xl sm:text-2xl font-semibold">{spot.Name}</p>
+          <p className="text-sm sm:text-base text-gray-500">{spot.userName}</p>
+
+          <div 
+            className={`flex ${expanded && !isShrinking ? 'flex-wrap' : ''} gap-2 mt-2 flex-row`}
+          >
+            {exampleCategories.map((categoryName, index) => (
+              <Category
+                key={categoryName + index}
+                name={categoryName}
+                isVisible={(expanded && !isShrinking) || index == 0}
+              />
+            ))}
+          </div>
+
         </div>
       </div>
 
@@ -154,7 +161,7 @@ function Spot({ spot }) {
       />
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden 
+        className={`transition-all duration-500 mt-1 ease-in-out overflow-hidden 
                     ${expanded && !isShrinking ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
         style={{ transitionProperty: 'max-height, opacity', transitionDuration: '0.5s' }}
       >
@@ -177,15 +184,17 @@ function Spot({ spot }) {
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
       >
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <button
             onClick={handleLikeClick}
-            className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+            className={`flex items-center justify-center w-16 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
             title="Like"
             disabled={!expanded}
           >
             <FaHeart className="text-gray-600 hover:text-red-600" />
+            <span className="ml-2 text-sm font-semibold text-gray-600">7</span>
           </button>
+
           <button
             onClick={handleCommentClick}
             className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
