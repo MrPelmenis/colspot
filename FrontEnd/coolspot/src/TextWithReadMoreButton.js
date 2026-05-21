@@ -18,7 +18,9 @@ export default function TextWithReadMoreButton({ text, maxLength, onReadMoreClic
     }
   };
 
-  const displayText = isExpanded ? text : `${text.substring(0, maxLength)}...`;
+  const displayText = isExpanded || text.length <= maxLength
+    ? text
+    : `${text.substring(0, maxLength)}...`;
 
   return (
     <div className="text-gray-700 text-sm mt-2 overflow-hidden">

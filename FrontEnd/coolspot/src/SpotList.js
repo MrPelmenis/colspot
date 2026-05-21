@@ -38,8 +38,7 @@ function SpotList() {
       <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300">
         {/* Menu Title */}
         <div className="text-gray-700 font-semibold text-lg flex items-center">
-          <FaFilter className="mr-2 text-blue-500" />
-          <span>Filter Spots</span>
+          <span>Find Spots</span>
         </div>
         {/* Sort Dropdown */}
         <select

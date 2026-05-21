@@ -9,6 +9,8 @@ function CommentListWindow() {
   const [newComment, setNewComment] = useState('');
   const [error, setError] = useState(''); // State to hold validation error
 
+  const [sortOption, setSortOption] = useState('recent'); // State to track selected sorting option
+
   const { currentUser } = useContext(CurrentUserContext);
 
   useEffect(() => {
@@ -50,6 +52,21 @@ function CommentListWindow() {
     }
   };
 
+  const sortComments = (comments, option) => {
+    switch (option) {
+      case 'mostLiked':
+        return [...comments].sort((a, b) => b.likes - a.likes); // Sort by likes
+      case 'recent':
+        return [...comments].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sort by time
+      default:
+        return comments;
+    }
+  };
+  
+
+  const handleSortChange = (e) => setSortOption(e.target.value);
+  const sortedComments = sortComments(commentInfo, sortOption);
+
   const onClose = () => {
     setVisibleComments(false);
   };
@@ -81,7 +98,7 @@ function CommentListWindow() {
         >
           &times;
         </button>
-        
+
         <h2 className="text-2xl font-bold mb-4 text-center">Comments</h2>
 
         <input
@@ -91,26 +108,38 @@ function CommentListWindow() {
           value={newComment}
           onChange={(e) => {
             setNewComment(e.target.value);
-            if (error) setError(''); // Clear error when user starts typing
+            if (error) setError('');
           }}
         />
 
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>} {/* Display error if it exists */}
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
 
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-between items-center mt-4">
+          <select
+            value={sortOption}
+            onChange={handleSortChange}
+            className="border p-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="recent">Recent Comments</option>
+            <option value="mostLiked">Most Liked</option>
+          </select>
+
           <button
             onClick={handleAddComment}
-            className="bg-blue-600 text-white text-sm px-3 py-1 rounded-lg shadow hover:bg-blue-700 transition-colors"
+            disabled={!currentUser.nickname}
+            className={`${
+              !currentUser.nickname ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            } text-white text-sm px-3 py-1 rounded-lg shadow transition-colors`}
           >
-            Comment
+            {!currentUser.nickname ? 'Log in to comment' : 'Comment'}
           </button>
         </div>
 
         <div className="space-y-4 overflow-y-auto max-h-[200px] mt-4">
-          {commentInfo && commentInfo.length > 0 ? (
-            commentInfo.map((comment, index) => (
+          {sortedComments && sortedComments.length > 0 ? (
+            sortedComments.map((comment, index) => (
               <Comment
-                key={`${comment.userName}-${index}`} // Ensure that each comment has a unique identifier
+                key={`${comment.userName}-${index}`}
                 comment={comment}
               />
             ))

@@ -15,6 +15,7 @@ import DeleteSpotWindow from './Windows/DeleteSpotWindow.js';
 import EditSpotWindow from './Windows/EditSpotWindow.js';
 import { CommentProvider } from './ContextProviders/CommentProvider.js';
 import CommentListWindow from './Windows/CommentListWindow.js';
+import DeleteCommentWindow from "./Windows/DeleteCommentWindow.js";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
               <DeleteSpotWindow />
               <EditSpotWindow />
               <CommentListWindow />
+              <DeleteCommentWindow />
 
               <Header />
               <div className="flex flex-col gap-8 my-8">
