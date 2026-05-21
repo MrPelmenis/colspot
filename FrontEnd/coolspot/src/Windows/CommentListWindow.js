@@ -34,6 +34,7 @@ function CommentListWindow() {
           userName: currentUser.nickname,
           userEmail: currentUser.email,
           comment: newComment,
+          timestamp: new Date().toISOString()
         }),
       });
 

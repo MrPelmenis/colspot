@@ -342,6 +342,7 @@ def add_comment(spot_id):
     userName = data.get('userName')
     userEmail = data.get('userEmail')
     comment = data.get('comment')
+    timestamp = data.get('timestamp')
 
     # Check if the spot exists
     cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
@@ -352,8 +353,8 @@ def add_comment(spot_id):
 
     # Insert the new comment into the comments table
     cursor.execute(
-        "INSERT INTO comments (spot_id, userName, userEmail, comment) VALUES (?, ?, ?, ?)",
-        (spot_id, userName, userEmail, comment)
+        "INSERT INTO comments (spot_id, userName, userEmail, comment, timestamp) VALUES (?, ?, ?, ?, ?)",
+        (spot_id, userName, userEmail, comment, timestamp)
     )
     db.commit()
 

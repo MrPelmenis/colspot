@@ -30,8 +30,6 @@ function Comment({ comment }) {
     alert("edit");
   };
 
-  const emptyFunction = () => {};
-
   return (
     <div
       id={uniqueId}
@@ -45,7 +43,7 @@ function Comment({ comment }) {
       <TextWithReadMoreButton
         text={comment.text}
         maxLength={50}
-        onReadMoreClick={emptyFunction}
+        onReadMoreClick={()=>{}}
       />
 
       <div className="flex justify-between items-center mt-2 space-x-2">

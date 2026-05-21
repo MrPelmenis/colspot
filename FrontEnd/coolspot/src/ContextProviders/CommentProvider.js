@@ -22,7 +22,7 @@ export const CommentProvider = ({ children }) => {
         userEmail: comment.userEmail,
         spotID: spotID,
         text: comment.comment, 
-        time: new Date(comment.timestamp).toISOString(),
+        time: comment.timestamp,
       }));
 
       setCommentInfo(formattedComments);
