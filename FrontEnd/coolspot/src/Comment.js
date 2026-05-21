@@ -6,6 +6,7 @@ import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { CommentContext } from './ContextProviders/CommentProvider';
 import { WindowContext } from './ContextProviders/WindowContext'; // Import the WindowContext
 
+
 function Comment({ comment }) {
   const { currentUser } = useContext(CurrentUserContext);
   const { updateWindowState } = useContext(WindowContext); // Use the context to update window state
@@ -25,7 +26,6 @@ function Comment({ comment }) {
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
-    console.log("aaa");
     updateWindowState('deleteCommentWindow', { visible: true, commentID: comment.id });
   };
 

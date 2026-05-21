@@ -1,22 +1,21 @@
 import React, { useState, useRef, useEffect, useMemo, useContext } from 'react';
-import { FaHeart, FaComment, FaTrash, FaEdit } from 'react-icons/fa'; // Importing the icons
+import { FaHeart, FaComment, FaTrash, FaEdit } from 'react-icons/fa';
 import TextWithReadMoreButton from './TextWithReadMoreButton';
 import { ExtraFunctions } from './ExtraFunctions';
-import { CurrentUserContext } from './ContextProviders/CurrentUserContext'; // Import CurrentUserContext
-
+import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { WindowContext } from './ContextProviders/WindowContext';
-
 import { CommentContext } from './ContextProviders/CommentProvider';
+import Category from './Category.js';
 
 function Spot({ spot }) {
   const [expanded, setExpanded] = useState(false);
   const [isShrinking, setIsShrinking] = useState(false);
   const spotRef = useRef(null);
   const { currentUser } = useContext(CurrentUserContext); 
-
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
-
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+  const exampleCategories = ["Historical", "Scenic", "Chill"];
 
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
@@ -68,7 +67,7 @@ function Spot({ spot }) {
   const handleEditClick = (event) => {
     event.stopPropagation();
     startShrinking();
-    updateWindowState('editSpotWindow', { visible: true, spotToEdit:spot });
+    updateWindowState('editSpotWindow', { visible: true, spotToEdit: spot });
   };
 
   const handleSpotClick = () => {
@@ -77,14 +76,14 @@ function Spot({ spot }) {
         if (spotRef.current) {
           const spotPosition = spotRef.current.getBoundingClientRect().top;
           
-          //if anyone knows how to make this scroll work please help
+          // if anyone knows how to make this scroll work please help
 
           /*window.scrollTo({
               top: spotPosition + window.innerHeight/2,
               behavior: 'smooth',
           });*/
         }
-    };
+    }
   };
 
   const handleCloseSpot = (event) => {
@@ -97,7 +96,7 @@ function Spot({ spot }) {
       id={uniqueId}
       ref={spotRef}
       className={`relative w-full bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer 
-                  ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[100px]'}`} hover:bg-gray-200`}
+                  ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} hover:bg-gray-200`} // Updated height here
       onClick={handleSpotClick}
     >
       <button
@@ -105,10 +104,16 @@ function Spot({ spot }) {
                     transform transition-transform duration-500 
                     ${expanded && !isShrinking ? 'scale-100' : 'scale-0'}`}
         onClick={handleCloseSpot}
-        style={{ transformOrigin: 'top right' }} // Ensure scaling originates from the top right corner
+        style={{ transformOrigin: 'top right' }}
       >
         &times;
       </button>
+
+      <div className="flex flex-wrap sm:flex-col gap-2 mb-2">
+        {exampleCategories.map((categoryName, index) => (
+          <Category key={index} name={categoryName} />
+        ))}
+      </div>
 
       {spot.Images[0] && (
         <img
@@ -117,9 +122,9 @@ function Spot({ spot }) {
           className={`absolute top-8 right-2 h-14 rounded-md transition-all duration-500
                       ${expanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
           style={{
-            width: 'auto',             // Set width to auto to maintain aspect ratio
-            height: '3.5rem',           // Equivalent to h-14
-            objectFit: 'contain',       // Adjusts the image within the defined height
+            width: 'auto',
+            height: '3.5rem',
+            objectFit: 'contain',
             transitionProperty: 'opacity, transform',
           }}
         />
@@ -141,14 +146,12 @@ function Spot({ spot }) {
         </div>
       </div>
 
-
       <TextWithReadMoreButton
         text={spot.Description}
         onReadMoreClick={handleSpotClick}
         spotClose={isShrinking}
         maxLength={50}
       />
-
 
       <div
         className={`transition-all duration-500 ease-in-out overflow-hidden 
@@ -165,7 +168,7 @@ function Spot({ spot }) {
               src={image}
               alt={`Spot ${spot.Name} - Image ${index + 1}`}
               className="h-[200px] object-contain rounded-md transition-transform duration-500 ease-in-out"
-              style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }} // Scale effect on images
+              style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }}
             />
           ))}
         </div>
@@ -191,19 +194,18 @@ function Spot({ spot }) {
           >
             <FaComment className="text-gray-600 hover:text-blue-600" />
           </button>
-
         </div>
 
-        <div className='flex'>
-          {spot.userName === currentUser.nickname && ( 
-              <button
-                onClick={handleEditClick}
-                className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
-                title="Edit"
-                disabled={!expanded}
-              >
-                <FaEdit className="text-gray-600 hover:text-green-600" />
-              </button>
+        <div className="flex">
+          {spot.userName === currentUser.nickname && (
+            <button
+              onClick={handleEditClick}
+              className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+              title="Edit"
+              disabled={!expanded}
+            >
+              <FaEdit className="text-gray-600 hover:text-green-600" />
+            </button>
           )}
           
           {spot.userName === currentUser.nickname && (
