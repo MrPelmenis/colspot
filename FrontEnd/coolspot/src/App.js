@@ -36,7 +36,7 @@ function App() {
               <Header />
               <div className="flex flex-col gap-8 my-8">
                 <MapDiv />
-                <SpotList /> {/* SpotList now fetches and renders spots using context */}
+                <SpotList />
               </div>
               <Footer />
             </div>

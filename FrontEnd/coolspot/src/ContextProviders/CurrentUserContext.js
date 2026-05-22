@@ -5,6 +5,7 @@ export const CurrentUserContext = createContext();
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({
+    id: "",
     nickname: '',
     email: '',
     description: '',

@@ -20,7 +20,7 @@ function Header() {
   const [profilePic, setProfilePic] = useState(currentUser.profile_pic || "/images/DefaultProfilePic.png");
 
   useEffect(()=>{
-    //console.log("current user:", currentUser);
+      //console.log("current user:", currentUser);
   }, [currentUser])
 
   useEffect(() => {
@@ -48,9 +48,10 @@ function Header() {
   
           // Get the server's response
           const data = await res.json();
-          //console.log("Response from server:", data);
+          console.log("kaads ir mans useris: ", data);
   
           const userData = {
+            userID: data.user_id,
             nickname: data.nickname,
             email: data.email || email, 
             description: data.description,
@@ -93,14 +94,14 @@ function Header() {
     }
 
     const data = await res.json();
-    //console.log("tas kas no servera atnak:");
-    //console.log(data.user);
+    console.log("tas kas no servera atnak:");
+    console.log(data.user);
     
 
     if(data.message == "User exists"){
-      //console.log("exists");
       localStorage.setItem("JWT", jwtToken);
       updateCurrentUser({
+        userID: data.user.user_id,
         nickname: data.user.nickname, 
         description: data.user.description, 
         email: data.user.email,
@@ -109,6 +110,7 @@ function Header() {
     } else{
       //console.log("create");
       updateCurrentUser({
+        userID: data.user.user_id,
         nickname: data.user.name, 
         description: data.user.description, 
         email: data.user.email
@@ -119,9 +121,7 @@ function Header() {
 
 
   const onProfileClick = () => {
-    //console.log("currentUser:");
-    //console.log(currentUser);
-    updateWindowState('profileWindow', { email: "", visible: true });
+    updateWindowState('profileWindow', {visible: true });
   }
 
   const isLoggedIn = ExtraFunctions.isUserLoggedIn();

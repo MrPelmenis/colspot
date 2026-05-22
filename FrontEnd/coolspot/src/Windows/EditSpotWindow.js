@@ -74,8 +74,6 @@ function EditSpotWindow() {
           };
       
           console.log("Sending updated spot data to server:", newEditedSpot);
-      
-          // Send the updated spot to the server with PUT request
           const response = await fetch(`http://localhost:5000/api/spots/${spotToEdit.Id}`, {
               method: 'PUT',
               headers: {
@@ -91,9 +89,9 @@ function EditSpotWindow() {
           const result = await response.json();
           console.log(result.message);
       
-          // Optional: Update spots in context or state here
+          
           fetchSpots();
-          onClose(); // Close the modal or form if necessary
+          onClose();
       } catch (error) {
           console.error('Error updating spot:', error);
       }

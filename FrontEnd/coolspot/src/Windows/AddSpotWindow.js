@@ -69,6 +69,7 @@ function AddSpotWindow() {
       const jsonData = {
         spotName,
         Description: description,
+        user_id: currentUser.userID,
         images: base64Images,
         userName: currentUser.nickname,
         userEmail: currentUser.email,

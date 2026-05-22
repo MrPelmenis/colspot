@@ -118,11 +118,12 @@ def send():
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT nickname, description, profile_pic FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT id, nickname, description, profile_pic FROM users WHERE email = ?", (email,))
     user = cursor.fetchone()
 
     if user:
         return jsonify({
+            "user_id": user["id"],
             "nickname": user["nickname"],
             "description": user["description"],
             "profile_pic": user["profile_pic"]
@@ -166,7 +167,7 @@ def check_user():
             "nickname": user["nickname"],
             "description": user["description"],
             "profile_pic": user["profile_pic"],
-            "user_id": user["user_id"],
+            "user_id": user["id"],
         }), 200
     else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
         # print("trying create")
@@ -199,8 +200,8 @@ def create_user():
 
     cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
     conn.commit()
-
-    return jsonify({"message": "User created succesfully "}), 200 
+    user = get_user_info_by_email(email)
+    return jsonify({"message": "User created succesfully ", "user": user}), 200 
 
 
 def save_base64_image(base64_image, spot_id, index):

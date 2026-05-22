@@ -206,7 +206,7 @@ function Spot({ spot }) {
         </div>
 
         <div className="flex">
-          {spot.userName === currentUser.nickname && (
+          {spot.user_id === currentUser.userID && (
             <button
               onClick={handleEditClick}
               className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
@@ -217,7 +217,7 @@ function Spot({ spot }) {
             </button>
           )}
           
-          {spot.userName === currentUser.nickname && (
+          {spot.user_id === currentUser.userID && (
             <button
               onClick={handleDeleteClick}
               className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-red-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}

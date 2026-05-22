@@ -35,15 +35,13 @@ function DeleteProfileWindow() {
       return;
     }
 
-    alert("delete");
-
     try {
-      const res = await fetch('/api/delete_profile', {
-        method: 'POST',
+      const res = await fetch('/api/delete_user/' + currentUser.userID, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ nickname: currentUser.nickname }),
+        }
+        //body: JSON.stringify({ user_id: currentUser.userID }),
       });
 
       if (!res.ok) {
@@ -53,6 +51,7 @@ function DeleteProfileWindow() {
       updateCurrentUser({ email: '', nickname: '', description: '' });
       localStorage.removeItem('JWT');
       updateWindowState('deleteProfile', { visible: false });
+      updateWindowState('profileWindow', { visible: false });
 
     } catch (error) {
       console.error('Error deleting profile:', error);

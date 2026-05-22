@@ -10,7 +10,8 @@ export const SpotsProvider = ({ children }) => {
     try {
       const response = await fetch('http://localhost:5000/api/spots');
       const data = await response.json();
-      setSpots(data); // Update spots in context
+      console.log("spots:", data);
+      setSpots(data);
     } catch (error) {
       console.error('Error fetching spots:', error);
     }
