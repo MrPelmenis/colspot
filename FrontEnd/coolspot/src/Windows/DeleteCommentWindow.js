@@ -1,6 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
 
+import { CommentContext } from '../ContextProviders/CommentProvider';
+
 function DeleteCommentWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
@@ -8,6 +10,10 @@ function DeleteCommentWindow() {
   const [confirmationText, setConfirmationText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [requiredNumbers, setRequiredNumbers] = useState('');
+
+  const { fetchComment } = useContext(CommentContext);
+
+  
 
   const generateRandomNumbers = () => {
     return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
@@ -27,13 +33,31 @@ function DeleteCommentWindow() {
 
   const handleDeleteComment = async () => {
     if (confirmationText !== requiredNumbers) {
-      setErrorMessage(`Please type the exact sequence of numbers above`);
+      setErrorMessage('Please type the exact sequence of numbers above');
       return;
     }
-
-    alert("fetch delete comment, id: " + commentID);
-
+  
+    try {
+      const response = await fetch(`http://localhost:5000/api/spots/${windowStates.deleteCommentWindow.commentID}/comment`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to delete the comment.');
+        return;
+      }
+  
+      updateWindowState('deleteComment', { visible: false, commentID: null });
+      fetchComment();
+  
+    } catch (error) {
+      // Handle any errors during the fetch
+      console.error('Error deleting the comment:', error);
+      setErrorMessage('An error occurred while deleting the comment.');
+    }
   };
+  
 
   const handleClickOutside = (e) => {
     if (e.target.id === 'modal-overlay') {

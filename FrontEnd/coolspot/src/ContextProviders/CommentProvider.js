@@ -15,6 +15,7 @@ export const CommentProvider = ({ children }) => {
       }
       
       const data = await response.json();
+      console.log(data);
       const formattedComments = data.map(comment => ({
         id: comment.id,
         userName: comment.userName,

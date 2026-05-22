@@ -62,6 +62,7 @@ function Comment({ comment }) {
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
+    //console.log(comment);
     updateWindowState('deleteCommentWindow', { visible: true, commentID: comment.id });
   };
 
