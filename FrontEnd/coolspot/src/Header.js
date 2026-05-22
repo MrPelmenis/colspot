@@ -47,7 +47,7 @@ function Header() {
 
         // Get the server's response
         const data = await res.json();
-        console.log("kaads ir mans useris: ", data);
+        //console.log("kaads ir mans useris: ", data);
 
         const userData = {
           userID: data.user_id,

@@ -1,10 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
-import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
+
+
+import { SpotsContext } from '../ContextProviders/SpotsContext';
 
 function DeleteSpotWindow() {
 
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+  const { fetchSpots  } = useContext(SpotsContext);
 
   const { visible, spotID } = windowStates.deleteSpot;
   const [confirmationText, setConfirmationText] = useState('');
@@ -33,9 +37,27 @@ function DeleteSpotWindow() {
       setErrorMessage(`Please type the exact sequence of numbers above`);
       return;
     }
+  
+    try {
+      // Perform the delete request
+      const response = await fetch(`/api/spots/${spotID}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || 'Failed to delete the spot.');
+        return;
+      }
+  
+      updateWindowState('deleteSpot', { visible: false, spotID: null });
+      fetchSpots();
 
-    alert("fetch delete spot, id: " + spotID);
-    alert("kad sataisi pasaki, es sataisisu frontend talak");
+    } catch (error) {
+      // Handle any errors during the fetch
+      console.error('Error deleting the spot:', error);
+      setErrorMessage('An error occurred while deleting the spot.');
+    }
   };
 
   const handleClickOutside = (e) => {

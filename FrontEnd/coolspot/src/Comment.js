@@ -1,27 +1,63 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { FaHeart, FaTrash, FaEdit } from 'react-icons/fa';
 import TextWithReadMoreButton from './TextWithReadMoreButton';
 import { ExtraFunctions } from './ExtraFunctions';
 import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
-import { CommentContext } from './ContextProviders/CommentProvider';
-import { WindowContext } from './ContextProviders/WindowContext'; // Import the WindowContext
-
+import { WindowContext } from './ContextProviders/WindowContext';
 
 function Comment({ comment }) {
   const { currentUser } = useContext(CurrentUserContext);
-  const { updateWindowState } = useContext(WindowContext); // Use the context to update window state
+  const { updateWindowState } = useContext(WindowContext);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.text);
   const [error, setError] = useState('');
+  const [likes, setLikes] = useState(comment.likes);
+  const [likedByUser, setLikedByUser] = useState(comment.liked_by.includes(currentUser.userID));
+
+  useEffect(()=>{
+    setLikedByUser(currentUser.userID && comment.liked_by.includes(currentUser.userID));
+  }, [currentUser.userID]);
 
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${comment.userName}-${comment.text}-${randomNumber}`;
   }, [comment.userName, comment.text]);
 
-  const handleLikeClick = (event) => {
+  const handleLikeClick = async (event) => {
     event.stopPropagation();
-    alert("like comment");
+
+    try {
+      if (likedByUser) {
+        // If already liked, send a DELETE request to unlike the comment
+        const response = await fetch(`/api/comments/${comment.id}/likes/${currentUser.userID}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setLikes(likes - 1);
+          setLikedByUser(false);
+        } else {
+          console.error('Failed to unlike the comment');
+        }
+      } else {
+        const response = await fetch(`/api/comments/${comment.id}/likes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user_id: currentUser.userID }),
+        });
+
+        if (response.ok) {
+          setLikes(likes + 1);
+          setLikedByUser(true);
+        } else {
+          console.error('Failed to like the comment');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating like status:', error);
+    }
   };
 
   const handleDeleteClick = (event) => {
@@ -49,7 +85,7 @@ function Comment({ comment }) {
   const handleCancelClick = (event) => {
     event.stopPropagation();
     setIsEditing(false);
-    setEditText(comment.text); // Reset to the original text
+    setEditText(comment.text);
     setError('');
   };
 
@@ -85,11 +121,14 @@ function Comment({ comment }) {
           <div className="flex items-center">
             <button
               onClick={handleLikeClick}
-              className="flex items-center justify-center w-12 gap-1 h-8 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300"
-              title="Like"
+              disabled={!currentUser.userID} 
+              className={`flex items-center justify-center w-12 gap-1 h-8 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${
+                likedByUser ? 'text-red-600' : 'text-gray-600'
+              }`}
+              title={!currentUser.userID ? "You must be logged in to like" : "Like"}
             >
-              <FaHeart className="text-gray-600 hover:text-red-600" />
-              <span className="text-sm text-gray-600">7</span>
+              <FaHeart className={likedByUser ? 'text-red-600' : 'text-gray-600'} />
+              <span className="text-sm">{likes}</span>
             </button>
           </div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { CommentContext } from '../ContextProviders/CommentProvider';
 import Comment from '../Comment';
 
@@ -12,12 +12,6 @@ function CommentListWindow() {
   const [sortOption, setSortOption] = useState('recent'); // State to track selected sorting option
 
   const { currentUser } = useContext(CurrentUserContext);
-
-  useEffect(() => {
-    if (visibleComments && commentInfo.length > 0 && commentSpotID) {
-     // fetchComment(commentInfo[0].spotID);
-    }
-  }, [visibleComments]);
   
 
   const handleAddComment = async () => {
