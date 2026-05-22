@@ -280,6 +280,8 @@ def get_spots():
         cursor.execute("SELECT nickname FROM users WHERE id = ?", (spot["user_id"],))
         nickName_result = cursor.fetchone()
         nickName = nickName_result[0] if nickName_result else "Unknown"
+
+        
         # Convert image files to Base64 and store them in a list
         base64_images = []
         for image in images:
@@ -295,7 +297,8 @@ def get_spots():
             except FileNotFoundError:
                 print(f"Image file {image_path} not found.")
 
-
+        cursor.execute("SELECT user_id FROM spot_likes WHERE spot_id = ?", (spot["id"],))
+        likes = cursor.fetchall()
 
         spots_list.append({ 
             "Id": spot["id"],
@@ -304,7 +307,9 @@ def get_spots():
             "Geolocation": spot["geolocation"],
             "user_id": spot["user_id"],
             "Time": spot["timestamp"],
-            "Images": base64_images 
+            "Images": base64_images, 
+            "likes": len(likes), 
+            "liked_by": [like["user_id"] for like in likes]
         })
     return jsonify(spots_list)
 
@@ -393,24 +398,63 @@ def update_spot(spot_id):
 
     return jsonify({'message': 'Spot updated successfully!'}), 200
 
-@app.route('/api/spots/<int:spot_id>/like', methods=['POST']) #DOES NOT WORK YET
-def like_spot(spot_id):
-    db = get_db()
-    cursor = db.cursor()
 
-    # Check if the spot exists
+#LIKES
+@app.route('/api/spots/<int:spot_id>/likes', methods=['POST'])
+def add_like(spot_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Get user_id from request body
+    data = request.json
+    user_id = data.get('user_id')
+
     cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
     spot = cursor.fetchone()
-
     if spot is None:
         return jsonify({"error": "Spot not found"}), 404
 
-    # Increment the number of likes
-    new_likes = spot['likes'] + 1
-    cursor.execute("UPDATE spots SET likes = ? WHERE id = ?", (new_likes, spot_id))
-    db.commit()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
 
-    return jsonify({"message": "Spot liked", "likes": new_likes}), 200
+    # Check if the like already exists to prevent duplicate likes
+    cursor.execute("SELECT * FROM spot_likes WHERE spot_id = ? AND user_id = ?", (spot_id, user_id))
+    like = cursor.fetchone()
+    if like:
+        return jsonify({"message": "Like already exists"}), 409 
+
+    cursor.execute("INSERT INTO spot_likes (spot_id, user_id) VALUES (?, ?)", (spot_id, user_id))
+    conn.commit()
+
+    return "", 201
+
+@app.route('/api/spots/<int:spot_id>/likes/<int:user_id>', methods=['DELETE']) 
+def delete_like(spot_id, user_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
+    spot = cursor.fetchone()
+    if spot is None:
+        return jsonify({"error": "Spot not found"}), 404
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    cursor.execute("SELECT * FROM spot_likes WHERE spot_id = ? AND user_id = ?", (spot_id, user_id))
+    like = cursor.fetchone()
+    if like is None:
+        return jsonify({"error": "Like not found"}), 404
+
+    cursor.execute("DELETE FROM spot_likes WHERE spot_id = ? AND user_id = ?", (spot_id, user_id))
+    conn.commit()
+
+    return "", 204
+
 
 #COMMENTS
 @app.route('/api/spots/<int:spot_id>/comment', methods=['POST'])
@@ -476,8 +520,6 @@ def delete_comment(comment_id):
         return jsonify({"message": "Comment deleted successfully"}), 200
     else:
         return jsonify({"error": "Comment not found"}), 404
-
-
     
 @app.teardown_appcontext
 def close_connection(exception):
