@@ -20,7 +20,7 @@ function Header() {
   const [profilePic, setProfilePic] = useState(currentUser.profile_pic || "/images/DefaultProfilePic.png");
 
   useEffect(()=>{
-      //console.log("current user:", currentUser);
+      console.log("current user:", currentUser);
   }, [currentUser])
 
   useEffect(() => {

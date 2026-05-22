@@ -105,8 +105,8 @@ function ProfileWindow() {
 
         setErrorMessage(""); 
 
-        const res = await fetch('/api/update_user_profile', {
-            method: 'POST',
+        const res = await fetch('/api/users', {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },

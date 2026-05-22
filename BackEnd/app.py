@@ -71,9 +71,32 @@ def serve_manifest():
 def serve_config():
     return send_from_directory(app.static_folder, 'config.js')
 
+#USER
+@app.route('/api/users', methods=["POST"])
+def create_user():
+    data = request.json
+    # print(data)
+    email = data.get('email')
+    nickname = data.get('nickname')
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        print("took")
+        return jsonify({"message": "took"}), 200  
 
 
-@app.route('/api/update_user_profile', methods=['POST'])
+    cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
+    conn.commit()
+    user = get_user_info_by_email(email)
+    return jsonify({"message": "User created succesfully "}), 200 
+    # return jsonify({"message": "User created succesfully ", "user": user}), 200 
+
+@app.route('/api/users', methods=['PATCH'])
 def change():
     data = request.get_json()  
     if not data:
@@ -108,8 +131,6 @@ def change():
 
     return jsonify({"message": "Profile updated successfully"}), 200  
 
-
-
 @app.route('/api/update_profile', methods=['POST'])
 def send():
     data = request.get_json() 
@@ -130,23 +151,6 @@ def send():
         }), 200
     else:
         return jsonify({"error": "User not found"}), 404
-
-
-def get_user_info_by_email(email):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-    user = cursor.fetchone()
-    conn.commit()
-    return user
-
-def get_user_info_by_id(user_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-    conn.commit()
-    return user
 
 @app.route('/api/check_user', methods=['POST'])
 def check_user():
@@ -178,32 +182,6 @@ def check_user():
             "name": nickname
         }), 201  # HTTP status code for Created
 
-    
-    
-@app.route('/api/create_user', methods=["POST"])
-def create_user():
-    data = request.json
-    # print(data)
-    email = data.get('email')
-    nickname = data.get('nickname')
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT 1 FROM users WHERE nickname = ?", (nickname,))
-    existing_user = cursor.fetchone()
-
-    if existing_user:
-        print("took")
-        return jsonify({"message": "took"}), 200  
-
-
-    cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
-    conn.commit()
-    user = get_user_info_by_email(email)
-    return jsonify({"message": "User created succesfully ", "user": user}), 200 
-
-
 def save_base64_image(base64_image, spot_id, index):
     # Extract image type and base64 data
     header, base64_data = base64_image.split(';base64,')
@@ -219,7 +197,73 @@ def save_base64_image(base64_image, spot_id, index):
 
     return image_path
 
+@app.route('/api/get_profile_image', methods=['GET'])
+def get_profile_image():
+    nickname = request.args.get('nickname') 
 
+    if not nickname:
+        return jsonify({"error": "Nickname is required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT profile_pic FROM users WHERE nickname = ?", (nickname,))
+    user = cursor.fetchone()
+
+    if user and user[0]:
+        return jsonify({"profile_pic": user[0]}), 200 
+    else:
+        default_image_path = "DefaultProfilePic.png"
+        if os.path.exists(default_image_path):
+            with open(default_image_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                # print("encoded data:")
+                # print(encoded_string)
+                return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
+        else:
+            return jsonify({"error": "Default image not found"}), 500
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user:
+        user_id = user['id']
+
+        # Reassign related records to the "deleted" user
+        cursor.execute("UPDATE spots SET user_id = 0 WHERE user_id = ?", (user_id,))
+        cursor.execute("UPDATE comments SET user_id = 0 WHERE user_id = ?", (user_id,))
+        db.commit()
+
+        # Now delete the user
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        db.commit()
+
+        return jsonify({"message": "User deleted successfully; related records reassigned to 'deleted' user"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+def get_user_info_by_email(email):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    user = cursor.fetchone()
+    conn.commit()
+    return user
+
+def get_user_info_by_id(user_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    conn.commit()
+    return user
+
+#SPOTS
 @app.route('/api/spots', methods=['GET'])
 def get_spots():
     db = get_db()
@@ -293,6 +337,26 @@ def add_spot():
 
     return jsonify({'message': 'Spot added successfully!'}), 201
 
+@app.route('/api/spots/<int:spot_id>', methods=['DELETE'])
+def delete_spot(spot_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot_id,))
+    images = cursor.fetchall()
+
+    cursor.execute("DELETE FROM comments WHERE spot_id = ?", (spot_id, ))
+    db.commit()
+
+    cursor.execute("DELETE FROM spots WHERE id = ?", (spot_id,))
+    db.commit()
+
+    for image in images:
+        file_path = image['file_path']
+        if os.path.exists(file_path):
+            os.remove(file_path)  # Remove the file from the file system
+
+    return jsonify({"message": "Spot and associated images deleted successfully."}), 200
 
 @app.route('/api/spots/<int:spot_id>', methods=['PUT'])
 def update_spot(spot_id):
@@ -329,7 +393,7 @@ def update_spot(spot_id):
 
     return jsonify({'message': 'Spot updated successfully!'}), 200
 
-@app.route('/api/spots/<int:spot_id>/like', methods=['POST'])
+@app.route('/api/spots/<int:spot_id>/like', methods=['POST']) #DOES NOT WORK YET
 def like_spot(spot_id):
     db = get_db()
     cursor = db.cursor()
@@ -348,6 +412,7 @@ def like_spot(spot_id):
 
     return jsonify({"message": "Spot liked", "likes": new_likes}), 200
 
+#COMMENTS
 @app.route('/api/spots/<int:spot_id>/comment', methods=['POST'])
 def add_comment(spot_id):
     db = get_db()
@@ -413,76 +478,7 @@ def delete_comment(comment_id):
         return jsonify({"error": "Comment not found"}), 404
 
 
-@app.route('/api/get_profile_image', methods=['GET'])
-def get_profile_image():
-    nickname = request.args.get('nickname') 
-
-    if not nickname:
-        return jsonify({"error": "Nickname is required"}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT profile_pic FROM users WHERE nickname = ?", (nickname,))
-    user = cursor.fetchone()
-
-    if user and user[0]:
-        return jsonify({"profile_pic": user[0]}), 200 
-    else:
-        default_image_path = "DefaultProfilePic.png"
-        if os.path.exists(default_image_path):
-            with open(default_image_path, "rb") as image_file:
-                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                # print("encoded data:")
-                # print(encoded_string)
-                return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
-        else:
-            return jsonify({"error": "Default image not found"}), 500
-
-@app.route('/api/spots/<int:spot_id>', methods=['DELETE'])
-def delete_spot(spot_id):
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot_id,))
-    images = cursor.fetchall()
-
-    cursor.execute("DELETE FROM comments WHERE spot_id = ?", (spot_id, ))
-    db.commit()
-
-    cursor.execute("DELETE FROM spots WHERE id = ?", (spot_id,))
-    db.commit()
-
-    for image in images:
-        file_path = image['file_path']
-        if os.path.exists(file_path):
-            os.remove(file_path)  # Remove the file from the file system
-
-    return jsonify({"message": "Spot and associated images deleted successfully."}), 200
-
-@app.route('/api/delete_user/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-    if user:
-        user_id = user['id']
-
-        # Reassign related records to the "deleted" user
-        cursor.execute("UPDATE spots SET user_id = 0 WHERE user_id = ?", (user_id,))
-        cursor.execute("UPDATE comments SET user_id = 0 WHERE user_id = ?", (user_id,))
-        db.commit()
-
-        # Now delete the user
-        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        db.commit()
-
-        return jsonify({"message": "User deleted successfully; related records reassigned to 'deleted' user"}), 200
-    else:
-        return jsonify({"error": "User not found"}), 404
-
+    
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)

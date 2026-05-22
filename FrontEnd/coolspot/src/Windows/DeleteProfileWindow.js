@@ -36,7 +36,7 @@ function DeleteProfileWindow() {
     }
 
     try {
-      const res = await fetch('/api/delete_user/' + currentUser.userID, {
+      const res = await fetch('/api/users/' + currentUser.userID, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

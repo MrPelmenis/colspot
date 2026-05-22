@@ -34,7 +34,7 @@ function SignInWindow() {
       return;
     }
 
-    const res = await fetch('/api/create_user', {
+    const res = await fetch('/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
