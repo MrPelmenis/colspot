@@ -370,7 +370,6 @@ def update_spot(spot_id):
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
-    userEmail = data.get('userEmail')
     images = data.get('images')  # Assuming images are optional
     timestamp = datetime.now().isoformat()
 
@@ -380,9 +379,9 @@ def update_spot(spot_id):
     # Update the main spot fields
     cursor.execute("""
         UPDATE spots
-        SET Name = ?, Description = ?, Geolocation = ?, userEmail = ?, timestamp = ?
+        SET Name = ?, Description = ?, Geolocation = ?, timestamp = ?
         WHERE id = ?
-    """, (name, description, geolocation, userEmail, timestamp, spot_id))
+    """, (name, description, geolocation, timestamp, spot_id))
 
     # Handle images update if new images are provided
     if images:
