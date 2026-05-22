@@ -400,7 +400,7 @@ def update_spot(spot_id):
     return jsonify({'message': 'Spot updated successfully!'}), 200
 
 
-#LIKES
+#LIKES SPOTS
 @app.route('/api/spots/<int:spot_id>/likes', methods=['POST'])
 def add_like(spot_id):
     conn = get_db()
@@ -498,12 +498,18 @@ def get_comments(spot_id):
     for comment in comments:
         user_id = comment["user_id"]
         user = get_user_info_by_id(user_id)
+
+        cursor.execute("SELECT user_id FROM comment_likes WHERE comment_id = ?", (comment["id"],))
+        likes = cursor.fetchall()
+
         comment_data = {
             "id": comment["id"],
             "userName": user["nickname"],
             "userEmail": user["email"],
             "comment": comment["comment"],
-            "timestamp": comment["timestamp"]
+            "timestamp": comment["timestamp"],
+            "likes": len(likes), 
+            "liked_by": [like["user_id"] for like in likes]
         }
         comments_list.append(comment_data)
 
@@ -522,6 +528,62 @@ def delete_comment(comment_id):
     else:
         return jsonify({"error": "Comment not found"}), 404
     
+#LIKES COMMENTS
+@app.route('/api/comments/<int:comment_id>/likes', methods=['POST'])
+def add_like_to_comment(comment_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    data = request.json
+    user_id = data.get('user_id')
+
+    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id,))
+    comment = cursor.fetchone()
+    if comment is None:
+        return jsonify({"error": "Comment not found"}), 404
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    # Check if the like already exists to prevent duplicate likes
+    cursor.execute("SELECT * FROM comment_likes WHERE comment_id = ? AND user_id = ?", (comment_id, user_id))
+    like = cursor.fetchone()
+    if like:
+        return jsonify({"message": "Like already exists"}), 409 
+
+    cursor.execute("INSERT INTO comment_likes (comment_id, user_id) VALUES (?, ?)", (comment_id, user_id))
+    conn.commit()
+
+    return "", 201
+
+@app.route('/api/comments/<int:comment_id>/likes/<int:user_id>', methods=['DELETE']) 
+def delete_like_from_comment(comment_id, user_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id,))
+    comment = cursor.fetchone()
+    if comment is None:
+        return jsonify({"error": "comment not found"}), 404
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    cursor.execute("SELECT * FROM comment_likes WHERE comment_id = ? AND user_id = ?", (comment_id, user_id))
+    like = cursor.fetchone()
+    if like is None:
+        return jsonify({"error": "Like not found"}), 404
+
+    cursor.execute("DELETE FROM comment_likes WHERE comment_id = ? AND user_id = ?", (comment_id, user_id))
+    conn.commit()
+
+    return "", 204
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
