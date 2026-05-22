@@ -133,7 +133,7 @@ function ProfileWindow() {
     const onLogOut = () => {
         localStorage.setItem("JWT", "");
         updateWindowState('profileWindow', { email: "", visible: false });
-        updateCurrentUser({  nickname: "", email: "", description: "", profile_pic: "" });
+        updateCurrentUser({  nickname: "", email: "", description: "", profile_pic: "", userID: undefined });
     };
 
     const onDeleteProfile = () => {

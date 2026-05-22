@@ -15,6 +15,9 @@ function Spot({ spot }) {
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(spot.likes);
+
   const exampleCategories = ["Historical", "Scenic", "Chill"];
 
   const uniqueId = useMemo(() => {
@@ -37,6 +40,14 @@ function Spot({ spot }) {
     };
   }, [expanded]);
 
+  useEffect(() => {
+    if (spot.liked_by.includes(currentUser.userID)) {
+      setLiked(true);
+    }else{
+      setLiked(false);  
+    }
+  }, [spot.liked_by, currentUser.userID]);
+
   const startShrinking = () => {
     setIsShrinking(true);
     setTimeout(() => {
@@ -45,10 +56,6 @@ function Spot({ spot }) {
     }, 500);
   };
 
-  const handleLikeClick = (event) => {
-    event.stopPropagation();
-    alert('Liked!');
-  };
 
   const handleCommentClick = (event) => {
     event.stopPropagation();
@@ -74,17 +81,40 @@ function Spot({ spot }) {
     if (!expanded) {
         setExpanded(true);
         if (spotRef.current) {
-          const spotPosition = spotRef.current.getBoundingClientRect().top;
-          
-          // if anyone knows how to make this scroll work please help
-
-          /*window.scrollTo({
-              top: spotPosition + window.innerHeight/2,
-              behavior: 'smooth',
-          });*/
         }
     }
   };
+
+  const handleLikeClick = async () => {
+    const url = `http://localhost:5000/api/spots/${spot.Id}/likes`;
+
+    if (liked) {
+      // Dislike action
+      try {
+        await fetch(`${url}/${currentUser.userID}`, {
+          method: 'DELETE',
+        });
+        setLiked(false);
+        setLikesCount((prev) => prev - 1);
+      } catch (error) {
+        console.error('Error disliking the spot:', error);
+      }
+    } else {
+      // Like action
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: currentUser.userID }),  // Matches backend key
+        });
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+      } catch (error) {
+        console.error('Error liking the spot:', error);
+      }
+    }
+  };
+
 
   const handleCloseSpot = (event) => {
     event.stopPropagation();
@@ -136,7 +166,7 @@ function Spot({ spot }) {
       <div className="flex justify-between items-center mb-1">
         <div className="sm:items-start">
           <p className="text-xl sm:text-2xl font-semibold">{spot.Name}</p>
-          <p className="text-sm sm:text-base text-gray-500">{spot.userName}</p>
+          <p className="text-sm sm:text-base text-gray-500">{spot.nickname}</p>
 
           <div 
             className={`flex ${expanded && !isShrinking ? 'flex-wrap' : ''} gap-2 mt-2 flex-row`}
@@ -184,16 +214,24 @@ function Spot({ spot }) {
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
       >
-        <div className="flex gap-2">
+       <div className="flex gap-2">
+
+       <div className="flex gap-2">
           <button
             onClick={handleLikeClick}
-            className={`flex items-center justify-center w-16 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
-            title="Like"
-            disabled={!expanded}
+            className="flex items-center justify-center w-16 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300"
+            title={
+              currentUser?.userID
+                ? liked ? "Unlike" : "Like"
+                : "You must be logged in to like"
+            }
+            disabled={!currentUser?.userID}
           >
-            <FaHeart className="text-gray-600 hover:text-red-600" />
-            <span className="ml-2 text-sm font-semibold text-gray-600">7</span>
+            <FaHeart className={liked ? "text-red-600" : "text-gray-600"} />
+            <span className="ml-2 text-sm font-semibold text-gray-600">{likesCount}</span>
           </button>
+
+        </div>
 
           <button
             onClick={handleCommentClick}

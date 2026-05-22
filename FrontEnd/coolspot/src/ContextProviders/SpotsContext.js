@@ -5,6 +5,7 @@ export const SpotsContext = createContext();
 
 export const SpotsProvider = ({ children }) => {
   const [spots, setSpots] = useState([]); 
+  const [spotsUpdated, setSpotsUpdated ] = useState(false);
 
   const fetchSpots = async () => {
     try {
@@ -18,7 +19,7 @@ export const SpotsProvider = ({ children }) => {
   };
 
   return (
-    <SpotsContext.Provider value={{ spots, setSpots, fetchSpots }}>
+    <SpotsContext.Provider value={{ spots, setSpots, fetchSpots, spotsUpdated, setSpotsUpdated }}>
       {children}
     </SpotsContext.Provider>
   );

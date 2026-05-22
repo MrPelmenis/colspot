@@ -5,7 +5,7 @@ import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { FaFilter } from 'react-icons/fa';
 
 function SpotList() {
-  const { spots, setSpots, fetchSpots  } = useContext(SpotsContext);
+  const { spots, setSpots, fetchSpots, spotsUpdated, setSpotsUpdated  } = useContext(SpotsContext);
   const { currentUser } = useContext(CurrentUserContext);
   const [sortOption, setSortOption] = useState('recent');
 
@@ -13,6 +13,13 @@ function SpotList() {
   useEffect(() => {
     fetchSpots();
   }, [setSpots]);
+
+  useEffect(() => {
+    if (spotsUpdated) {
+      setSortOption('recent');
+      setSpotsUpdated(false);
+    }
+  }, [spotsUpdated]);
 
   // Sort and filter spots based on the selected option
   const sortSpots = (spots, option) => {

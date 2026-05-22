@@ -48,7 +48,7 @@ function DeleteProfileWindow() {
         throw new Error('Failed to delete profile');
       }
 
-      updateCurrentUser({ email: '', nickname: '', description: '' });
+      updateCurrentUser({ email: '', nickname: '', description: '', userID: null });
       localStorage.removeItem('JWT');
       updateWindowState('deleteProfile', { visible: false });
       updateWindowState('profileWindow', { visible: false });

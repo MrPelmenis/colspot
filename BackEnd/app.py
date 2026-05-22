@@ -306,6 +306,7 @@ def get_spots():
             "Description": spot["description"],
             "Geolocation": spot["geolocation"],
             "user_id": spot["user_id"],
+            "nickname": nickName,
             "Time": spot["timestamp"],
             "Images": base64_images, 
             "likes": len(likes), 

@@ -20,52 +20,53 @@ function Header() {
   const [profilePic, setProfilePic] = useState(currentUser.profile_pic || "/images/DefaultProfilePic.png");
 
   useEffect(()=>{
-      console.log("current user:", currentUser);
+      //console.log("current user:", currentUser);
   }, [currentUser])
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const jwtToken = localStorage.getItem('JWT');
-      
-      if (ExtraFunctions.isUserLoggedIn()) {
-        try {
-          const decodedToken = jwtDecode(jwtToken);
-          const email = decodedToken.email;
-  
-          //skatos kaads ir users
-          const res = await fetch('/api/update_profile', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify({ email }),
-          });
-  
-          if (!res.ok) {
-            throw new Error('Failed to fetch user profile');
-          }
-  
-          // Get the server's response
-          const data = await res.json();
-          console.log("kaads ir mans useris: ", data);
-  
-          const userData = {
-            userID: data.user_id,
-            nickname: data.nickname,
-            email: data.email || email, 
-            description: data.description,
-            profile_pic: data.profile_pic,  
-          };
+  const fetchUserData = async () => {
+    const jwtToken = localStorage.getItem('JWT');
+    
+    if (ExtraFunctions.isUserLoggedIn()) {
+      try {
+        const decodedToken = jwtDecode(jwtToken);
+        const email = decodedToken.email;
 
-          updateCurrentUser(userData);
+        //skatos kaads ir users
+        const res = await fetch('/api/update_profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify({ email }),
+        });
 
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-          localStorage.removeItem('JWT');  // Remove invalid JWT
+        if (!res.ok) {
+          throw new Error('Failed to fetch user profile');
         }
+
+        // Get the server's response
+        const data = await res.json();
+        console.log("kaads ir mans useris: ", data);
+
+        const userData = {
+          userID: data.user_id,
+          nickname: data.nickname,
+          email: data.email || email, 
+          description: data.description,
+          profile_pic: data.profile_pic,  
+        };
+
+        updateCurrentUser(userData);
+
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        localStorage.removeItem('JWT');  // Remove invalid JWT
       }
-    };
+    }
+  };
+  
+  useEffect(() => {
     fetchUserData();
   }, []);
  
@@ -100,21 +101,10 @@ function Header() {
 
     if(data.message == "User exists"){
       localStorage.setItem("JWT", jwtToken);
-      updateCurrentUser({
-        userID: data.user.user_id,
-        nickname: data.user.nickname, 
-        description: data.user.description, 
-        email: data.user.email,
-        profile_pic: data.user.profile_pic,
-      });
+      fetchUserData();
     } else{
       //console.log("create");
-      updateCurrentUser({
-        userID: data.user.user_id,
-        nickname: data.user.name, 
-        description: data.user.description, 
-        email: data.user.email
-      });
+      fetchUserData();
       updateWindowState('signInWindow', { email: data.user.email, nickname:data.user.name, visible: true, jwt: jwtToken});
     } 
   };

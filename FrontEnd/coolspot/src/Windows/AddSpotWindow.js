@@ -4,6 +4,7 @@ import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 
+
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
   const { visible } = windowStates.addSpotWindow;
@@ -13,7 +14,9 @@ function AddSpotWindow() {
   const [errorMessage, setErrorMessage] = useState('');
   const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
-  const { spots, setSpots } = useContext(SpotsContext);
+
+
+  const { spots, setSpots, fetchSpots, setSpotsUpdated } = useContext(SpotsContext);
 
   const addSpotWindow = windowStates.addSpotWindow;
 
@@ -99,13 +102,16 @@ function AddSpotWindow() {
         userName: jsonData.userName,
         userEmail: jsonData.userEmail,
         Time: new Date().toISOString(), 
+        liked_by: [],
+        user_id: currentUser.userID,
         likes: 0, 
       };
 
       console.log("ko es pielieku,", newSpot);
     
       updateWindowState('addSpotWindow', { visible: false });
-      setSpots((prevSpots) => [newSpot, ...prevSpots,]);
+      setSpotsUpdated(true);
+      fetchSpots();
       
     } catch (error) {
       console.error('Error uploading spot:', error);
