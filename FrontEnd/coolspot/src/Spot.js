@@ -22,8 +22,6 @@ function Spot({ spot, isThisSpotSelected }) {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(spot.likes);
 
-  const exampleCategories = ["Historical", "Scenic", "Chill"];
-
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${spot.Name}-${spot.Description}-${randomNumber}`;
@@ -196,7 +194,7 @@ function Spot({ spot, isThisSpotSelected }) {
           <div 
             className={`flex ${expanded && !isShrinking ? 'flex-wrap' : ''} gap-2 mt-2 flex-row`}
           >
-            {exampleCategories.map((categoryName, index) => (
+            {spot.categories.map((categoryName, index) => (
               <Category
                 key={categoryName + index}
                 name={categoryName}

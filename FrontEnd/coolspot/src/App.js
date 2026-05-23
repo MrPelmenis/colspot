@@ -2,7 +2,7 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import MapDiv from './Map';
+import MapDiv from './MapComponents/Map.js';
 import SpotList from './SpotList';
 import { WindowProvider } from './ContextProviders/WindowContext.js';
 import { CurrentUserProvider } from './ContextProviders/CurrentUserContext.js';
