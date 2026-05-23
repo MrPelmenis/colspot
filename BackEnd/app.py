@@ -526,7 +526,31 @@ def delete_comment(comment_id):
         return jsonify({"message": "Comment deleted successfully"}), 200
     else:
         return jsonify({"error": "Comment not found"}), 404
+
+@app.route('/api/spots/<int:comment_id>/comment', methods=['PATCH'])
+def update_comment(comment_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    data = request.json
+    comment_text = data.get('comment')
+    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id, ))
+    comment = cursor.fetchone()
+
+    if comment is None:
+        return jsonify({"error": "comment doesn't exist."}), 400
+    elif comment_text is None or comment_text.replace(" ", "") == "":
+        return jsonify({"error": "provided message is empty."})
+    elif comment["comment"] == comment_text:
+        return jsonify({"error": "Text is unchanged. There is nothing to edit."}), 400
+    else:
+        print(comment_text)
+        cursor.execute('''UPDATE comments SET comment = ? WHERE id = ?''', (comment_text, comment_id))
+        db.commit()
+        return jsonify({"message": "Comment was updated."}), 200
     
+
+
 #LIKES COMMENTS
 @app.route('/api/comments/<int:comment_id>/likes', methods=['POST'])
 def add_like_to_comment(comment_id):
