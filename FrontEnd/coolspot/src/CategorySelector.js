@@ -26,13 +26,9 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
     };
   }, []);
 
-  // Update dropdown visibility based on the parent component's 'visible' prop
   useEffect(() => {
     setShowDropdown(false);
-    if (!visible) {
-      setSelectedCategories([]);
-    }
-  }, [visible, setSelectedCategories]);
+  }, [visible]);
 
   // Add category to selected list
   const handleAddCategory = (category) => {

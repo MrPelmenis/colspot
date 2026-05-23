@@ -2,7 +2,6 @@ import React, { useEffect, useContext, useState } from 'react';
 import Spot from './Spot';
 import { SpotsContext } from './ContextProviders/SpotsContext';
 import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
-import { FaFilter } from 'react-icons/fa';
 
 function SpotList() {
   const {
@@ -18,31 +17,15 @@ function SpotList() {
   const [categoryFilter, setCategoryFilter] = useState(''); // State for category filter
   const [selectedSpot, setSelectedSpot] = useState(null);
 
-  // Fetch spots on component mount
-  useEffect(() => {
-    fetchSpots();
-  }, [setSpots]);
-
-  // Temporary categories until server is set up
   const availableCategories = [
     "Chill", "Socializing", "Dangerous", "Scenic", "Pay", "Historical", 
     "Foodie", "Hidden Gem", "Outdoor Activities", "Nightlife", 
     "Pet-Friendly", "Family-Friendly", "Artistic", "Romantic"
   ];
 
-  // Function to get 3 random categories
-  function getRandomCategories(categories, count = 3) {
-    const shuffled = [...categories].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  }
-
-  // Add random categories to each spot
-  function addCategoriesToSpots(spots) {
-    return spots.map((spot) => ({
-      ...spot,
-      categories: getRandomCategories(availableCategories),
-    }));
-  }
+  useEffect(() => {
+    fetchSpots();
+  }, [setSpots]);
 
   useEffect(() => {
     if (spotsUpdated) {
@@ -55,11 +38,10 @@ function SpotList() {
     if (selectedSpotID) {
       const foundSpot = spots.find((spot) => spot.Id == selectedSpotID);
       setSelectedSpot(foundSpot);
-      console.log('Selected Spot:', foundSpot); // Debug log
     } else {
       setSelectedSpot(null);
     }
-  }, [selectedSpotID, spots]);
+  }, [selectedSpotID, spots, fetchSpots]);
 
   const sortSpots = (spots, option) => {
     let sortedSpots;
@@ -71,15 +53,15 @@ function SpotList() {
         sortedSpots = [...spots].sort((a, b) => new Date(b.Time) - new Date(a.Time));
         break;
       case 'mySpots':
-        let mySpots = [...spots].sort((a, b) => new Date(b.Time) - new Date(a.Time));
-        sortedSpots = mySpots.filter((spot) => spot.user_id === currentUser.userID);
+        sortedSpots = [...spots]
+          .filter((spot) => spot.user_id === currentUser.userID)
+          .sort((a, b) => new Date(b.Time) - new Date(a.Time));
         break;
       default:
         sortedSpots = spots;
     }
-    return addCategoriesToSpots(sortedSpots);
+    return sortedSpots;
   };
-
 
   const filterSpotsByCategory = (spots, category) => {
     if (!category) return spots; 

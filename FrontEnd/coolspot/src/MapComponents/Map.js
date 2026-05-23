@@ -43,7 +43,7 @@ function MapDiv() {
   const { currentUser } = useContext(CurrentUserContext);
   const [mapView, setMapView] = useState('satellite');
 
-  const { spots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
+  const { spots, fetchSpots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
   const [zoomLevel, setZoomLevel] = useState(6); // Initial zoom level
 
@@ -81,7 +81,8 @@ function MapDiv() {
     setMapView(viewType);
   };
 
-  const handleViewSpot = (spotId) => {
+  const handleViewSpot = async(spotId) => {
+    await fetchSpots();
     setSelectedSpotID(spotId);
   };
 

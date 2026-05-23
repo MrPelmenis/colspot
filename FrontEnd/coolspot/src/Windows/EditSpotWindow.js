@@ -18,10 +18,11 @@ function EditSpotWindow() {
 
   useEffect(() => {
     if (visible && spotToEdit) {
+      console.log("spot to edit:", spotToEdit.categories);
       setSpotName(spotToEdit.Name);
       setDescription(spotToEdit.Description);
       setImages(spotToEdit.Images || []);
-      setSelectedCategories(spotToEdit.Categories || []);  // Load existing categories
+      setSelectedCategories(spotToEdit.categories || []);  // Load existing categories
       setErrorMessage('');
     }
   }, [visible, spotToEdit]);
@@ -115,6 +116,7 @@ function EditSpotWindow() {
 
       fetchSpots();  // Re-fetch the updated spots list
       onClose();     // Close the modal
+      
     } catch (error) {
       console.error('Error updating spot:', error);
       setErrorMessage('An error occurred while updating the spot.');
