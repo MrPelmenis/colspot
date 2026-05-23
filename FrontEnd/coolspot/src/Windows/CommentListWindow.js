@@ -16,7 +16,7 @@ function CommentListWindow() {
 
   const handleAddComment = async () => {
     if (newComment.trim().length < 3) {
-      setError('Comment cannot be shorter than 3 characters');
+      setError('Comment must be between 3 and 250 characters');
       return;
     }
 
@@ -95,15 +95,16 @@ function CommentListWindow() {
 
         <h2 className="text-2xl font-bold mb-4 text-center">Comments</h2>
 
-        <input
-          type="text"
-          className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1"
-          placeholder="Add your comment"
+        <textarea
+          className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1 resize-none"
+          placeholder="Add your comment (Max length 250)"
           value={newComment}
+          maxLength={250}
           onChange={(e) => {
             setNewComment(e.target.value);
-            if (error) setError('');
+            setError('');
           }}
+          rows="2" // Sets the number of rows in the textarea
         />
 
         {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

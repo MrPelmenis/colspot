@@ -45,3 +45,5 @@ const Category = ({ name, isVisible }) => {
 };
 
 export default Category;
+
+

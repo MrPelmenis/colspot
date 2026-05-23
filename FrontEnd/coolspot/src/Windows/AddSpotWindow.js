@@ -1,9 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
-
 import { SpotsContext } from '../ContextProviders/SpotsContext';
-
+import CategorySelector from '../CategorySelector';
 
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -12,13 +11,12 @@ function AddSpotWindow() {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
-
-
-
-  const { spots, setSpots, fetchSpots, setSpotsUpdated } = useContext(SpotsContext);
+  const { currentUser } = useContext(CurrentUserContext);
+  const { setSpotsUpdated, fetchSpots } = useContext(SpotsContext);
 
   const addSpotWindow = windowStates.addSpotWindow;
+
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   useEffect(() => {
     if (visible) {
@@ -29,13 +27,19 @@ function AddSpotWindow() {
     }
   }, [visible]);
 
+
   const onClose = () => {
     updateWindowState('addSpotWindow', { visible: false });
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    if (images.length + files.length > 3) {
+      setErrorMessage('You can upload a maximum of 3 images.');
+      return;
+    }
     setImages((prevImages) => [...prevImages, ...files]);
+    setErrorMessage('');
   };
 
   const handleRemoveImage = (index) => {
@@ -55,6 +59,12 @@ function AddSpotWindow() {
       return;
     }
   
+    // Check if at least one category is selected
+    if (selectedCategories.length === 0) {
+      setErrorMessage('Please select at least one category.');
+      return;
+    }
+  
     try {
       const convertToBase64 = (file) => {
         return new Promise((resolve, reject) => {
@@ -64,11 +74,12 @@ function AddSpotWindow() {
           reader.onerror = (error) => reject(error);
         });
       };
-    
+  
       const base64Images = await Promise.all(
         images.map((image) => convertToBase64(image))
       );
-    
+  
+      // Prepare the jsonData object
       const jsonData = {
         spotName,
         Description: description,
@@ -77,8 +88,14 @@ function AddSpotWindow() {
         userName: currentUser.nickname,
         userEmail: currentUser.email,
         Geolocation: addSpotWindow.geoLocation,
+        categories: selectedCategories,  // Add selected categories here
       };
-    
+  
+      // Alert and console log the categories
+      alert(`Categories added: ${selectedCategories.join(', ')}`);
+      console.log('jsonData:', jsonData);
+  
+      // Send the data to the server
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
         headers: {
@@ -86,42 +103,21 @@ function AddSpotWindow() {
         },
         body: JSON.stringify(jsonData),
       });
-    
+  
       if (!response.ok) {
         throw new Error('Error publishing spot');
       }
-
-      
-    
-
-      const newSpot = {
-        Name: jsonData.spotName,
-        Description: jsonData.Description,
-        Geolocation: `${jsonData.Geolocation.lat},${jsonData.Geolocation.lng}`,
-        Images: jsonData.images,
-        userName: jsonData.userName,
-        userEmail: jsonData.userEmail,
-        Time: new Date().toISOString(), 
-        liked_by: [],
-        user_id: currentUser.userID,
-        likes: 0, 
-      };
-
-      console.log("ko es pielieku,", newSpot);
-    
+  
       updateWindowState('addSpotWindow', { visible: false });
       setSpotsUpdated(true);
       fetchSpots();
-      
     } catch (error) {
       console.error('Error uploading spot:', error);
       setErrorMessage('An error occurred while publishing your spot.');
     }
-
   };
-  
 
-  // Close window on click outside
+  
   const handleClickOutside = (e) => {
     if (e.target.id === 'modal-overlay') {
       onClose();
@@ -132,7 +128,7 @@ function AddSpotWindow() {
     <div
       id="modal-overlay"
       className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 
-      transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
       onClick={handleClickOutside}
     >
       <div
@@ -152,17 +148,32 @@ function AddSpotWindow() {
         <input
           type="text"
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1"
-          placeholder="Spot Name"
+          placeholder="Spot Name (Max 60 characters)"
           value={spotName}
-          onChange={(e) => { setSpotName(e.target.value); setErrorMessage(''); }}
+          onChange={(e) => {
+            if (e.target.value.length <= 60) {
+              setSpotName(e.target.value); setErrorMessage('');
+            }
+          }}
         />
 
         <textarea
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-4"
-          placeholder="Spot Description"
+          placeholder="Spot Description (Max 250 characters)"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.length <= 250) {
+              setDescription(e.target.value);
+              setErrorMessage('');
+            }
+          }}
           style={{ resize: 'none', height: '100px', overflowY: 'auto' }}
+        />
+
+        <CategorySelector 
+        visible={windowStates.addSpotWindow.visible}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
         />
 
         <div className="overflow-x-auto overflow-y-hidden mb-4 flex items-center space-x-4">
@@ -170,7 +181,6 @@ function AddSpotWindow() {
             {images.map((image, index) => (
               <div key={index} className="relative flex-shrink-0 border border-gray-300 rounded-lg" style={{ height: '100px' }}>
                 <img src={URL.createObjectURL(image)} alt={`Uploaded ${index}`} className="object-cover" style={{ height: '100px', width: 'auto' }} />
-
                 <button
                   onClick={() => handleRemoveImage(index)}
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-md w-6 h-6 flex items-center justify-center"
@@ -181,24 +191,26 @@ function AddSpotWindow() {
               </div>
             ))}
 
-            <div
-              className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
-              style={{ width: '100px', height: '100px' }}
-            >
-              <input
-                type="file"
-                multiple
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                id="image-upload"
-                onChange={handleImageChange}
-              />
-              <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                <span className="text-blue-500 text-xs">Add Images</span>
-              </label>
-            </div>
+            {images.length < 3 && (
+              <div
+                className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
+                style={{ width: '100px', height: '100px' }}
+              >
+                <input
+                  type="file"
+                  multiple
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  id="image-upload"
+                  onChange={handleImageChange}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
+                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span className="text-blue-500 text-xs">Add Images</span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 

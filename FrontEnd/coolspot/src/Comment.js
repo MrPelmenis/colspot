@@ -14,7 +14,7 @@ function Comment({ comment }) {
   const [likes, setLikes] = useState(comment.likes);
   const [likedByUser, setLikedByUser] = useState(comment.liked_by.includes(currentUser.userID));
 
-  useEffect(()=>{
+  useEffect(() => {
     setLikedByUser(currentUser.userID && comment.liked_by.includes(currentUser.userID));
   }, [currentUser.userID]);
 
@@ -28,7 +28,6 @@ function Comment({ comment }) {
 
     try {
       if (likedByUser) {
-        // If already liked, send a DELETE request to unlike the comment
         const response = await fetch(`/api/comments/${comment.id}/likes/${currentUser.userID}`, {
           method: 'DELETE',
         });
@@ -62,7 +61,6 @@ function Comment({ comment }) {
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
-    //console.log(comment);
     updateWindowState('deleteCommentWindow', { visible: true, commentID: comment.id });
   };
 
@@ -75,6 +73,10 @@ function Comment({ comment }) {
     event.stopPropagation();
     if (editText.trim().length < 3) {
       setError('Comment cannot be shorter than 3 characters');
+      return;
+    }
+    if (editText.length > 250) {
+      setError('Comment cannot exceed 250 characters');
       return;
     }
     alert("comment edit console logged info");
@@ -106,10 +108,14 @@ function Comment({ comment }) {
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             value={editText}
             onChange={(e) => {
-              setEditText(e.target.value);
-              if (error) setError('');
+              const newText = e.target.value;
+              if (newText.length <= 250) {
+                setEditText(newText);
+                if (error) setError(''); // Clear error on typing
+              }
             }}
             rows="3"
+            placeholder="Edit your comment (Max length 250)"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
         </div>

@@ -2,23 +2,26 @@ import React, { useState, useContext, useEffect } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 import { SpotsContext } from '../ContextProviders/SpotsContext';
+import CategorySelector from '../CategorySelector';
 
 function EditSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
-
   const { spots, setSpots, fetchSpots } = useContext(SpotsContext);
-
   const { visible, spotToEdit } = windowStates.editSpotWindow || {};
   const [spotName, setSpotName] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const { currentUser } = useContext(CurrentUserContext);
+
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   useEffect(() => {
     if (visible && spotToEdit) {
       setSpotName(spotToEdit.Name);
       setDescription(spotToEdit.Description);
       setImages(spotToEdit.Images || []);
+      setSelectedCategories(spotToEdit.Categories || []);  // Load existing categories
       setErrorMessage('');
     }
   }, [visible, spotToEdit]);
@@ -29,6 +32,10 @@ function EditSpotWindow() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    if (images.length + files.length > 3) {
+      setErrorMessage('You can only upload a maximum of 3 images.');
+      return;
+    }
     setImages((prevImages) => [...prevImages, ...files]);
   };
 
@@ -37,8 +44,12 @@ function EditSpotWindow() {
   };
 
   const handleUpdateSpot = async () => {
-    if (spotName.length < 3 || spotName.length > 30) {
-      setErrorMessage('Spot name must be between 3 and 30 characters.');
+    if (spotName.length < 3 || spotName.length > 60) {
+      setErrorMessage('Spot name must be between 3 and 60 characters.');
+      return;
+    }
+    if (description.length > 250) {
+      setErrorMessage('Description must not exceed 250 characters.');
       return;
     }
     if (!description || images.length === 0) {
@@ -46,56 +57,65 @@ function EditSpotWindow() {
       return;
     }
 
-      try {
-          const convertToBase64 = (file) =>
-              new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => resolve(reader.result);
-                  reader.onerror = (error) => reject(error);
-              });
-      
-          const base64Images = await Promise.all(
-              images.map((image) => (image instanceof File ? convertToBase64(image) : image))
-          );
+    // Check if at least one category is selected
+    if (selectedCategories.length === 0) {
+      setErrorMessage('Please select at least one category.');
+      return;
+    }
 
+    try {
+      const convertToBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
 
-          //es so daru jo mans backend fujaks lowkey nemaak stringu apstradas serverii
-          let geoLoc = spotToEdit.Geolocation.split(",");
-          let geoCoordJSON = {lat:geoLoc[0], lng:geoLoc[1]};
-      
-          // Create the edited spot object
-          let newEditedSpot = {
-              spotName: spotName,
-              Description: description,
-              images: base64Images,
-              Geolocation: geoCoordJSON,
-              userEmail: spotToEdit.userEmail, // Assuming userEmail is part of spotToEdit
-          };
-      
-          console.log("Sending updated spot data to server:", newEditedSpot);
-          const response = await fetch(`http://localhost:5000/api/spots/${spotToEdit.Id}`, {
-              method: 'PUT',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(newEditedSpot),
-          });
-      
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
-      
-          const result = await response.json();
-          console.log(result.message);
-      
-          
-          fetchSpots();
-          onClose();
-      } catch (error) {
-          console.error('Error updating spot:', error);
+      const base64Images = await Promise.all(
+        images.map((image) => (image instanceof File ? convertToBase64(image) : image))
+      );
+
+      // Update the geolocation (split the coordinates string into an object)
+      let geoLoc = spotToEdit.Geolocation.split(",");
+      let geoCoordJSON = { lat: geoLoc[0], lng: geoLoc[1] };
+
+      // Prepare the edited spot object
+      const updatedSpotData = {
+        spotName,
+        Description: description,
+        images: base64Images,
+        Geolocation: geoCoordJSON,
+        userEmail: spotToEdit.userEmail, // Assuming userEmail is part of spotToEdit
+        categories: selectedCategories,  // Add selected categories here
+      };
+
+      // Alert and console log the categories and the updated spot data
+      alert(`Categories updated: ${selectedCategories.join(', ')}`);
+      console.log('Updated Spot Data:', updatedSpotData);
+
+      // Send the data to the server
+      const response = await fetch(`http://localhost:5000/api/spots/${spotToEdit.Id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSpotData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error updating spot');
       }
-  
+
+      const result = await response.json();
+      console.log(result.message);
+
+      fetchSpots();  // Re-fetch the updated spots list
+      onClose();     // Close the modal
+    } catch (error) {
+      console.error('Error updating spot:', error);
+      setErrorMessage('An error occurred while updating the spot.');
+    }
   };
 
   const handleClickOutside = (e) => {
@@ -128,17 +148,33 @@ function EditSpotWindow() {
         <input
           type="text"
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1"
-          placeholder="Spot Name"
+          placeholder="Spot Name (Max length 60)"
           value={spotName}
-          onChange={(e) => { setSpotName(e.target.value); setErrorMessage(''); }}
+          onChange={(e) => {
+            if(e.target.value.length < 60){
+              setSpotName(e.target.value);
+              setErrorMessage('');
+            }
+          }}
         />
 
         <textarea
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-4"
-          placeholder="Spot Description"
+          placeholder="Spot Description (Max length 250)"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) =>{ 
+            if (e.target.value.length <= 250) {
+              setDescription(e.target.value);
+              setErrorMessage('');
+            }
+          }}
           style={{ resize: 'none', height: '100px', overflowY: 'auto' }}
+        />
+
+        <CategorySelector 
+          visible={windowStates.editSpotWindow.visible}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
         />
 
         <div className="overflow-x-auto overflow-y-hidden mb-4 flex items-center space-x-4">
@@ -156,29 +192,33 @@ function EditSpotWindow() {
                 </button>
               </div>
             ))}
-
-            <div
-              className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
-              style={{ width: '100px', height: '100px' }}
-            >
-              <input
-                type="file"
-                multiple
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                id="image-upload"
-                onChange={handleImageChange}
-              />
-              <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                <span className="text-blue-500 text-xs">Add Images</span>
-              </label>
-            </div>
+            {images.length < 3 && (
+                <div
+                className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
+                style={{ width: '100px', height: '100px' }}
+              >
+                <input
+                  type="file"
+                  multiple
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  id="image-upload"
+                  onChange={handleImageChange}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
+                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span className="text-blue-500">Upload</span>
+                </label>
+              </div>
+            )}
+            
           </div>
         </div>
 
-        {errorMessage && <p className="text-red-500 mt-1 text-sm">{errorMessage}</p>}
+        {errorMessage && (
+          <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+        )}
 
         <div className="flex justify-end mt-4">
           <button

@@ -11,7 +11,7 @@ function DeleteCommentWindow() {
   const [errorMessage, setErrorMessage] = useState('');
   const [requiredNumbers, setRequiredNumbers] = useState('');
 
-  const { fetchComment } = useContext(CommentContext);
+  const { fetchComment, commentSpotID} = useContext(CommentContext);
 
   
 
@@ -48,8 +48,8 @@ function DeleteCommentWindow() {
         return;
       }
   
-      updateWindowState('deleteComment', { visible: false, commentID: null });
-      fetchComment();
+      updateWindowState('deleteCommentWindow', { visible: false, commentID: null });
+      fetchComment(commentSpotID);
   
     } catch (error) {
       // Handle any errors during the fetch
