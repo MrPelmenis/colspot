@@ -7,13 +7,17 @@ import { WindowContext } from './ContextProviders/WindowContext';
 import { CommentContext } from './ContextProviders/CommentProvider';
 import Category from './Category.js';
 
-function Spot({ spot }) {
-  const [expanded, setExpanded] = useState(false);
+import { SpotsContext } from './ContextProviders/SpotsContext';
+
+function Spot({ spot, isThisSpotSelected }) {
+  const [expanded, setExpanded] = useState(isThisSpotSelected);
   const [isShrinking, setIsShrinking] = useState(false);
   const spotRef = useRef(null);
-  const { currentUser } = useContext(CurrentUserContext); 
+  const { currentUser } = useContext(CurrentUserContext);
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+  const {selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(spot.likes);
@@ -28,7 +32,9 @@ function Spot({ spot }) {
   const handleClickOutside = (event) => {
     if (spotRef.current && !spotRef.current.contains(event.target)) {
       if (expanded) {
-        startShrinking();
+        if(!isThisSpotSelected){
+          handleCloseSpot();
+        }
       }
     }
   };
@@ -59,7 +65,9 @@ function Spot({ spot }) {
 
   const handleCommentClick = async (event) => {
     event.stopPropagation();
-    startShrinking();
+    if(!isThisSpotSelected){
+      handleCloseSpot();
+    }
     setCommentSpotID(spot.Id);
     await fetchComment(spot.Id);
     setVisibleComments(true);
@@ -67,13 +75,17 @@ function Spot({ spot }) {
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
-    startShrinking();
+    if(!isThisSpotSelected){
+      handleCloseSpot();
+    }
     updateWindowState('deleteSpot', { visible: true, spotID: spot.Id });
   };
 
   const handleEditClick = (event) => {
     event.stopPropagation();
-    startShrinking();
+    if(!isThisSpotSelected){
+      handleCloseSpot();
+    }
     updateWindowState('editSpotWindow', { visible: true, spotToEdit: spot });
   };
 
@@ -125,17 +137,21 @@ function Spot({ spot }) {
   };
 
 
-  const handleCloseSpot = (event) => {
-    event.stopPropagation();
-    startShrinking();
+  const handleCloseSpot = () => { 
+    if(isThisSpotSelected){
+      setSelectedSpotID(null);
+    }else{
+      startShrinking();
+    }
   };
 
   return (
     <div
-      id={uniqueId}
+      id={"spot-" + spot.Id}
       ref={spotRef}
       className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer
-        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} hover:bg-gray-200`} 
+        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} 
+        ${isThisSpotSelected ? 'border-4 border-gray-600 rounded-xl bg-blue-50' : 'hover:bg-gray-200'}`}  // Add this line for selected spot styling
       onClick={handleSpotClick}
     >
       <button
