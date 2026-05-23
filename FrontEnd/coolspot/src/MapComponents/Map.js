@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -45,7 +45,9 @@ function MapDiv() {
 
   const { spots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
-  const [zoomLevel, setZoomLevel] = useState(4); // Initial zoom level
+  const [zoomLevel, setZoomLevel] = useState(6); // Initial zoom level
+
+  const mapRef = useRef(null);
 
 
   useEffect(() => {
@@ -100,22 +102,27 @@ function MapDiv() {
   }, [selectedSpotID]);
 
   const handleLocate = (latitude, longitude) => {
-    console.log('User location:', latitude, longitude);
-    setMapCenter([latitude, longitude]); // Update the map center state
-    setZoomLevel(zoomLevel); // Retain the current zoom level
+    setMapCenter([latitude, longitude]);
+    setZoomLevel(zoomLevel);
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
     console.log(name, lat, lng, zoom);
-    setMapCenter([lat, lng]); // Set the map's new center
-    setZoomLevel(zoomLevel); // Set the calculated zoom level
+    setMapCenter([lat, lng]);
+    setZoomLevel(zoomLevel); 
   };
+
+
 
 
   return (
     <div className="relative w-[80vw] h-auto sm:w-[80vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
       
-      <LocationSearchBar onLocate={handleLocate} onSearch={handleSearch} />
+      <div className="absolute top-0 right-0 z-10 flex items-center space-x-2">
+        <div className="bg-white rounded-lg shadow-lg p-2 w-full max-w-lg flex items-center">
+          <LocationSearchBar onLocate={handleLocate} onSearch={handleSearch} />
+        </div>
+      </div>
       
       {/* Map Container */}
       <div className="relative w-full h-[80vw] sm:h-[80vw] md:h-[70vw] lg:h-[60vw] xl:h-[40vw]">

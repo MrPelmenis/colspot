@@ -13,6 +13,7 @@ function MapUpdater({ center, zoomLevel }) {
     }
   }, [center, zoomLevel, map]);
 
+
   return null;
 }
 

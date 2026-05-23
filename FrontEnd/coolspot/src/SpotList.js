@@ -101,12 +101,12 @@ function SpotList() {
       )}
 
       {/* Spot Menu */}
-      <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300">
+      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300 space-y-4 sm:space-y-0">
         <div className="text-gray-700 font-semibold text-lg flex-grow">
           <span>Find Spots</span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex items-center">
             <label htmlFor="categoryFilter" className="mr-2 text-gray-700">Category:</label>
             <select
