@@ -94,11 +94,14 @@ function EditSpotWindow() {
       alert(`Categories updated: ${selectedCategories.join(', ')}`);
       console.log('Updated Spot Data:', updatedSpotData);
 
+      const jwtToken = localStorage.getItem('JWT');
+
       // Send the data to the server
       const response = await fetch(`http://localhost:5000/api/spots/${spotToEdit.Id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
         },
         body: JSON.stringify(updatedSpotData),
       });

@@ -34,10 +34,13 @@ function SignInWindow() {
       return;
     }
 
+    const jwtToken = localStorage.getItem('JWT');
+
     const res = await fetch('/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`,
       },
       body: JSON.stringify({ nickname: username, email: email }),
     });

@@ -105,10 +105,13 @@ function ProfileWindow() {
 
         setErrorMessage(""); 
 
+        const jwtToken = localStorage.getItem('JWT');
+
         const res = await fetch('/api/users', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`,
             },
             body: JSON.stringify({ nickname: newUsername, description, email: currentUser.email, profile_pic: profilePicSrc }),
         });

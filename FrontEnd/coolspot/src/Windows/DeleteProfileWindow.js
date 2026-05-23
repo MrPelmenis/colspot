@@ -35,12 +35,15 @@ function DeleteProfileWindow() {
       return;
     }
 
+    const jwtToken = localStorage.getItem('JWT');
+
     try {
       const res = await fetch('/api/users/' + currentUser.userID, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        }
+          'Authorization': `Bearer ${jwtToken}`,
+        },
         //body: JSON.stringify({ user_id: currentUser.userID }),
       });
 

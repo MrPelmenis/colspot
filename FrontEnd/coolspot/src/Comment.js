@@ -5,6 +5,8 @@ import { ExtraFunctions } from './ExtraFunctions';
 import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 import { WindowContext } from './ContextProviders/WindowContext';
 
+import { CommentContext } from './ContextProviders/CommentProvider';
+
 function Comment({ comment }) {
   const { currentUser } = useContext(CurrentUserContext);
   const { updateWindowState } = useContext(WindowContext);
@@ -14,9 +16,16 @@ function Comment({ comment }) {
   const [likes, setLikes] = useState(comment.likes);
   const [likedByUser, setLikedByUser] = useState(comment.liked_by.includes(currentUser.userID));
 
+  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, commentSpotID, setCommentSpotID } = useContext(CommentContext);
+
   useEffect(() => {
     setLikedByUser(currentUser.userID && comment.liked_by.includes(currentUser.userID));
   }, [currentUser.userID]);
+
+  useEffect(() => {
+    setLikes(comment.likes);
+    setLikedByUser(currentUser.userID && comment.liked_by.includes(currentUser.userID));
+  }, [comment.id]);
 
   const uniqueId = useMemo(() => {
     const randomNumber = Math.floor(Math.random() * 10000);
@@ -26,10 +35,16 @@ function Comment({ comment }) {
   const handleLikeClick = async (event) => {
     event.stopPropagation();
 
+    const jwtToken = localStorage.getItem('JWT');
+
     try {
       if (likedByUser) {
         const response = await fetch(`/api/comments/${comment.id}/likes/${currentUser.userID}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
         });
 
         if (response.ok) {
@@ -43,6 +58,7 @@ function Comment({ comment }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
           },
           body: JSON.stringify({ user_id: currentUser.userID }),
         });
@@ -66,24 +82,55 @@ function Comment({ comment }) {
 
   const handleEditClick = (event) => {
     event.stopPropagation();
+    setEditText(comment.text);
     setIsEditing(true);
   };
 
   const handleSaveClick = (event) => {
     event.stopPropagation();
+
     if (editText.trim().length < 3) {
-      setError('Comment cannot be shorter than 3 characters');
-      return;
+        setError('Comment cannot be shorter than 3 characters');
+        return;
     }
+
     if (editText.length > 250) {
-      setError('Comment cannot exceed 250 characters');
-      return;
+        setError('Comment cannot exceed 250 characters');
+        return;
     }
-    alert("comment edit console logged info");
-    console.log("id:", comment.id, "new text:", editText);
+
+    //console.log("id:", comment, "new text:", editText);
     setIsEditing(false);
     setError('');
-  };
+
+    const jwtToken = localStorage.getItem('JWT');
+
+    // Make the PATCH request to update the comment on the server
+    fetch(`/api/spots/${comment.id}/comment`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+            comment: editText
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            setError(data.error);
+        } else {
+          setIsEditing(false);
+          setError('');
+          fetchComment(commentSpotID);
+        }
+    })
+    .catch(err => {
+        console.error("Error updating comment:", err);
+        setError('Something went wrong. Please try again.');
+    });
+};
 
   const handleCancelClick = (event) => {
     event.stopPropagation();

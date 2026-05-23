@@ -94,12 +94,15 @@ function AddSpotWindow() {
       // Alert and console log the categories
       alert(`Categories added: ${selectedCategories.join(', ')}`);
       console.log('jsonData:', jsonData);
+
+      const jwtToken = localStorage.getItem('JWT');
   
       // Send the data to the server
       const response = await fetch('http://localhost:5000/api/spots', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
         },
         body: JSON.stringify(jsonData),
       });

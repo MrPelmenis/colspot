@@ -36,10 +36,16 @@ function DeleteCommentWindow() {
       setErrorMessage('Please type the exact sequence of numbers above');
       return;
     }
-  
+    
+    const jwtToken = localStorage.getItem('JWT');
+
     try {
       const response = await fetch(`http://localhost:5000/api/spots/${windowStates.deleteCommentWindow.commentID}/comment`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
+        },
       });
   
       if (!response.ok) {

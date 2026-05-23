@@ -57,11 +57,11 @@ function Spot({ spot }) {
   };
 
 
-  const handleCommentClick = (event) => {
+  const handleCommentClick = async (event) => {
     event.stopPropagation();
     startShrinking();
     setCommentSpotID(spot.Id);
-    fetchComment(spot.Id);
+    await fetchComment(spot.Id);
     setVisibleComments(true);
   };
 
@@ -88,11 +88,17 @@ function Spot({ spot }) {
   const handleLikeClick = async () => {
     const url = `http://localhost:5000/api/spots/${spot.Id}/likes`;
 
+    const jwtToken = localStorage.getItem('JWT');
+
     if (liked) {
       // Dislike action
       try {
         await fetch(`${url}/${currentUser.userID}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
         });
         setLiked(false);
         setLikesCount((prev) => prev - 1);
@@ -104,7 +110,10 @@ function Spot({ spot }) {
       try {
         await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
           body: JSON.stringify({ user_id: currentUser.userID }),  // Matches backend key
         });
         setLiked(true);

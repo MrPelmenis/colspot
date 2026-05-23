@@ -37,11 +37,17 @@ function DeleteSpotWindow() {
       setErrorMessage(`Please type the exact sequence of numbers above`);
       return;
     }
-  
+    
+    const jwtToken = localStorage.getItem('JWT');
+
     try {
       // Perform the delete request
       const response = await fetch(`/api/spots/${spotID}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
+        },
       });
   
       if (!response.ok) {

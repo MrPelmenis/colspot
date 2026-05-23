@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { CommentContext } from '../ContextProviders/CommentProvider';
 import Comment from '../Comment';
 
@@ -12,7 +12,18 @@ function CommentListWindow() {
   const [sortOption, setSortOption] = useState('recent'); // State to track selected sorting option
 
   const { currentUser } = useContext(CurrentUserContext);
-  
+
+  // Sort comments function
+  const sortComments = (comments, option) => {
+    switch (option) {
+      case 'mostLiked':
+        return [...comments].sort((a, b) => b.likes - a.likes); // Sort by likes
+      case 'recent':
+        return [...comments].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sort by time
+      default:
+        return comments;
+    }
+  };
 
   const handleAddComment = async () => {
     if (newComment.trim().length < 3) {
@@ -20,11 +31,14 @@ function CommentListWindow() {
       return;
     }
 
+    const jwtToken = localStorage.getItem('JWT');
+
     try {
       const response = await fetch(`../api/spots/${commentSpotID}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
         },
         body: JSON.stringify({
           userName: currentUser.nickname,
@@ -37,7 +51,8 @@ function CommentListWindow() {
       if (response.ok) {
         setNewComment(''); // Clear the input after adding
         setError(''); // Clear any previous errors
-        fetchComment(commentSpotID); // Refresh comments
+        //setCommentInfo([]);
+        await fetchComment(commentSpotID); // Refresh comments
       } else {
         console.error('Failed to add comment');
       }
@@ -46,20 +61,7 @@ function CommentListWindow() {
     }
   };
 
-  const sortComments = (comments, option) => {
-    switch (option) {
-      case 'mostLiked':
-        return [...comments].sort((a, b) => b.likes - a.likes); // Sort by likes
-      case 'recent':
-        return [...comments].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sort by time
-      default:
-        return comments;
-    }
-  };
-  
-
   const handleSortChange = (e) => setSortOption(e.target.value);
-  const sortedComments = sortComments(commentInfo, sortOption);
 
   const onClose = () => {
     setVisibleComments(false);
@@ -131,8 +133,9 @@ function CommentListWindow() {
         </div>
 
         <div className="space-y-4 overflow-y-auto max-h-[200px] mt-4">
-          {sortedComments && sortedComments.length > 0 ? (
-            sortedComments.map((comment, index) => (
+          {commentInfo && commentInfo.length > 0 ? (
+            // Apply sorting directly in JSX
+            sortComments(commentInfo, sortOption).map((comment, index) => (
               <Comment
                 key={`${comment.userName}-${index}`}
                 comment={comment}
