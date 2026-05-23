@@ -300,6 +300,15 @@ def get_spots():
         cursor.execute("SELECT user_id FROM spot_likes WHERE spot_id = ?", (spot["id"],))
         likes = cursor.fetchall()
 
+        cursor.execute("SELECT tag_id FROM spot_tags WHERE spot_id = ?", (spot["id"],))
+        tags = cursor.fetchall()
+        #print(tags)
+        categories = []
+        for tag in tags:
+            cursor.execute("SELECT tag_name FROM tags WHERE id = ?", (tag[0], ))
+            category = cursor.fetchone()
+            categories.append(category[0])
+
         spots_list.append({ 
             "Id": spot["id"],
             "Name": spot["name"],
@@ -310,7 +319,8 @@ def get_spots():
             "Time": spot["timestamp"],
             "Images": base64_images, 
             "likes": len(likes), 
-            "liked_by": [like["user_id"] for like in likes]
+            "liked_by": [like["user_id"] for like in likes],
+            "categories": categories
         })
     return jsonify(spots_list)
 
@@ -325,6 +335,8 @@ def add_spot():
     user_id = user["id"]
     images = data.get('images')
     timestamp = datetime.now().isoformat()
+    categories = data.get('categories')
+
 
     db = get_db()
     cursor = db.cursor()
@@ -332,6 +344,14 @@ def add_spot():
                    (name, description, geolocation, user_id, timestamp))
     spot_id = cursor.lastrowid
     db.commit()
+
+    for tag in categories:
+        cursor.execute("SELECT id FROM tags WHERE tag_name = ?", (tag, ))
+        tag_id = cursor.fetchone()[0]
+
+        cursor.execute("INSERT INTO spot_tags (spot_id, tag_id) VALUES (?, ?)", (spot_id, tag_id, ))
+    db.commit()
+    
 
     image_paths = []
     for index, base64_image in enumerate(images):
@@ -607,6 +627,9 @@ def delete_like_from_comment(comment_id, user_id):
     return "", 204
 
 
+
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -615,4 +638,3 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
-
