@@ -100,14 +100,15 @@ function MapDiv() {
   }, [selectedSpotID]);
 
   const handleLocate = (latitude, longitude) => {
-    setMapCenter([latitude, longitude]); // Update the map center state
     console.log('User location:', latitude, longitude);
+    setMapCenter([latitude, longitude]); // Update the map center state
+    setZoomLevel(zoomLevel); // Retain the current zoom level
   };
-
-  const handleSearch = (name, lat, lng, zoomLevel) => {
-    console.log(name, lat, lng, zoomLevel);
-    setMapCenter([lat, lng]);
-    setZoomLevel(zoomLevel);
+  
+  const handleSearch = (name, lat, lng, zoom) => {
+    console.log(name, lat, lng, zoom);
+    setMapCenter([lat, lng]); // Set the map's new center
+    setZoomLevel(zoomLevel); // Set the calculated zoom level
   };
 
 
@@ -146,7 +147,7 @@ function MapDiv() {
           }}
         >
           {/* Integrate MapUpdater */}
-          <MapUpdater center={mapCenter} />
+          <MapUpdater center={mapCenter} zoomLevel={zoomLevel} />
 
           {mapView === 'satellite' ? (
             <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />

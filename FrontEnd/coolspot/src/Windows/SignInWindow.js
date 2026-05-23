@@ -4,7 +4,7 @@ import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 
 function SignInWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
-  const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+  const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
 
   const { email, nickname, visible } = windowStates.signInWindow;
   const jwt = windowStates.signInWindow.jwt;
@@ -52,12 +52,14 @@ function SignInWindow() {
     const data = await res.json();
 
     if (data.message === 'took') {
-      setErrorMessage('Choose another nickname, this one is taken'); // Set error message
+      setErrorMessage('Choose another nickname, this one is taken');
       return;
     }
 
+    console.log(data);
+
     localStorage.setItem('JWT', jwt);
-    updateCurrentUser({ ...currentUser, nickname: username, email: email });
+    fetchUserData();
     updateWindowState('signInWindow', { email: '', nickname: '', visible: false, jwt: '' });
   };
 

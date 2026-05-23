@@ -1,14 +1,19 @@
-import React, { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
+import { useEffect } from 'react';
 
-function MapUpdater({ center }) {
+function MapUpdater({ center, zoomLevel }) {
   const map = useMap();
+
   useEffect(() => {
-    if (center && map) {
-      map.setView(center); // Update the map's view when center changes
+    if (center) {
+      map.flyTo(center, zoomLevel || map.getZoom(), {
+        animate: true,
+        duration: 1.5,
+      });
     }
-  }, [center, map]);
+  }, [center, zoomLevel, map]);
 
   return null;
-} 
+}
+
 export default MapUpdater;
