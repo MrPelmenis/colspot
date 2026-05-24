@@ -92,8 +92,8 @@ function EditSpotWindow() {
       };
 
       // Alert and console log the categories and the updated spot data
-      alert(`Categories updated: ${selectedCategories.join(', ')}`);
-      console.log('Updated Spot Data:', updatedSpotData);
+      //alert(`Categories updated: ${selectedCategories.join(', ')}`);
+      //console.log('Updated Spot Data:', updatedSpotData);
 
       const jwtToken = localStorage.getItem('JWT');
 
