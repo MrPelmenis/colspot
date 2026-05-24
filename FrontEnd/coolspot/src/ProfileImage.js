@@ -29,7 +29,7 @@ const ProfileImage = ({ nickname }) => {
     const getImage =  async (nickname) => {
         if (nickname) {
             try {
-                const res = await fetch(`/api/get_profile_image?nickname=${nickname}`, {
+                const res = await fetch(`${window.websiteSetting.serverURL}/api/get_profile_image?nickname=${nickname}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

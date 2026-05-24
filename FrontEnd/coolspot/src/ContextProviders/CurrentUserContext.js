@@ -24,7 +24,7 @@ export const CurrentUserProvider = ({ children }) => {
         const email = decodedToken.email;
 
         //skatos kaads ir users
-        const res = await fetch('/api/update_profile', {
+        const res = await fetch(`${window.websiteSetting.serverURL}/api/update_profile`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

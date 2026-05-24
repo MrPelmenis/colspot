@@ -7,7 +7,7 @@ function SignInWindow() {
   const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
 
   const { email, nickname, visible } = windowStates.signInWindow;
-  const jwt = windowStates.signInWindow.jwt;
+  
 
   const [username, setUsername] = useState(windowStates.signInWindow.nickname);
   const [errorMessage, setErrorMessage] = useState(''); // State for error message
@@ -34,9 +34,10 @@ function SignInWindow() {
       return;
     }
 
-    const jwtToken = localStorage.getItem('JWT');
+    const jwtToken =  windowStates.signInWindow.jwt;
 
-    const res = await fetch('/api/users', {
+
+    const res = await fetch(`${window.websiteSetting.serverURL}/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ function SignInWindow() {
 
     //console.log(data);
 
-    localStorage.setItem('JWT', jwt);
+    localStorage.setItem('JWT', jwtToken);
     fetchUserData();
     updateWindowState('signInWindow', { email: '', nickname: '', visible: false, jwt: '' });
   };

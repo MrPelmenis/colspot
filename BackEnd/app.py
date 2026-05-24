@@ -79,7 +79,7 @@ def set_headers(response):
     response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"  # Allow resources from other origins
     response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"  # Allow cross-origin resources
     response.headers["Access-Control-Allow-Origin"] = "*"  # Allow any origin to access your API
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"  # Allow specific HTTP methods
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"  # Allow specific HTTP methods
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"  # Allow necessary headers
     return response
 

@@ -42,7 +42,7 @@ function DeleteSpotWindow() {
 
     try {
       // Perform the delete request
-      const response = await fetch(`/api/spots/${spotID}`, {
+      const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${spotID}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

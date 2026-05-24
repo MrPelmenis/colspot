@@ -39,7 +39,7 @@ function Comment({ comment }) {
 
     try {
       if (likedByUser) {
-        const response = await fetch(`/api/comments/${comment.id}/likes/${currentUser.userID}`, {
+        const response = await fetch(`${window.websiteSetting.serverURL}/api/comments/${comment.id}/likes/${currentUser.userID}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ function Comment({ comment }) {
           console.error('Failed to unlike the comment');
         }
       } else {
-        const response = await fetch(`/api/comments/${comment.id}/likes`, {
+        const response = await fetch(`${window.websiteSetting.serverURL}/api/comments/${comment.id}/likes`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ function Comment({ comment }) {
     const jwtToken = localStorage.getItem('JWT');
 
     // Make the PATCH request to update the comment on the server
-    fetch(`/api/spots/${comment.id}/comment`, {
+    fetch(`${window.websiteSetting.serverURL}/api/spots/${comment.id}/comment`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

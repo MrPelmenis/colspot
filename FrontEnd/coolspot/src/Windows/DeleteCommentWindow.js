@@ -40,7 +40,7 @@ function DeleteCommentWindow() {
     const jwtToken = localStorage.getItem('JWT');
 
     try {
-      const response = await fetch(`http://localhost:5000/api/spots/${windowStates.deleteCommentWindow.commentID}/comment`, {
+      const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${windowStates.deleteCommentWindow.commentID}/comment`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

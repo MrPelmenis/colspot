@@ -111,7 +111,7 @@ function AddSpotWindow() {
       const jwtToken = localStorage.getItem('JWT');
   
       // Send the data to the server
-      const response = await fetch('http://localhost:5000/api/spots', {
+      const response = await fetch(`${window.websiteSetting.serverURL}/api/spots`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ function CommentListWindow() {
     const jwtToken = localStorage.getItem('JWT');
 
     try {
-      const response = await fetch(`../api/spots/${commentSpotID}/comment`, {
+      const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${commentSpotID}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

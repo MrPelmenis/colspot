@@ -107,7 +107,9 @@ function ProfileWindow() {
 
         const jwtToken = localStorage.getItem('JWT');
 
-        const res = await fetch('/api/users', {
+        //console.log("jwt prof:", jwtToken);
+
+        const res = await fetch(`${window.websiteSetting.serverURL}/api/users`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -115,6 +117,7 @@ function ProfileWindow() {
             },
             body: JSON.stringify({ nickname: newUsername, description, email: currentUser.email, profile_pic: profilePicSrc }),
         });
+
 
         if (!res.ok) {
             throw new Error('Failed to update profile');

@@ -26,7 +26,7 @@ export async function fetchSpecial(request, variables, isUserAnonymus = false) {
         body: formData,
     };
 
-    let res = await fetch(`${window.websiteSetting.SERVER_URL}?${argument}=${request}`, options);
+    let res = await fetch(`${window.websiteSetting.serverURL}?${argument}=${request}`, options);
     let finalResult = await res.json();
     
     return finalResult;

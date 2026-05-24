@@ -9,7 +9,7 @@ export const CommentProvider = ({ children }) => {
 
   const fetchComment = async (spotID) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/spots/${spotID}/comments`);
+      const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${spotID}/comments`);
       if (!response.ok) {
         throw new Error('Failed to fetch comments');
       }

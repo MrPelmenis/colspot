@@ -39,7 +39,7 @@ function Header() {
     setUserEmail(email);
     //localStorage.setItem("JWT", jwtToken);
 
-    const res = await fetch('/api/check_user', {
+    const res = await fetch(`${window.websiteSetting.serverURL}/api/check_user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

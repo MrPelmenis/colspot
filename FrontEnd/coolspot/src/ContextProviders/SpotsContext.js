@@ -10,7 +10,7 @@ export const SpotsProvider = ({ children }) => {
 
   const fetchSpots = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/spots');
+      const response = await fetch( `${window.websiteSetting.serverURL}/api/spots`);
       const data = await response.json();
       //console.log("spots:", data);
       setSpots(data);

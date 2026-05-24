@@ -42,7 +42,7 @@ function DeleteProfileWindow() {
     const jwtToken = localStorage.getItem('JWT');
 
     try {
-      const res = await fetch('/api/users/' + currentUser.userID, {
+      const res = await fetch(`${window.websiteSetting.serverURL}/api/users/` + currentUser.userID, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

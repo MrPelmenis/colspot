@@ -119,7 +119,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   };
 
   const handleLikeClick = async () => {
-    const url = `http://localhost:5000/api/spots/${spot.Id}/likes`;
+    const url = `${window.websiteSetting.serverURL}/api/spots/${spot.Id}/likes`;
 
     const jwtToken = localStorage.getItem('JWT');
 
