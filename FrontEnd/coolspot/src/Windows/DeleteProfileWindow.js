@@ -63,6 +63,7 @@ function DeleteProfileWindow() {
       //lai paradas ka deletotam uuserim ir sis spots :D
       fetchSpots();
 
+
     } catch (error) {
       console.error('Error deleting profile:', error);
       setErrorMessage('An error occurred while deleting your profile.');

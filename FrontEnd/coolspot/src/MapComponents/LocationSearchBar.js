@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { FaLocationArrow } from 'react-icons/fa';
 
+
+import { FaMapMarkerAlt } from 'react-icons/fa';
 function LocationSearchBar({ onLocate, onSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -97,10 +99,11 @@ function LocationSearchBar({ onLocate, onSearch }) {
 
       <button
         onClick={handleLocateMe}
-        className="bg-gray-800 text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-700 transition-all flex items-center justify-center"
+        className="bg-gray-800 text-white px-4 py-3 rounded-md shadow-md hover:bg-gray-700 transition-all flex items-center justify-center ml-2"
         style={{ height: '100%' }}
+        title="Locate Me"
       >
-        <FaLocationArrow />
+        <FaMapMarkerAlt />
       </button>
     </div>
   );

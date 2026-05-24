@@ -16,8 +16,8 @@ import EditSpotWindow from './Windows/EditSpotWindow.js';
 import { CommentProvider } from './ContextProviders/CommentProvider.js';
 import CommentListWindow from './Windows/CommentListWindow.js';
 import DeleteCommentWindow from "./Windows/DeleteCommentWindow.js";
-
 import ViewSpotWindow from './Windows/ViewSpotWindow.js';
+import MapProvider from './ContextProviders/MapContext.js';
 
 function App() {
   return (
@@ -25,6 +25,7 @@ function App() {
       <WindowProvider>
         <SpotsProvider> 
           <CommentProvider>
+            <MapProvider>
             <div className="flex flex-col items-center bg-gray-800 min-h-screen">
               <SignInWindow />
               <ProfileWindow />
@@ -43,6 +44,7 @@ function App() {
               </div>
               <Footer />
             </div>
+            </MapProvider>
           </CommentProvider>
         </SpotsProvider>
       </WindowProvider>

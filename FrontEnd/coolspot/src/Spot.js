@@ -9,6 +9,10 @@ import Category from './Category.js';
 
 import { SpotsContext } from './ContextProviders/SpotsContext';
 
+import { MapContext, MapProvider } from './ContextProviders/MapContext.js';
+
+import { FaMapMarkerAlt } from 'react-icons/fa';
+
 function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [expanded, setExpanded] = useState(isThisSpotSelected);
   const [isShrinking, setIsShrinking] = useState(false);
@@ -16,6 +20,8 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const { currentUser } = useContext(CurrentUserContext);
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+  const { mapCoords, updateMapCoords } = useContext(MapContext);
 
   const {selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
@@ -51,6 +57,23 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
       setLiked(false);  
     }
   }, [spot.liked_by, currentUser.userID]);
+
+  const handleFindOnMap = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'auto'
+      });
+    }, 1500);
+    let coords = spot.Geolocation.split(",");
+    let lat = JSON.parse(coords[0]);
+    let lng = JSON.parse(coords[1]);
+    updateMapCoords({ lat: lat, lng: lng });
+  };
 
   const startShrinking = () => {
     setIsShrinking(true);
@@ -235,6 +258,14 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
           ))}
         </div>
       </div>
+
+      <p
+        className={` mt-2 cursor-pointer items-center flex transition-opacity duration-500 ease-in-out hover:underline text-left 
+          ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+        onClick={handleFindOnMap}
+      >
+       <FaMapMarkerAlt /> <span className='text-blue pl-1'>Find On Map</span> 
+      </p>
 
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}

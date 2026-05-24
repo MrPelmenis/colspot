@@ -24,6 +24,7 @@ function AddSpotWindow() {
       setDescription('');
       setImages([]);
       setErrorMessage('');
+      setSelectedCategories([]);
     }
   }, [visible]);
 
@@ -163,10 +164,10 @@ function AddSpotWindow() {
         <input
           type="text"
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1"
-          placeholder="Spot Name (Max 60 characters)"
+          placeholder="Spot Name"
           value={spotName}
           onChange={(e) => {
-            if (e.target.value.length <= 60) {
+            if (e.target.value.length <= 30) {
               setSpotName(e.target.value); setErrorMessage('');
             }
           }}
@@ -174,7 +175,7 @@ function AddSpotWindow() {
 
         <textarea
           className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-4"
-          placeholder="Spot Description (Max 250 characters)"
+          placeholder="Spot Description"
           value={description}
           onChange={(e) => {
             if (e.target.value.length <= 250) {

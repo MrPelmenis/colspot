@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef} from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,6 +7,8 @@ import AddSpotWindow from '../Windows/AddSpotWindow';
 
 import streetViewIMG from '../images/street-view.png';
 import sateliteViewIMG from '../images/satelite-view.png';
+import { FaPlus, FaMapMarkerAlt } from 'react-icons/fa';
+
 
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
@@ -14,6 +16,8 @@ import { ExtraFunctions } from '../ExtraFunctions';
 
 import LocationSearchBar from './LocationSearchBar';
 import MapUpdater from './MapUpdater';
+
+import { MapContext } from '../ContextProviders/MapContext';
 
 const customIcon = new L.Icon({
   iconUrl: '/images/map_marker.png',
@@ -38,7 +42,7 @@ function MapDiv() {
   const [markersSpotInfo, setMarkers] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const { windowStates, updateWindowState } = useContext(WindowContext);
-  const [buttonMessage, setButtonMessage] = useState('Click to add the spot');
+  const [buttonMessage, setButtonMessage] = useState('Add Your Spot');
   const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
   const { currentUser } = useContext(CurrentUserContext);
   const [mapView, setMapView] = useState('satellite');
@@ -49,6 +53,13 @@ function MapDiv() {
 
   const mapRef = useRef(null);
 
+  const { mapCoords, updateMapCoords } = useContext(MapContext);
+
+  useEffect(() => {
+    if (mapCoords.lat && mapCoords.lng) {
+      setMapCenter([mapCoords.lat, mapCoords.lng]);
+    }
+  }, [mapCoords]);
 
   useEffect(() => {
     setMarkers(spots);
@@ -66,7 +77,7 @@ function MapDiv() {
   const toggleAddMarkerMode = () => {
     if (isLoggedIn) {
       setIsAdding(!isAdding);
-      setButtonMessage(isAdding ? 'Click to add the spot' : 'Click on spot location');
+      setButtonMessage(isAdding ? 'Add Your Spot' : 'Click On Spot Location');
     }
   };
 
@@ -74,7 +85,7 @@ function MapDiv() {
     if (!isLoggedIn) {
       return 'You must be logged in to add spots';
     }
-    return isAdding ? buttonMessage : 'Click to add the spot';
+    return isAdding ? buttonMessage : 'Add Your Spot';
   };
 
   const toggleMapView = (viewType) => {
