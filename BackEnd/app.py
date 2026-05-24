@@ -329,7 +329,7 @@ def add_spot():
     data = request.json
     name = data.get('spotName')
     description = data.get('Description')
-    geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}"
+    geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
     email = data.get('userEmail')
     user = get_user_info_by_email(email)
     user_id = user["id"]
@@ -344,6 +344,8 @@ def add_spot():
                    (name, description, geolocation, user_id, timestamp))
     spot_id = cursor.lastrowid
     db.commit()
+
+    
 
     for tag in categories:
         cursor.execute("SELECT id FROM tags WHERE tag_name = ?", (tag, ))
@@ -392,16 +394,27 @@ def update_spot(spot_id):
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
     images = data.get('images')  # Assuming images are optional
     timestamp = datetime.now().isoformat()
+    categories = data.get('categories')
 
     db = get_db()
     cursor = db.cursor()
 
-    # Update the main spot fields
+
     cursor.execute("""
         UPDATE spots
         SET Name = ?, Description = ?, Geolocation = ?, timestamp = ?
         WHERE id = ?
     """, (name, description, geolocation, timestamp, spot_id))
+
+    cursor.execute("DELETE from spot_tags WHERE spot_id = ?", ( spot_id,))
+
+    for tag in categories:
+        cursor.execute("SELECT id FROM tags WHERE tag_name = ?", (tag, ))
+        tag_id = cursor.fetchone()[0]
+
+        cursor.execute("INSERT INTO spot_tags (spot_id, tag_id) VALUES (?, ?)", (spot_id, tag_id, ))
+    db.commit()
+
 
     # Handle images update if new images are provided
     if images:
