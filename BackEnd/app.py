@@ -3,34 +3,66 @@ from authlib.integrations.flask_client import OAuth
 import sqlite3
 from datetime import datetime
 from flask_cors import CORS
+# from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from functools import wraps
+
+
+CLIENT_ID = '304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com'
 
 import os
 import base64
 
 DATABASE = "main_db.db"
+UPLOAD_FOLDER = 'uploads/spot_images/'
 app = Flask(__name__, static_folder='../Frontend/coolspot/build')
-app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
+# app.config['SECRET_KEY'] = 'your_strong_secret_key'
+# app.config["JWT_SECRET_KEY"] = 'your_jwt_secret_key'
+# app.config['JWT_TOKEN_LOCATION'] = ['headers']
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# jwt = JWTManager(app)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-
-UPLOAD_FOLDER = 'uploads/spot_images/'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
 # OAuth setup
-oauth = OAuth(app)
-google = oauth.register(
-    name='google',
-    client_id="304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com",
-    client_secret="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",
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    client_kwargs={'scope': 'email profile'},
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
-)
+# oauth = OAuth(app)
+# google = oauth.register(
+#     name='google',
+#     client_id="304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com",
+#     client_secret="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",
+#     authorize_url='https://accounts.google.com/o/oauth2/auth',
+#     access_token_url='https://accounts.google.com/o/oauth2/token',
+#     client_kwargs={'scope': 'email profile'},
+#     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+# )
+
+
+def google_oauth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            print("Missing Authorization Header")
+            return jsonify({"message": "Missing Authorization Header"}), 401
+
+        token = auth_header.split("Bearer ")[-1]
+        # print(token)
+        try:
+            # Verify the ID token with Google
+            id_info = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+            # Store the user info in g or a session
+            request.user = id_info
+        except ValueError:
+            # Invalid token
+            print("Invalid token")
+            return jsonify({"message": "Invalid token"}), 401
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
 
 
 def get_db():
@@ -73,6 +105,7 @@ def serve_config():
 
 #USER
 @app.route('/api/users', methods=["POST"])
+@google_oauth_required
 def create_user():
     data = request.json
     # print(data)
@@ -97,6 +130,7 @@ def create_user():
     # return jsonify({"message": "User created succesfully ", "user": user}), 200 
 
 @app.route('/api/users', methods=['PATCH'])
+@google_oauth_required
 def change():
     data = request.get_json()  
     if not data:
@@ -132,6 +166,7 @@ def change():
     return jsonify({"message": "Profile updated successfully"}), 200  
 
 @app.route('/api/update_profile', methods=['POST'])
+@google_oauth_required
 def send():
     data = request.get_json() 
     email = data["email"]
@@ -224,6 +259,7 @@ def get_profile_image():
             return jsonify({"error": "Default image not found"}), 500
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@google_oauth_required
 def delete_user(user_id):
 
     db = get_db()
@@ -263,9 +299,13 @@ def get_user_info_by_id(user_id):
     conn.commit()
     return user
 
+
+
 #SPOTS
 @app.route('/api/spots', methods=['GET'])
+#@jwt_required()
 def get_spots():
+    
     db = get_db()
     cursor = db.cursor()
     # Fetch all spots
@@ -283,6 +323,7 @@ def get_spots():
 
         
         # Convert image files to Base64 and store them in a list
+        # try:
         base64_images = []
         for image in images:
             image_path = image["file_path"]
@@ -295,7 +336,10 @@ def get_spots():
                     base64_image = f"data:image/{mime_type};base64,{encoded_image}"
                     base64_images.append(base64_image)
             except FileNotFoundError:
-                print(f"Image file {image_path} not found.")
+                pass
+                #print(f"Image file {image_path} not found.")
+        # except TypeError: #if there is no photo
+        #     pass
 
         cursor.execute("SELECT user_id FROM spot_likes WHERE spot_id = ?", (spot["id"],))
         likes = cursor.fetchall()
@@ -325,8 +369,10 @@ def get_spots():
     return jsonify(spots_list)
 
 @app.route('/api/spots', methods=['POST'])
+@google_oauth_required
 def add_spot():
     data = request.json
+    
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
@@ -354,18 +400,21 @@ def add_spot():
         cursor.execute("INSERT INTO spot_tags (spot_id, tag_id) VALUES (?, ?)", (spot_id, tag_id, ))
     db.commit()
     
+    try:
+        image_paths = []
+        for index, base64_image in enumerate(images):
+            image_path = save_base64_image(base64_image, spot_id, index)
+            image_paths.append(image_path)
+            cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
 
-    image_paths = []
-    for index, base64_image in enumerate(images):
-        image_path = save_base64_image(base64_image, spot_id, index)
-        image_paths.append(image_path)
-        cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
-
-    db.commit()
+        db.commit()
+    except TypeError:  #if there is no photo
+        pass
 
     return jsonify({'message': 'Spot added successfully!'}), 201
 
 @app.route('/api/spots/<int:spot_id>', methods=['DELETE'])
+@google_oauth_required
 def delete_spot(spot_id):
     db = get_db()
     cursor = db.cursor()
@@ -387,6 +436,7 @@ def delete_spot(spot_id):
     return jsonify({"message": "Spot and associated images deleted successfully."}), 200
 
 @app.route('/api/spots/<int:spot_id>', methods=['PUT'])
+@google_oauth_required
 def update_spot(spot_id):
     data = request.json
     name = data.get('spotName')
@@ -434,6 +484,7 @@ def update_spot(spot_id):
 
 #LIKES SPOTS
 @app.route('/api/spots/<int:spot_id>/likes', methods=['POST'])
+@google_oauth_required
 def add_like(spot_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -464,6 +515,7 @@ def add_like(spot_id):
     return "", 201
 
 @app.route('/api/spots/<int:spot_id>/likes/<int:user_id>', methods=['DELETE']) 
+@google_oauth_required
 def delete_like(spot_id, user_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -491,6 +543,7 @@ def delete_like(spot_id, user_id):
 
 #COMMENTS
 @app.route('/api/spots/<int:spot_id>/comment', methods=['POST'])
+@google_oauth_required
 def add_comment(spot_id):
     db = get_db()
     cursor = db.cursor()
@@ -548,6 +601,7 @@ def get_comments(spot_id):
     return jsonify(comments_list)
 
 @app.route('/api/spots/<int:comment_id>/comment', methods=['DELETE'])
+@google_oauth_required
 def delete_comment(comment_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -561,6 +615,7 @@ def delete_comment(comment_id):
         return jsonify({"error": "Comment not found"}), 404
 
 @app.route('/api/spots/<int:comment_id>/comment', methods=['PATCH'])
+@google_oauth_required
 def update_comment(comment_id):
     db = get_db()
     cursor = db.cursor()
@@ -586,6 +641,7 @@ def update_comment(comment_id):
 
 #LIKES COMMENTS
 @app.route('/api/comments/<int:comment_id>/likes', methods=['POST'])
+@google_oauth_required
 def add_like_to_comment(comment_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -615,6 +671,7 @@ def add_like_to_comment(comment_id):
     return "", 201
 
 @app.route('/api/comments/<int:comment_id>/likes/<int:user_id>', methods=['DELETE']) 
+@google_oauth_required
 def delete_like_from_comment(comment_id, user_id):
     conn = get_db()
     cursor = conn.cursor()

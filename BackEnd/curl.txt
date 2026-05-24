@@ -1,0 +1,1 @@
+curl -X POST http://localhost:5000/api/spots -H "Content-Type: application/json" -d "{\"spotName\":\"Sunny Beach\",\"Description\":\"A nice sunny beach to relax.\",\"Geolocation\":{\"lat\":34.052235,\"lng\":-118.243683},\"userEmail\":\"deleted@domain.com\",\"categories\":[\"Romantic\",\"Scenic\"]}"
