@@ -1,49 +1,34 @@
 import React from 'react';
-import { FaRegSmile, FaUsers, FaExclamationTriangle, FaMountain, FaDollarSign, FaHistory, FaUtensils, FaGem, FaTree, FaCocktail, FaDog, FaChild, FaPaintBrush, FaHeart } from 'react-icons/fa';
 
-const categoryStyles = {
-  Chill: { color: 'lightblue', icon: <FaRegSmile /> },
-  Socializing: { color: 'yellow', icon: <FaUsers /> },
-  Dangerous: { color: 'red', icon: <FaExclamationTriangle /> },
-  Scenic: { color: 'green', icon: <FaMountain /> },
-  'Pay': { color: 'gray', icon: <FaDollarSign /> },
-  Historical: { color: 'brown', icon: <FaHistory /> },
-  Foodie: { color: 'orange', icon: <FaUtensils /> },
-  'Hidden Gem': { color: 'purple', icon: <FaGem /> },
-  'Outdoor Activities': { color: 'teal', icon: <FaTree /> },
-  Nightlife: { color: 'midnightblue', icon: <FaCocktail /> },
-  'Pet-Friendly': { color: 'lightgreen', icon: <FaDog /> },
-  'Family-Friendly': { color: 'lightyellow', icon: <FaChild /> },
-  Artistic: { color: 'turquoise', icon: <FaPaintBrush /> },
-  Romantic: { color: 'pink', icon: <FaHeart /> }
-};
+const categories = [
+  'Chill',
+  'Socializing',
+  'Dangerous',
+  'Scenic',
+  'Pay',
+  'Historical',
+  'Foodie',
+  'Hidden Gem',
+  'Outdoor Activities',
+  'Nightlife',
+  'Pet-Friendly',
+  'Family-Friendly',
+  'Artistic',
+  'Romantic',
+];
 
 const Category = ({ name, isVisible }) => {
-  const { color, icon } = categoryStyles[name] || { color: 'lightgray', icon: null };
-
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: color,
-        color: 'white',
-        padding: '5px 10px',
-        borderRadius: '15px',
-        width: '100px',
-        height: '30px',
-        fontWeight: 'bold',
-        fontSize: '14px',
-      }}
-      className={`transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`flex items-end justify-center border-b-2 border-black 
+                  pb-[2px] px-[2px] text-sm font-bold text-black 
+                  leading-none cursor-pointer 
+                  transition-opacity duration-500 hover:text-gray-600
+                  ${isVisible ? 'opacity-100' : 'opacity-0'}`}
     >
-      <span>{name}</span>
-      <span style={{ marginLeft: '5px' }}>{icon}</span>
+      {name}
     </div>
   );
 };
 
 export default Category;
-
-

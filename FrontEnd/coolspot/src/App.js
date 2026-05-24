@@ -17,6 +17,8 @@ import { CommentProvider } from './ContextProviders/CommentProvider.js';
 import CommentListWindow from './Windows/CommentListWindow.js';
 import DeleteCommentWindow from "./Windows/DeleteCommentWindow.js";
 
+import ViewSpotWindow from './Windows/ViewSpotWindow.js';
+
 function App() {
   return (
     <CurrentUserProvider>
@@ -32,6 +34,7 @@ function App() {
               <EditSpotWindow />
               <CommentListWindow />
               <DeleteCommentWindow />
+              <ViewSpotWindow />
 
               <Header />
               <div className="flex flex-col gap-8 my-8">

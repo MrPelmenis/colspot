@@ -82,8 +82,7 @@ function MapDiv() {
   };
 
   const handleViewSpot = async(spotId) => {
-    await fetchSpots();
-    setSelectedSpotID(spotId);
+    updateWindowState('viewSpotWindow', { visible: true, spotId: spotId });
   };
 
   // Scroll to the selected spot when the selectedSpotID changes
@@ -219,13 +218,13 @@ function MapDiv() {
           <img
             src={streetViewIMG}
             alt="Street View"
-            className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-gray-300 hover:border-gray-400 transition-all"
+            className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-black hover:border-2 transition-all"
             onClick={() => toggleMapView('street')}
           />
           <img
             src={sateliteViewIMG}
             alt="Satellite View"
-            className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-gray-300 hover:border-gray-400 transition-all"
+            className="w-12 h-12 cursor-pointer bg-white rounded-lg shadow-lg border border-white hover:border-2 hover:border-white transition-all"
             onClick={() => toggleMapView('satellite')}
           />
         </div>

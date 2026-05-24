@@ -12,7 +12,8 @@ export const WindowProvider = ({ children }) => {
     deleteSpot: {spotID:"", visible:false},
     editSpotWindow: {visible:false, spotToEdit: null},
     addSpotWindow:{ visible:false, nickname:"", email:"", geoLocation:""},
-    deleteCommentWindow:{visible:false, commentID: null}
+    deleteCommentWindow:{visible:false, commentID: null},
+    viewSpotWindow:{visible:false, spot:null},
   });
 
   const updateWindowState = (windowName, newState) => {
