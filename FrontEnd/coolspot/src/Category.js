@@ -36,7 +36,7 @@ const Category = ({ name, isVisible }) => {
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-2 rounded-md border 
+      className={`flex items-center gap-2 px-4 py-2 select-none rounded-md border 
                   border-gray-300 shadow-sm hover:shadow-lg 
                   transition-all duration-300 cursor-pointer 
                   text-gray-800 bg-white hover:bg-gray-50 

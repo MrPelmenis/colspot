@@ -18,7 +18,7 @@ function EditSpotWindow() {
 
   useEffect(() => {
     if (visible && spotToEdit) {
-      console.log("spot to edit:", spotToEdit.categories);
+      //console.log("spot to edit:", spotToEdit.categories);
       setSpotName(spotToEdit.Name);
       setDescription(spotToEdit.Description);
       setImages(spotToEdit.Images || []);

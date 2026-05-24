@@ -2,9 +2,13 @@ import React, { useContext, useState, useEffect } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 
+
+import { SpotsContext } from '../ContextProviders/SpotsContext';
 function DeleteProfileWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
   const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
+
+  const { fetchSpots } = useContext(SpotsContext);
 
   const { visible, nickname } = windowStates.deleteProfile;
   const [confirmationText, setConfirmationText] = useState('');
@@ -55,6 +59,9 @@ function DeleteProfileWindow() {
       localStorage.removeItem('JWT');
       updateWindowState('deleteProfile', { visible: false });
       updateWindowState('profileWindow', { visible: false });
+      
+      //lai paradas ka deletotam uuserim ir sis spots :D
+      fetchSpots();
 
     } catch (error) {
       console.error('Error deleting profile:', error);

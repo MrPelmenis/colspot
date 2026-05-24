@@ -33,15 +33,27 @@ function AddSpotWindow() {
   };
 
   const handleImageChange = (e) => {
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     const files = Array.from(e.target.files);
+  
+    // Validate file types
+    for (const file of files) {
+      if (!validImageTypes.includes(file.type)) {
+        setErrorMessage('You can only upload images (JPEG, JPG, PNG).');
+        return;
+      }
+    }
+  
+    // Check file limit
     if (images.length + files.length > 3) {
       setErrorMessage('You can upload a maximum of 3 images.');
       return;
     }
+  
     setImages((prevImages) => [...prevImages, ...files]);
     setErrorMessage('');
   };
-
+  
   const handleRemoveImage = (index) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
@@ -92,8 +104,8 @@ function AddSpotWindow() {
       };
   
       // Alert and console log the categories
-      alert(`Categories added: ${selectedCategories.join(', ')}`);
-      console.log('jsonData:', jsonData);
+      //alert(`Categories added: ${selectedCategories.join(', ')}`);
+      //console.log('jsonData:', jsonData);
 
       const jwtToken = localStorage.getItem('JWT');
   

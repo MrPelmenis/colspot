@@ -56,7 +56,7 @@ function SignInWindow() {
       return;
     }
 
-    console.log(data);
+    //console.log(data);
 
     localStorage.setItem('JWT', jwt);
     fetchUserData();

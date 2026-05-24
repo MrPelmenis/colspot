@@ -53,8 +53,8 @@ function Header() {
     }
 
     const data = await res.json();
-    console.log("tas kas no servera atnak:");
-    console.log(data.user);
+    //console.log("tas kas no servera atnak:");
+    //console.log(data.user);
     
 
     if(data.message == "User exists"){

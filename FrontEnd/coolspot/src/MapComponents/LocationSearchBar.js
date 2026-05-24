@@ -18,7 +18,7 @@ function LocationSearchBar({ onLocate, onSearch }) {
         }
       );
     } else {
-      console.log('Geolocation is not supported by this browser.');
+      //('Geolocation is not supported by this browser.');
     }
   };
 
