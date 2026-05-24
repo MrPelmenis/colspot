@@ -55,7 +55,8 @@ function DeleteSpotWindow() {
         setErrorMessage(errorData.message || 'Failed to delete the spot.');
         return;
       }
-  
+      
+      updateWindowState('viewSpotWindow', { visible: false });
       updateWindowState('deleteSpot', { visible: false, spotID: null });
       fetchSpots();
 

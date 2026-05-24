@@ -113,7 +113,7 @@ function EditSpotWindow() {
 
       const result = await response.json();
       console.log(result.message);
-
+      updateWindowState('viewSpotWindow', { visible: false });
       fetchSpots();  // Re-fetch the updated spots list
       onClose();     // Close the modal
       

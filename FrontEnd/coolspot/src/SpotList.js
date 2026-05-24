@@ -76,12 +76,6 @@ function SpotList() {
 
   return (
     <div className="w-[100vw] sm:w-[90vw] md:w-[80vw] lg:w-[60vw] mx-auto p-6">
-      {selectedSpot && (
-        <div className="mb-4">
-          <Spot key={selectedSpot.Id} spot={selectedSpot} isThisSpotSelected={true} />
-        </div>
-      )}
-
       {/* Spot Menu */}
       <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300 space-y-4 sm:space-y-0">
         <div className="text-gray-700 font-semibold text-lg flex-grow">

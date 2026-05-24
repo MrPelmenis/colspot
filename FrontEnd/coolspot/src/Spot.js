@@ -9,7 +9,7 @@ import Category from './Category.js';
 
 import { SpotsContext } from './ContextProviders/SpotsContext';
 
-function Spot({ spot, isThisSpotSelected }) {
+function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [expanded, setExpanded] = useState(isThisSpotSelected);
   const [isShrinking, setIsShrinking] = useState(false);
   const spotRef = useRef(null);
@@ -136,6 +136,9 @@ function Spot({ spot, isThisSpotSelected }) {
 
 
   const handleCloseSpot = () => { 
+    if(isThisSpotSelected && closeWindow){
+      closeWindow();
+    }
     if(isThisSpotSelected){
       setSelectedSpotID(null);
     }else{
@@ -147,9 +150,8 @@ function Spot({ spot, isThisSpotSelected }) {
     <div
       id={"spot-" + spot.Id}
       ref={spotRef}
-      className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md mb-4 p-4 transition-all duration-500 ease-in-out cursor-pointer
-        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} 
-        ${isThisSpotSelected ? 'border-4 border-gray-600 rounded-xl bg-blue-50' : 'hover:bg-gray-200'}`}  // Add this line for selected spot styling
+      className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md p-4 transition-all duration-500 ease-in-out cursor-pointer
+        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} ${!isThisSpotSelected ? "mb-4" : ""} `}
       onClick={handleSpotClick}
     >
       <button

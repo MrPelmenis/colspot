@@ -82,11 +82,13 @@ function MapDiv() {
   };
 
   const handleViewSpot = async(spotId) => {
-    updateWindowState('viewSpotWindow', { visible: true, spotId: spotId });
+    //console.log("izvelejos spotu spotId: ", spotId);
+    setSelectedSpotID(spotId);
+    updateWindowState('viewSpotWindow', { visible: true });
   };
 
   // Scroll to the selected spot when the selectedSpotID changes
-  useEffect(() => {
+  /*useEffect(() => {
     if (selectedSpotID) {
       const element = document.getElementById('spot-' + selectedSpotID);
       if (element) {
@@ -99,7 +101,7 @@ function MapDiv() {
         }, 100);
       }
     }
-  }, [selectedSpotID]);
+  }, [selectedSpotID]);*/
 
   const handleLocate = (latitude, longitude) => {
     setMapCenter([latitude, longitude]);
@@ -107,9 +109,9 @@ function MapDiv() {
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
-    console.log(name, lat, lng, zoom);
+    console.log("name, ", name, " zoom: ", zoom);
     setMapCenter([lat, lng]);
-    setZoomLevel(zoomLevel); 
+    setZoomLevel(zoom); 
   };
 
 

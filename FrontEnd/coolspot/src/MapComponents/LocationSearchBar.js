@@ -56,11 +56,11 @@ function LocationSearchBar({ onLocate, onSearch }) {
     const lngDiff = Math.abs(bounds.northeast.lng - bounds.southwest.lng);
     const maxDiff = Math.max(latDiff, lngDiff);
 
-    if (maxDiff > 30) return 5;
-    if (maxDiff > 15) return 6;
-    if (maxDiff > 5) return 7;
-    if (maxDiff > 2) return 8;
-    if (maxDiff > 0.5) return 9;
+    if (maxDiff > 30) return 3;
+    if (maxDiff > 15) return 5;
+    if (maxDiff > 5) return 6;
+    if (maxDiff > 2) return 9;
+    if (maxDiff > 0.5) return 10;
     return 12;
   };
 
