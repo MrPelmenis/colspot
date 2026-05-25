@@ -17,28 +17,13 @@ import base64
 DATABASE = "main_db.db"
 UPLOAD_FOLDER = 'uploads/spot_images/'
 app = Flask(__name__, static_folder='../Frontend/coolspot/build')
-print(app.static_folder)
 # app.config['SECRET_KEY'] = 'your_strong_secret_key'
 # app.config["JWT_SECRET_KEY"] = 'your_jwt_secret_key'
 # app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# jwt = JWTManager(app)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# OAuth setup
-# oauth = OAuth(app)
-# google = oauth.register(
-#     name='google',
-#     client_id="304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com",
-#     client_secret="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",
-#     authorize_url='https://accounts.google.com/o/oauth2/auth',
-#     access_token_url='https://accounts.google.com/o/oauth2/token',
-#     client_kwargs={'scope': 'email profile'},
-#     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
-# )
-
 
 def google_oauth_required(f):
     @wraps(f)
@@ -110,9 +95,8 @@ def serve_config():
 @google_oauth_required
 def create_user():
     data = request.json
-    # print(data)
-    email = data.get('email')
-    nickname = data.get('nickname')
+    email = data.get('email').strip()
+    nickname = data.get('nickname').strip()
 
     conn = get_db()
     cursor = conn.cursor()
@@ -138,9 +122,9 @@ def change():
     if not data:
         return jsonify({"error": "No data provided"}), 400  
     
-    nickname = data.get("nickname") 
+    nickname = data.get("nickname").strip()
     description = data.get("description")  
-    email = data.get("email")
+    email = data.get("email").strip()
     profile_pic = data.get("profile_pic")
 
     conn = get_db()  
@@ -192,8 +176,8 @@ def send():
 @app.route('/api/check_user', methods=['POST'])
 def check_user():
     data = request.json
-    nickname = data.get('nickname')
-    email = data.get('email')
+    nickname = data.get('nickname').strip()
+    email = data.get('email').strip()
 
     conn = get_db()
     cursor = conn.cursor()
@@ -236,29 +220,30 @@ def save_base64_image(base64_image, spot_id, index):
 
 @app.route('/api/get_profile_image', methods=['GET'])
 def get_profile_image():
-    nickname = request.args.get('nickname') 
-
+    nickname = request.args.get('nickname').strip()
     if not nickname:
         return jsonify({"error": "Nickname is required"}), 400
 
     conn = get_db()
     cursor = conn.cursor()
-
-    cursor.execute("SELECT profile_pic FROM users WHERE nickname = ?", (nickname,))
+    cursor.execute("SELECT * FROM users WHERE nickname = ?", (nickname,))
     user = cursor.fetchone()
+    conn.commit()
 
-    if user and user[0]:
-        return jsonify({"profile_pic": user[0]}), 200 
+    cursor.execute("SELECT * FROM users WHERE nickname = 'Maximilian '")
+    answer = cursor.fetchone()
+    if user:
+        return jsonify({"profile_pic": user["profile_pic"]}), 200 
     else:
-        default_image_path = "DefaultProfilePic.png"
-        if os.path.exists(default_image_path):
-            with open(default_image_path, "rb") as image_file:
-                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                # print("encoded data:")
-                # print(encoded_string)
-                return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
-        else:
-            return jsonify({"error": "Default image not found"}), 500
+        # default_image_path = "DefaultProfilePic.png"
+        # if os.path.exists(default_image_path):
+        #     with open(default_image_path, "rb") as image_file:
+        #         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        #         # print("encoded data:")
+        #         # print(encoded_string)
+        #         return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
+        # else:
+        return jsonify({"error": "Default image not found"}), 500
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
 @google_oauth_required
@@ -272,7 +257,6 @@ def delete_user(user_id):
     if user:
         user_id = user['id']
 
-        # Reassign related records to the "deleted" user
         cursor.execute("UPDATE spots SET user_id = 0 WHERE user_id = ?", (user_id,))
         cursor.execute("UPDATE comments SET user_id = 0 WHERE user_id = ?", (user_id,))
         db.commit()
@@ -302,15 +286,12 @@ def get_user_info_by_id(user_id):
     return user
 
 
-
 #SPOTS
 @app.route('/api/spots', methods=['GET'])
-#@jwt_required()
 def get_spots():
     
     db = get_db()
     cursor = db.cursor()
-    # Fetch all spots
     cursor.execute("SELECT * FROM spots")
     spots = cursor.fetchall()
     
@@ -410,7 +391,7 @@ def add_spot():
             cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
 
         db.commit()
-    except TypeError:  #if there is no photo
+    except TypeError:  
         pass
 
     return jsonify({'message': 'Spot added successfully!'}), 201
@@ -424,16 +405,13 @@ def delete_spot(spot_id):
     cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot_id,))
     images = cursor.fetchall()
 
-    cursor.execute("DELETE FROM comments WHERE spot_id = ?", (spot_id, ))
-    db.commit()
-
     cursor.execute("DELETE FROM spots WHERE id = ?", (spot_id,))
     db.commit()
 
     for image in images:
         file_path = image['file_path']
         if os.path.exists(file_path):
-            os.remove(file_path)  # Remove the file from the file system
+            os.remove(file_path)  
 
     return jsonify({"message": "Spot and associated images deleted successfully."}), 200
 
@@ -444,7 +422,7 @@ def update_spot(spot_id):
     name = data.get('spotName')
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
-    images = data.get('images')  # Assuming images are optional
+    images = data.get('images')  
     timestamp = datetime.now().isoformat()
     categories = data.get('categories')
 
