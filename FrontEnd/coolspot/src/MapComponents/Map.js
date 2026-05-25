@@ -117,7 +117,7 @@ function MapDiv() {
 
   const handleLocate = (latitude, longitude) => {
     setMapCenter([latitude, longitude]);
-    setZoomLevel(zoomLevel);
+    setZoomLevel(13);
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
@@ -145,6 +145,7 @@ function MapDiv() {
           zoom={zoomLevel}
           style={{ height: '100%', width: '100%' }}
           className="z-0 leaflet-grab"
+          zoomControl={false}
           key={zoomLevel}
           whenReady={(map) => {
             const container = map.target.getContainer();

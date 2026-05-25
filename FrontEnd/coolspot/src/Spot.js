@@ -191,7 +191,8 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
         <img
           src={spot.Images[0]}
           alt={`Thumbnail for ${spot.Name}`}
-          className={`absolute top-8 right-2 h-14 rounded-md transition-all duration-500
+          className={`absolute right-2 h-14 rounded-md transition-all duration-500
+                      top-12 sm:top-10 md:top-8
                       ${expanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
           style={{
             width: 'auto',
@@ -201,6 +202,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
           }}
         />
       )}
+
 
       <p
         className={`absolute right-1 top-2 text-xs text-gray-500 transition-all duration-500 

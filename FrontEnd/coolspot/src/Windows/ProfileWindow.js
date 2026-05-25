@@ -197,8 +197,8 @@ function ProfileWindow() {
                     {isEditingUsername ? (
                         <div className="flex flex-col">
                             <input
-                                type="text"
-                                className="w-full text-2xl font-bold border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-300"
+                                maxLength={20}
+                                className="w-full text-2xl font-bold border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-300 resize-none overflow-hidden"
                                 value={newUsername}
                                 onChange={(e) => {
                                     setNewUsername(e.target.value);
@@ -210,7 +210,11 @@ function ProfileWindow() {
                                 }}
                                 onBlur={handleUsernameSave}
                                 autoFocus
+                                style={{
+                                    height: `${Math.min(Math.max(newUsername.split('\n').length, 1), 3) * 1.5}rem`, // Adjust height based on content
+                                }}
                             />
+
                         </div>
                     ) : (
                         <h2
@@ -231,14 +235,16 @@ function ProfileWindow() {
                 <label className="block text-gray-700 mb-2" htmlFor="description">
                     Description:
                 </label>
-                <input
+                <textarea
                     type="text"
                     id="description"
-                    className="w-full p-2 border rounded-lg"
+                    maxLength={150}
+                    className="w-full p-2 border rounded-lg h-16 resize-none"
                     placeholder="Enter your bio"
                     value={description}
                     onChange={(e) => handleDecChange(e.target.value)}
                 />
+
             </div>
 
             <div className="flex justify-between items-center mt-2">
