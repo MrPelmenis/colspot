@@ -34,5 +34,11 @@ lerna-debug.log*
 # Other system files
 Thumbs.db
 
-/Backend/main_db.db
-/Backend/uploads
+./Backend/venv/
+./Backend/main_db.db/
+./Backend/uploads/
+./FrontEnd/coolspot/public/config.js
+BackEnd/gunicorn.conf.py
+Backend/db/
+Backend/main_db.b
+Backend/__pycache__/
