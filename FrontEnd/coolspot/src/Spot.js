@@ -170,39 +170,41 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
     const url = `${window.websiteSetting.serverURL}/api/spots/${spot.Id}/likes`;
 
     const jwtToken = localStorage.getItem('JWT');
-
-    if (liked) {
-      // Dislike action
-      try {
-        await fetch(`${url}/${currentUser.userID}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`,
-          },
-        });
-        setLiked(false);
-        setLikesCount((prev) => prev - 1);
-      } catch (error) {
-        console.error('Error disliking the spot:', error);
-      }
-    } else {
-      // Like action
-      try {
-        await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`,
-          },
-          body: JSON.stringify({ user_id: currentUser.userID }),  // Matches backend key
-        });
-        setLiked(true);
-        setLikesCount((prev) => prev + 1);
-      } catch (error) {
-        console.error('Error liking the spot:', error);
+    if(jwtToken){
+      if (liked) {
+        // Dislike action
+        try {
+          await fetch(`${url}/${currentUser.userID}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${jwtToken}`,
+            },
+          });
+          setLiked(false);
+          setLikesCount((prev) => prev - 1);
+        } catch (error) {
+          console.error('Error disliking the spot:', error);
+        }
+      } else {
+        // Like action
+        try {
+          await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({ user_id: currentUser.userID }),  // Matches backend key
+          });
+          setLiked(true);
+          setLikesCount((prev) => prev + 1);
+        } catch (error) {
+          console.error('Error liking the spot:', error);
+        }
       }
     }
+    
   };
 
 
@@ -343,7 +345,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
               const lng = coords[1];
               const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
   
-              console.log(fetchAddressFromCoordinates(lat, lng));
+              //console.log(fetchAddressFromCoordinates(lat, lng));
               window.open(googleMapsUrl, '_blank');
             }
           }}

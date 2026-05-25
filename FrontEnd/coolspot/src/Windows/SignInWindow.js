@@ -11,7 +11,7 @@ function SignInWindow() {
 
   const [username, setUsername] = useState(windowStates.signInWindow.nickname);
   const [errorMessage, setErrorMessage] = useState(''); // State for error message
-  const [showTOS, setShowTOS] = useState(false); // State to toggle TOS visibility
+  const [showTOS, setShowTOS] = useState(false); 
 
   // Sync the username state with the nickname whenever it changes
   useEffect(() => {

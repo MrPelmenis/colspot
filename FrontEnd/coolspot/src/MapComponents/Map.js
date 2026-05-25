@@ -9,6 +9,8 @@ import streetViewIMG from '../images/street-view.png';
 import sateliteViewIMG from '../images/satelite-view.png';
 import { FaPlus, FaMapMarkerAlt } from 'react-icons/fa';
 
+import { SpotSelectionContext } from '../ContextProviders/SpotSelectionProvider';
+
 
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
@@ -47,6 +49,8 @@ function MapDiv() {
   const { currentUser } = useContext(CurrentUserContext);
   const [mapView, setMapView] = useState('streetview');
 
+  const [savedMarkers, setSavedMarkers] = useState([]);
+
   const { spots, fetchSpots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
   const [zoomLevel, setZoomLevel] = useState(9);
@@ -54,6 +58,23 @@ function MapDiv() {
   const mapRef = useRef(null);
 
   const { mapCoords, updateMapCoords } = useContext(MapContext);
+
+
+  const { category, updateCategory } = useContext(SpotSelectionContext);
+
+  useEffect(() => {
+    console.log("category:", category);
+    console.log(markersSpotInfo);
+    console.log("saved:", savedMarkers);
+
+    if(category!==""){
+      const filteredSpots = savedMarkers.filter((spot) => spot.categories.includes(category));
+      setMarkers(filteredSpots);
+    }else{
+      setMarkers(savedMarkers);
+    }
+  }, [category]);
+  
 
   useEffect(() => {
     if (mapCoords.lat && mapCoords.lng) {
@@ -64,6 +85,7 @@ function MapDiv() {
 
   useEffect(() => {
     setMarkers(spots);
+    setSavedMarkers(spots);
   }, [spots]);
 
   useEffect(() => {
@@ -130,7 +152,7 @@ function MapDiv() {
 
 
   return (
-    <div className="relative w-[90vw] h-auto sm:w-[80vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
+    <div className="relative w-[90vw] sm:w-[90vw] md:w-[80vw] lg:w-[60vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
       
       <div className="absolute top-0 right-0 z-10 flex items-center space-x-2">
         <div className="bg-white rounded-lg shadow-lg p-2 w-full max-w-lg flex items-center">
@@ -143,6 +165,7 @@ function MapDiv() {
         <MapContainer
           center={mapCenter}
           zoom={zoomLevel}
+          attributionControl={false} 
           style={{ height: '100%', width: '100%' }}
           className="z-0 leaflet-grab"
           zoomControl={false}

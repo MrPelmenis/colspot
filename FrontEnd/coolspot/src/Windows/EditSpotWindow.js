@@ -234,6 +234,7 @@ function EditSpotWindow() {
                 <input
                   type="file"
                   multiple
+                  accept="image/*"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   id="image-upload"
                   onChange={handleImageChange}

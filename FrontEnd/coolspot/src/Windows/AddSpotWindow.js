@@ -227,6 +227,7 @@ function AddSpotWindow() {
               >
                 <input
                   type="file"
+                  accept="image/*"
                   multiple
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   id="image-upload"

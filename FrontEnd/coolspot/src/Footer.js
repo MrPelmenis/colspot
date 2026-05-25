@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function Footer() {
   const [showTOS, setShowTOS] = useState(false);
+  const TOSRef = useRef(null);
 
   const toggleTOS = () => {
     setShowTOS(!showTOS);
@@ -10,6 +11,24 @@ function Footer() {
   const closeTOS = () => {
     setShowTOS(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (TOSRef.current && !TOSRef.current.contains(event.target)) {
+        closeTOS();
+      }
+    };
+
+    if (showTOS) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTOS]);
 
   return (
     <div className="relative bg-gray-200 py-4 w-full rounded-t-lg shadow-inner flex items-center justify-between px-4">
@@ -27,8 +46,11 @@ function Footer() {
       </button>
 
       {showTOS && (
-        <div className="absolute z-50 mt-4 text-gray-700 border p-4 rounded-lg bg-white shadow-lg"
-             style={{ maxHeight: '200px', overflowY: 'auto', width: '300px', bottom: '60px', right: '10px' }}>
+        <div 
+          ref={TOSRef}
+          className="absolute z-50 mt-4 text-gray-700 border p-4 rounded-lg bg-white shadow-lg"
+          style={{ maxHeight: '200px', overflowY: 'auto', width: '300px', bottom: '60px', right: '10px' }}
+        >
           <h3 className="text-lg font-bold mb-2">Terms of Service</h3>
           {window.websiteSetting.TOS}
           <button onClick={closeTOS} className="mt-2 text-black hover:underline">Close</button>

@@ -207,8 +207,8 @@ function ProfileWindow() {
                     <input
                         onChange={uploadImg}
                         type="file"
+                        accept="image/*"
                         id="imgInput"
-                        accept="image/png, image/jpeg"
                         className="hidden"
                     />
                     <label htmlFor="imgInput">

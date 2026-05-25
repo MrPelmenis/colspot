@@ -19,6 +19,7 @@ import DeleteCommentWindow from "./Windows/DeleteCommentWindow.js";
 import ViewSpotWindow from './Windows/ViewSpotWindow.js';
 import MapProvider from './ContextProviders/MapContext.js';
 import ViewImageWindow from './Windows/ViewImageWindow.js';
+import SpotSelectionProvider from './ContextProviders/SpotSelectionProvider.js';
 
 function App() {
   return (
@@ -27,25 +28,27 @@ function App() {
         <SpotsProvider> 
           <CommentProvider>
             <MapProvider>
-            <div className="flex flex-col items-center bg-gray-800 min-h-screen">
-              <SignInWindow />
-              <ProfileWindow />
-              <DeleteProfileWindow />
-              <AddSpotWindow />
-              <DeleteSpotWindow />
-              <EditSpotWindow />
-              <CommentListWindow />
-              <DeleteCommentWindow />
-              <ViewSpotWindow />
-              <ViewImageWindow />
+              <SpotSelectionProvider>
+                <div className="flex flex-col items-center bg-gray-800 min-h-screen">
+                  <SignInWindow />
+                  <ProfileWindow />
+                  <DeleteProfileWindow />
+                  <AddSpotWindow />
+                  <DeleteSpotWindow />
+                  <EditSpotWindow />
+                  <CommentListWindow />
+                  <DeleteCommentWindow />
+                  <ViewSpotWindow />
+                  <ViewImageWindow />
 
-              <Header />
-              <div className="flex flex-col gap-8 my-8">
-                <MapDiv />
-                <SpotList />
-              </div>
-              <Footer />
-            </div>
+                  <Header />
+                  <div className="flex flex-col gap-8 my-8">
+                    <MapDiv />
+                    <SpotList />
+                  </div>
+                  <Footer />
+                </div>
+              </SpotSelectionProvider>
             </MapProvider>
           </CommentProvider>
         </SpotsProvider>
