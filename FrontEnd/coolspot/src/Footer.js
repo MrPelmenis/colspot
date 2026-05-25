@@ -13,11 +13,9 @@ function Footer() {
 
   return (
     <div className="relative bg-gray-200 py-4 w-full rounded-t-lg shadow-inner flex items-center justify-between px-4">
-      {/* Left Section */}
-      <p className="text-gray-600 text-sm">
+      <p className="text-gray-600 text-sm hidden sm:block">
         CoolSpot
       </p>
-      
       {/* Middle Section */}
       <p className="text-gray-600 text-sm text-center">© 2024 CoolSpot. All rights reserved.</p>
       

@@ -109,6 +109,7 @@ function AddSpotWindow() {
       //console.log('jsonData:', jsonData);
 
       const jwtToken = localStorage.getItem('JWT');
+
   
       // Send the data to the server
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots`, {

@@ -77,8 +77,10 @@ function Header() {
   return (
     <GoogleOAuthProvider clientId={window.websiteSetting.CLIENT_ID}>
       <header className="bg-gray-200 py-4 w-full flex justify-between items-center px-4 rounded-b-lg shadow-md sticky top-0 z-10">
-        <h1 className="text-4xl font-bold text-gray-800 flex-grow text-center md:text-left">CoolSpot</h1>
-        {isLoggedIn ? (
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-4xl font-bold text-gray-800 flex-grow text-left">
+          CoolSpot
+      </h1>
+      {isLoggedIn ? (
           <div onClick={onProfileClick} title="View Profile" className="flex items-center mr-2 cursor-pointer">
             <h2
               className="text-lg text-gray-800 font-semibold ml-4"

@@ -84,7 +84,7 @@ function MapDiv() {
 
   const getButtonMessage = () => {
     if (!isLoggedIn) {
-      return 'You must be logged in to add spots';
+      return 'Log in to add spots';
     }
     return isAdding ? buttonMessage : 'Add Your Spot';
   };
@@ -130,7 +130,7 @@ function MapDiv() {
 
 
   return (
-    <div className="relative w-[80vw] h-auto sm:w-[80vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
+    <div className="relative w-[90vw] h-auto sm:w-[80vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] bg-gray-400 rounded-lg shadow-md mx-auto z-0">
       
       <div className="absolute top-0 right-0 z-10 flex items-center space-x-2">
         <div className="bg-white rounded-lg shadow-lg p-2 w-full max-w-lg flex items-center">
@@ -139,7 +139,7 @@ function MapDiv() {
       </div>
       
       {/* Map Container */}
-      <div className="relative w-full h-[80vw] sm:h-[80vw] md:h-[70vw] lg:h-[60vw] xl:h-[40vw]">
+      <div className="relative w-full h-[90vw] sm:h-[80vw] md:h-[70vw] lg:h-[60vw] xl:h-[40vw]">
         <MapContainer
           center={mapCenter}
           zoom={zoomLevel}
@@ -222,7 +222,7 @@ function MapDiv() {
           disabled={!isLoggedIn}
           className={`absolute bottom-4 right-4 text-black py-2 px-4 rounded-lg shadow-lg border-2 border-black transition-all ${
             isAdding ? 'bg-gray-300 hover:bg-gray-400' : 'bg-white hover:bg-gray-100'
-          } ${!isLoggedIn && 'opacity-50 cursor-not-allowed'}`}
+          } ${!isLoggedIn && 'opacity-50 cursor-not-allowed'} whitespace-normal break-words`}
         >
           {getButtonMessage()}
         </button>
