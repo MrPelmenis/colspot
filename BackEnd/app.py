@@ -186,13 +186,14 @@ def check_user():
     conn.commit()
 
     if user:
-        print("exists")
+        print("exists",user["is_admin"])
         return jsonify(message="User exists", user={
             "email": user["email"],
             "nickname": user["nickname"],
             "description": user["description"],
             "profile_pic": user["profile_pic"],
             "user_id": user["id"],
+            "is_admin": user["is_admin"]
         }), 200
     else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
         # print("trying create")
