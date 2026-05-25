@@ -38,18 +38,18 @@ function AddMarker({ onAddMarker, isAdding }) {
 }
 
 function MapDiv() {
-  const [mapCenter, setMapCenter] = useState([51.477928, -0.001545]);
+  const [mapCenter, setMapCenter] = useState([56.939860, 24.109501]);
   const [markersSpotInfo, setMarkers] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const { windowStates, updateWindowState } = useContext(WindowContext);
   const [buttonMessage, setButtonMessage] = useState('Add Your Spot');
   const [isLoggedIn, setIsLoggedIn] = useState(ExtraFunctions.isUserLoggedIn());
   const { currentUser } = useContext(CurrentUserContext);
-  const [mapView, setMapView] = useState('satellite');
+  const [mapView, setMapView] = useState('streetview');
 
   const { spots, fetchSpots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
-  const [zoomLevel, setZoomLevel] = useState(6); // Initial zoom level
+  const [zoomLevel, setZoomLevel] = useState(9);
 
   const mapRef = useRef(null);
 

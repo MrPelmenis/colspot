@@ -13,6 +13,8 @@ import { MapContext, MapProvider } from './ContextProviders/MapContext.js';
 
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
+import { GrMapLocation } from "react-icons/gr";
+
 function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [expanded, setExpanded] = useState(isThisSpotSelected);
   const [isShrinking, setIsShrinking] = useState(false);
@@ -20,6 +22,23 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const { currentUser } = useContext(CurrentUserContext);
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
   const { windowStates, updateWindowState } = useContext(WindowContext);
+
+
+  const [address, updateAddress] = useState(null);
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (spot.Geolocation) {
+        const coords = spot.Geolocation.split(",");
+        const lat = parseFloat(coords[0]);
+        const lng = parseFloat(coords[1]);
+        const address = await fetchAddressFromCoordinates(lat, lng);
+        updateAddress(address);
+      }
+    };
+
+    fetchAddress();
+  }, [spot.Geolocation]);
 
   const { mapCoords, updateMapCoords } = useContext(MapContext);
 
@@ -57,6 +76,35 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
       setLiked(false);  
     }
   }, [spot.liked_by, currentUser.userID]);
+
+
+  const fetchAddressFromCoordinates = async (latitude, longitude) => {
+    const apiKey = window.websiteSetting.OPEN_CAGE_KEY; // Replace with your OpenCage API key
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude},${longitude}&key=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        const formattedAddress = data.results[0].formatted.split(',');
+        const first = formattedAddress[0]?.trim(); // Get the first element
+        const second = formattedAddress[1]?.trim(); // Get the second element
+      
+        if ((first + ', ' + second).length > 30) {
+          return first; // Return only the first element if the total length exceeds 30
+        } else {
+          return [first, second].filter(Boolean).join(', '); // Return first and second if within 30 chars
+        }
+      } else {
+        throw new Error('No results found');
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      return null;
+    }
+  };
+
 
   const handleFindOnMap = () => {
     window.scrollTo({
@@ -169,12 +217,14 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
     }
   };
 
+
+
   return (
     <div
       id={"spot-" + spot.Id}
       ref={spotRef}
       className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md p-4 transition-all duration-500 ease-in-out cursor-pointer
-        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[160px]'}`} ${!isThisSpotSelected ? "mb-4" : ""} `}
+        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[180px]'}`} ${!isThisSpotSelected ? "mb-4" : ""} `}
       onClick={handleSpotClick}
     >
       <button
@@ -215,8 +265,10 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
 
       <div className="flex justify-between items-center mb-1">
         <div className="sm:items-start">
-          <p className="text-xl sm:text-2xl font-semibold">{spot.Name}</p>
+          <p className="text-md sm:text-xl md:text-2xl font-semibold">{spot.Name}</p>
           <p className="text-sm sm:text-base text-gray-500">{spot.nickname}</p>
+          
+          <p className="text-sm sm:text-base text-gray-500">{address || "Loading..."}</p>
 
           <div 
             className={`flex ${expanded && !isShrinking ? 'flex-wrap' : ''} gap-2 mt-2 flex-row`}
@@ -261,13 +313,33 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
         </div>
       </div>
 
-      <p
-        className={` mt-2 cursor-pointer items-center flex transition-opacity duration-500 ease-in-out hover:underline text-left 
+      <div
+        className={`mt-2 flex flex-col md:flex-row md:items-center transition-opacity duration-500 ease-in-out 
           ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
-        onClick={handleFindOnMap}
       >
-       <FaMapMarkerAlt /> <span className='text-blue pl-1'>Find On Map</span> 
-      </p>
+        <p
+          className="cursor-pointer items-center flex hover:underline text-left mr-4"
+          onClick={handleFindOnMap}
+        >
+          
+          <GrMapLocation /> <span className="text-blue pl-1">Find On Map</span>
+        </p>
+
+        <span
+          className="cursor-pointer items-center flex hover:underline text-left"
+          onClick={() => {
+            let coords = (spot.Geolocation.split(",")).map(coord => parseFloat(coord));
+            const lat = coords[0];
+            const lng = coords[1];
+            const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+            console.log(fetchAddressFromCoordinates(lat, lng));
+            window.open(googleMapsUrl, '_blank');
+          }}
+        >
+        <FaMapMarkerAlt /> <span className="text-blue pl-1">Google Maps</span>
+        </span>
+      </div>
 
       <div
         className={`flex justify-between items-center mt-2 transition-opacity duration-500 ease-in-out ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
