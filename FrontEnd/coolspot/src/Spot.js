@@ -319,7 +319,11 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
       >
         <p
           className="cursor-pointer items-center flex hover:underline text-left mr-4"
-          onClick={handleFindOnMap}
+          onClick={()=>{
+            if(expanded){
+              handleFindOnMap();
+            }
+          }}
         >
           
           <GrMapLocation /> <span className="text-blue pl-1">Find On Map</span>
@@ -328,13 +332,15 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
         <span
           className="cursor-pointer items-center flex hover:underline text-left"
           onClick={() => {
-            let coords = (spot.Geolocation.split(",")).map(coord => parseFloat(coord));
-            const lat = coords[0];
-            const lng = coords[1];
-            const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-
-            console.log(fetchAddressFromCoordinates(lat, lng));
-            window.open(googleMapsUrl, '_blank');
+            if(expanded){
+              let coords = (spot.Geolocation.split(",")).map(coord => parseFloat(coord));
+              const lat = coords[0];
+              const lng = coords[1];
+              const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+  
+              console.log(fetchAddressFromCoordinates(lat, lng));
+              window.open(googleMapsUrl, '_blank');
+            }
           }}
         >
         <FaMapMarkerAlt /> <span className="text-blue pl-1">Google Maps</span>
@@ -355,7 +361,8 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
                 ? liked ? "Unlike" : "Like"
                 : "You must be logged in to like"
             }
-            disabled={!currentUser?.userID}
+            disabled={!currentUser?.userID && !expanded}
+            
           >
             <FaHeart className={liked ? "text-red-600" : "text-gray-600"} />
             <span className="ml-2 text-sm font-semibold text-gray-600">{likesCount}</span>
