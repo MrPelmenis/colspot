@@ -33,13 +33,42 @@ function EditSpotWindow() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+  
+    const validImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/svg+xml',
+      'image/heic',
+      'image/heif',
+      'image/tiff'
+    ];
+    
+
+    // Check the maximum limit of images
     if (images.length + files.length > 3) {
       setErrorMessage('You can only upload a maximum of 3 images.');
       return;
     }
+  
+    // Validate file types
+    for (const file of files) {
+      if (!validImageTypes.includes(file.type)) {
+        setErrorMessage(
+          'Invalid file type. You can only upload images'
+        );
+        return;
+      }
+    }
+  
+    // Update images if all validations pass
     setImages((prevImages) => [...prevImages, ...files]);
   };
 
+  
   const handleRemoveImage = (index) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };

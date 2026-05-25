@@ -57,6 +57,32 @@ function ProfileWindow() {
 
     const uploadImg = (event) => {
         let file = event.target.files[0];
+
+        const validImageTypes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/bmp',
+            'image/svg+xml',
+            'image/heic',
+            'image/heif',
+            'image/tiff'
+          ];
+
+        if (!file) {
+            setErrorMessage('No file selected.');
+            return;
+        }
+
+        if (!validImageTypes.includes(file.type)) {
+            setErrorMessage(
+              'Invalid file type. Please upload an image.'
+            );
+            return;
+        }
+
         if (file) {
             let data = new FormData();
             data.append('file', file);

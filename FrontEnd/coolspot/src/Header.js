@@ -7,7 +7,7 @@ import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
 import { ExtraFunctions } from './ExtraFunctions';
 
-
+import defaultProfilePic from './images/DefaultProfilePic.png';
 
 import ProfileImage from './ProfileImage'; 
 

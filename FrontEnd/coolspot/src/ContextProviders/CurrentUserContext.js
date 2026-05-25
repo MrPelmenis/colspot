@@ -40,7 +40,7 @@ export const CurrentUserProvider = ({ children }) => {
         // Get the server's response
         const data = await res.json();
         //console.log("kaads ir mans useris: ", data);
-
+        console.log(data);
         const userData = {
           userID: data.user_id,
           nickname: data.nickname,

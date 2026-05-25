@@ -34,13 +34,25 @@ function AddSpotWindow() {
   };
 
   const handleImageChange = (e) => {
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const validImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/svg+xml',
+      'image/heic',
+      'image/heif',
+      'image/tiff'
+    ];
+    
     const files = Array.from(e.target.files);
-  
-    // Validate file types
     for (const file of files) {
       if (!validImageTypes.includes(file.type)) {
-        setErrorMessage('You can only upload images (JPEG, JPG, PNG).');
+        setErrorMessage(
+          'You can only upload valid image files: JPEG, JPG, PNG, GIF, WebP, BMP, SVG, HEIC, HEIF, or TIFF.'
+        );
         return;
       }
     }

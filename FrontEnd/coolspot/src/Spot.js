@@ -218,6 +218,10 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   };
 
 
+  const handleImageClick = (src) =>{
+    updateWindowState('viewImageWindow', { visible: true, imageSRC: src });
+  } 
+
 
   return (
     <div
@@ -305,6 +309,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
             <img
               key={index}
               src={image}
+              onClick={() => handleImageClick(image)}
               alt={`Spot ${spot.Name} - Image ${index + 1}`}
               className="h-[200px] object-contain rounded-md transition-transform duration-500 ease-in-out"
               style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }}

@@ -18,6 +18,7 @@ import CommentListWindow from './Windows/CommentListWindow.js';
 import DeleteCommentWindow from "./Windows/DeleteCommentWindow.js";
 import ViewSpotWindow from './Windows/ViewSpotWindow.js';
 import MapProvider from './ContextProviders/MapContext.js';
+import ViewImageWindow from './Windows/ViewImageWindow.js';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <CommentListWindow />
               <DeleteCommentWindow />
               <ViewSpotWindow />
+              <ViewImageWindow />
 
               <Header />
               <div className="flex flex-col gap-8 my-8">

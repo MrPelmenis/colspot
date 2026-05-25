@@ -2,9 +2,10 @@ import React, { useEffect, useState, useContext } from 'react';
 import { ExtraFunctions } from './ExtraFunctions';
 import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
+import defaultProfilePic from './images/DefaultProfilePic.png';
 
 const ProfileImage = ({ nickname }) => {
-    const [profilePic, setProfilePic] = useState("/images/DefaultProfilePic.png");
+    const [profilePic, setProfilePic] = useState(defaultProfilePic);
     const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
     useEffect(() => {
@@ -13,10 +14,13 @@ const ProfileImage = ({ nickname }) => {
                 try {
                     const img = await getImage(nickname);
                     setProfilePic(img.profile_pic);
+                    if(!img.profile_pic){
+                        setProfilePic(defaultProfilePic);
+                    }
                 } catch (error) {
                     console.error('Error fetching user image:', error);
                     // Fallback to default image on error
-                    setProfilePic("/images/DefaultProfilePic.png");
+                    setProfilePic(defaultProfilePic);
                 }
             }
         };
@@ -46,10 +50,10 @@ const ProfileImage = ({ nickname }) => {
     
             } catch (error) {
                 console.error('Error fetching user image:', error);
-                return "/images/DefaultProfilePic.png"; // Fallback in case of error
+                return defaultProfilePic; // Fallback in case of error
             }
         }
-        return "/images/DefaultProfilePic.png"; // Fallback if no nickname is provided
+        return defaultProfilePic; // Fallback if no nickname is provided
     }
 
 

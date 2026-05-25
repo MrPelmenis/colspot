@@ -14,6 +14,7 @@ export const WindowProvider = ({ children }) => {
     addSpotWindow:{ visible:false, nickname:"", email:"", geoLocation:""},
     deleteCommentWindow:{visible:false, commentID: null},
     viewSpotWindow:{visible:false},
+    viewImageWindow :{visible:false, imageSRC: null},
   });
 
   const updateWindowState = (windowName, newState) => {
