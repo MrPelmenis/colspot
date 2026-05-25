@@ -17,6 +17,7 @@ import base64
 DATABASE = "main_db.db"
 UPLOAD_FOLDER = 'uploads/spot_images/'
 app = Flask(__name__, static_folder='../Frontend/coolspot/build')
+print(app.static_folder)
 # app.config['SECRET_KEY'] = 'your_strong_secret_key'
 # app.config["JWT_SECRET_KEY"] = 'your_jwt_secret_key'
 # app.config['JWT_TOKEN_LOCATION'] = ['headers']
@@ -69,6 +70,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
+        db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = sqlite3.Row  # Set the row factory to return dictionaries
     
     return db
