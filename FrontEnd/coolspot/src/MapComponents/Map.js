@@ -145,7 +145,7 @@ function MapDiv() {
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
-    console.log("name, ", name, " zoom: ", zoom);
+    //console.log("name, ", name, " zoom: ", zoom);
     setMapCenter([lat, lng]);
     setZoomLevel(zoom); 
   };
