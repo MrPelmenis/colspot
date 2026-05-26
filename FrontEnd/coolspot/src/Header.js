@@ -25,7 +25,7 @@ function Header() {
   
   useEffect(() => {
     fetchUserData();
-    isLoggedIn = ((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
+    setIsLoggedIn((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
   }, []);
  
 
