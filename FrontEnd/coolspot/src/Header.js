@@ -15,19 +15,23 @@ function Header() {
   const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
   const [userEmail, setUserEmail] = useState("");
 
+  let isLoggedIn = (ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false;
+
 
   useEffect(()=>{
       //console.log("current user:", currentUser);
+      //console.log((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
   }, [currentUser])
 
   
   useEffect(() => {
     fetchUserData();
+    isLoggedIn = ((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
   }, []);
  
 
   const handleLoginSuccess = async (response) => {
-    updateCurrentUser({nickname: "", email: ""});
+    updateCurrentUser({nickname: "", email: "", is_admin: false});
     const jwtToken = response.credential;
     const decodedToken = jwtDecode(jwtToken);
     const email = decodedToken.email;
@@ -69,7 +73,7 @@ function Header() {
     updateWindowState('profileWindow', {visible: true });
   }
 
-  const isLoggedIn = ExtraFunctions.isUserLoggedIn();
+  
 
   return (
     <GoogleOAuthProvider clientId={window.websiteSetting.CLIENT_ID}>
