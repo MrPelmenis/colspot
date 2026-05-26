@@ -27,7 +27,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [address, updateAddress] = useState(null);
 
   useEffect(() => {
-    console.log(spot);
+    //console.log(spot);
   const fetchAddress = async () => {
       if (spot.Geolocation) {
         const coords = spot.Geolocation.split(",");

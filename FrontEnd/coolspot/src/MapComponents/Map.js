@@ -69,10 +69,6 @@ function MapDiv() {
 
 
   useEffect(() => {
-    console.log("category:", category);
-    console.log(markersSpotInfo);
-    console.log("saved:", savedMarkers);
-
     if(category!==""){
       const filteredSpots = savedMarkers.filter((spot) => spot.categories.includes(category));
       setMarkers(filteredSpots);
@@ -177,9 +173,17 @@ function MapDiv() {
           zoomControl={false}
           maxBounds={bounds}
           maxBoundsViscosity={1}
-          maxZoom={18}
           key={zoomLevel}
           whenReady={(map) => {
+            map.target.on("zoomend", () => {
+              const currentZoom = map.target.getZoom();
+              //console.log(currentZoom);
+              if (currentZoom < 2) {
+                map.target.setZoom(2);
+              }
+            });
+
+
             const container = map.target.getContainer();
             container.style.cursor = 'default';
 
