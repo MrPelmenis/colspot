@@ -19,7 +19,7 @@ export const CurrentUserProvider = ({ children }) => {
   const fetchUserData = async () => {
     const jwtToken = localStorage.getItem('JWT');
     
-    if (ExtraFunctions.isUserLoggedIn()) {
+    if (ExtraFunctions.isUserLoggedIn() && jwtToken) {
       try {
         const decodedToken = jwtDecode(jwtToken);
         const email = decodedToken.email;
