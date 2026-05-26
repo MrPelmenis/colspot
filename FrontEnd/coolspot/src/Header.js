@@ -7,7 +7,6 @@ import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
 import { ExtraFunctions } from './ExtraFunctions';
 
-import defaultProfilePic from './images/DefaultProfilePic.png';
 
 import ProfileImage from './ProfileImage'; 
 
@@ -16,8 +15,6 @@ function Header() {
   const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
   const [userEmail, setUserEmail] = useState("");
 
-  const [profileImage, setProfileImage] = useState("");
-  const [profilePic, setProfilePic] = useState(currentUser.profile_pic || "/images/DefaultProfilePic.png");
 
   useEffect(()=>{
       //console.log("current user:", currentUser);
@@ -83,7 +80,7 @@ function Header() {
       {isLoggedIn ? (
           <div onClick={onProfileClick} title="View Profile" className="flex items-center mr-2 cursor-pointer">
             <h2
-              className="text-lg text-gray-800 font-semibold ml-4"
+              className={`text-lg ${currentUser.is_admin ? 'text-red-800 font-extrabold' : 'text-gray-800'} font-semibold ml-4`}
             >
               {currentUser.nickname}
             </h2>

@@ -13,6 +13,7 @@ export const CurrentUserProvider = ({ children }) => {
     email: '',
     description: '',
     profile_pic: "",
+    is_admin: false,
   });
 
   const fetchUserData = async () => {
@@ -46,7 +47,8 @@ export const CurrentUserProvider = ({ children }) => {
           nickname: data.nickname,
           email: data.email || email, 
           description: data.description,
-          profile_pic: data.profile_pic,  
+          profile_pic: data.profile_pic,
+          is_admin: data.is_admin == 1 ? true : false,  
         };
 
         updateCurrentUser(userData);

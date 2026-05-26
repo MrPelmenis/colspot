@@ -4,7 +4,6 @@ import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 
 import defaultProfilePic from '../images/DefaultProfilePic.png';
-import ProfileImage from '../ProfileImage';
 
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 
@@ -12,7 +11,7 @@ function ProfileWindow() {
     const { windowStates, updateWindowState } = useContext(WindowContext);
     const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
-    const { spots, setSpots, fetchSpots } = useContext(SpotsContext);
+    const { fetchSpots } = useContext(SpotsContext);
 
     const { visible } = windowStates.profileWindow;
 
@@ -244,7 +243,7 @@ function ProfileWindow() {
                         </div>
                     ) : (
                         <h2
-                            className="text-2xl font-bold inline-flex items-center cursor-pointer break-words"
+                            className={`text-2xl  ${currentUser.is_admin ? 'text-red-800 font-extrabold' : 'text-gray-800'} font-bold inline-flex items-center cursor-pointer break-words`}
                         >
                             {newUsername}
                             <FaPencilAlt className="ml-2 text-gray-500 hover:text-gray-700" onClick={onNameChange} />

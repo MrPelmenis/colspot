@@ -5,7 +5,7 @@ function Footer() {
   const TOSRef = useRef(null);
 
   const toggleTOS = () => {
-    setShowTOS(!showTOS);
+    setShowTOS((prev) => !prev);
   };
 
   const closeTOS = () => {
@@ -36,10 +36,11 @@ function Footer() {
         CoolSpot
       </p>
       {/* Middle Section */}
-      <p className="text-gray-600 text-sm text-center">© 2024 CoolSpot. All rights reserved.</p>
+      <p className="text-gray-600 text-sm text-center">© 2025 CoolSpot. All rights reserved.</p>
       
       {/* Right Section */}
       <button 
+        onMouseDown={(e) => e.stopPropagation()} // Stop mousedown propagation here
         onClick={toggleTOS} 
         className="text-black hover:underline text-sm">
         {showTOS ? 'Hide Terms Of Service' : 'Show Terms Of Service'}
@@ -51,6 +52,12 @@ function Footer() {
           className="absolute z-50 mt-4 text-gray-700 border p-4 rounded-lg bg-white shadow-lg"
           style={{ maxHeight: '200px', overflowY: 'auto', width: '300px', bottom: '60px', right: '10px' }}
         >
+          <button
+            className="absolute top-0 right-0 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500"
+            onClick={closeTOS}
+          >
+            &times;
+          </button>
           <h3 className="text-lg font-bold mb-2">Terms of Service</h3>
           {window.websiteSetting.TOS}
           <button onClick={closeTOS} className="mt-2 text-black hover:underline">Close</button>

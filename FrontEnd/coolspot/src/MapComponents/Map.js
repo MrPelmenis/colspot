@@ -62,6 +62,12 @@ function MapDiv() {
 
   const { category, updateCategory } = useContext(SpotSelectionContext);
 
+  const bounds = [
+    [-90, -180], // Southwest corner of the world
+    [90, 180],   // Northeast corner of the world
+  ];
+
+
   useEffect(() => {
     console.log("category:", category);
     console.log(markersSpotInfo);
@@ -169,6 +175,9 @@ function MapDiv() {
           style={{ height: '100%', width: '100%' }}
           className="z-0 leaflet-grab"
           zoomControl={false}
+          maxBounds={bounds}
+          maxBoundsViscosity={1}
+          maxZoom={18}
           key={zoomLevel}
           whenReady={(map) => {
             const container = map.target.getContainer();

@@ -16,7 +16,7 @@ function Comment({ comment }) {
   const [likes, setLikes] = useState(comment.likes);
   const [likedByUser, setLikedByUser] = useState(comment.liked_by.includes(currentUser.userID));
 
-  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, commentSpotID, setCommentSpotID } = useContext(CommentContext);
+  const {  fetchComment,  commentSpotID } = useContext(CommentContext);
 
   useEffect(() => {
     setLikedByUser(currentUser.userID && comment.liked_by.includes(currentUser.userID));
@@ -187,7 +187,7 @@ function Comment({ comment }) {
           </div>
         )}
 
-        {comment.userName === currentUser.nickname && (
+        {((comment.userName === currentUser.nickname) || currentUser.is_admin ) && (
           <div className="flex items-center ml-auto space-x-2">
             {isEditing ? (
               <>

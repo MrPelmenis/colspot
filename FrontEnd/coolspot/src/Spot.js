@@ -9,7 +9,7 @@ import Category from './Category.js';
 
 import { SpotsContext } from './ContextProviders/SpotsContext';
 
-import { MapContext, MapProvider } from './ContextProviders/MapContext.js';
+import { MapContext } from './ContextProviders/MapContext.js';
 
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
@@ -27,7 +27,8 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [address, updateAddress] = useState(null);
 
   useEffect(() => {
-    const fetchAddress = async () => {
+    console.log(spot);
+  const fetchAddress = async () => {
       if (spot.Geolocation) {
         const coords = spot.Geolocation.split(",");
         const lat = parseFloat(coords[0]);
@@ -56,7 +57,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
     if (spotRef.current && !spotRef.current.contains(event.target)) {
       if (expanded) {
         if(!isThisSpotSelected){
-          handleCloseSpot();
+          //handleCloseSpot();
         }
       }
     }
@@ -135,7 +136,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const handleCommentClick = async (event) => {
     event.stopPropagation();
     if(!isThisSpotSelected){
-      handleCloseSpot();
+      //handleCloseSpot();
     }
     setCommentSpotID(spot.Id);
     await fetchComment(spot.Id);
@@ -145,7 +146,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const handleDeleteClick = (event) => {
     event.stopPropagation();
     if(!isThisSpotSelected){
-      handleCloseSpot();
+      //handleCloseSpot();
     }
     updateWindowState('deleteSpot', { visible: true, spotID: spot.Id });
   };
@@ -153,7 +154,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const handleEditClick = (event) => {
     event.stopPropagation();
     if(!isThisSpotSelected){
-      handleCloseSpot();
+      //handleCloseSpot();
     }
     updateWindowState('editSpotWindow', { visible: true, spotToEdit: spot });
   };
@@ -376,19 +377,19 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
           </button>
 
         </div>
-
           <button
             onClick={handleCommentClick}
-            className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
+            className={`flex items-center justify-center w-16 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
             title="View Comments"
             disabled={!expanded}
           >
             <FaComment className="text-gray-600 hover:text-blue-600" />
+            <span className="ml-2 text-sm font-semibold text-gray-600">{spot.comments}</span>
           </button>
         </div>
 
         <div className="flex">
-          {spot.user_id === currentUser.userID && (
+          {((spot.user_id === currentUser.userID) || currentUser.is_admin) && (
             <button
               onClick={handleEditClick}
               className={`flex items-center justify-center w-10 h-10 mr-2 bg-transparent border border-gray-300 rounded-full hover:bg-gray-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
@@ -399,7 +400,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
             </button>
           )}
           
-          {spot.user_id === currentUser.userID && (
+          {((spot.user_id === currentUser.userID) || currentUser.is_admin) && (
             <button
               onClick={handleDeleteClick}
               className={`flex items-center justify-center w-10 h-10 bg-transparent border border-gray-300 rounded-full hover:bg-red-200 transition duration-300 ${expanded && !isShrinking ? 'opacity-100' : 'opacity-0'}`}
