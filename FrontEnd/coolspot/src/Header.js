@@ -15,13 +15,12 @@ function Header() {
   const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
   const [userEmail, setUserEmail] = useState("");
 
-  let isLoggedIn = (ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false;
+  const [isLoggedIn, setIsLoggedIn] = useState((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
 
 
   useEffect(()=>{
-      //console.log("current user:", currentUser);
-      //console.log((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
-  }, [currentUser])
+    setIsLoggedIn((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
+  }, [updateCurrentUser, currentUser]);
 
   
   useEffect(() => {

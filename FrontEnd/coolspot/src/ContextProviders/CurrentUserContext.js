@@ -56,6 +56,7 @@ export const CurrentUserProvider = ({ children }) => {
 
       } catch (error) {
         console.error('Error fetching user data:', error);
+        updateCurrentUser({});
         localStorage.removeItem('JWT');  // Remove invalid JWT
         return {result:false, message: "Error fetching user data"};
       }
