@@ -160,7 +160,7 @@ def send():
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, nickname, description, profile_pic FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
     user = cursor.fetchone()
 
     if user:
@@ -168,7 +168,9 @@ def send():
             "user_id": user["id"],
             "nickname": user["nickname"],
             "description": user["description"],
-            "profile_pic": user["profile_pic"]
+            "profile_pic": user["profile_pic"],
+            "is_admin": user["is_admin"],   
+
         }), 200
     else:
         return jsonify({"error": "User not found"}), 404
@@ -186,7 +188,7 @@ def check_user():
     conn.commit()
 
     if user:
-        print("exists",user["is_admin"])
+        #print("exists",user["is_admin"])
         return jsonify(message="User exists", user={
             "email": user["email"],
             "nickname": user["nickname"],
@@ -305,7 +307,9 @@ def get_spots():
         nickName_result = cursor.fetchone()
         nickName = nickName_result[0] if nickName_result else "Unknown"
 
-        
+        cursor.execute("SELECT * FROM comments WHERE spot_id = ?", (spot["id"],))
+        comments = len(cursor.fetchall())
+
         # Convert image files to Base64 and store them in a list
         # try:
         base64_images = []
@@ -348,7 +352,8 @@ def get_spots():
             "Images": base64_images, 
             "likes": len(likes), 
             "liked_by": [like["user_id"] for like in likes],
-            "categories": categories
+            "categories": categories,
+            "comments": comments
         })
     return jsonify(spots_list)
 
