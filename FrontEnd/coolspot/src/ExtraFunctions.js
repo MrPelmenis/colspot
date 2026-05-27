@@ -16,12 +16,12 @@ export class ExtraFunctions {
     
 
     static getTimeAgo(dateTimeString) {
-    
-        // Ensure correct parsing by removing fractional seconds (if necessary)
+        // Parse the date string and convert it to the browser's local time
         const givenDateTime = new Date(dateTimeString);
         const currentDateTime = new Date(); // Browser's local time
     
-        const timeDifference = Math.floor((currentDateTime - givenDateTime) / 1000); // Difference in seconds
+        // Calculate the difference in seconds
+       const timeDifference = Math.floor((currentDateTime - givenDateTime) / 1000);
     
         if (timeDifference < 60) {
             return timeDifference === 1 ? `${timeDifference} second ago` : `${timeDifference} seconds ago`;
@@ -31,9 +31,15 @@ export class ExtraFunctions {
         } else if (timeDifference < 86400) {
             const hours = Math.floor(timeDifference / 3600);
             return hours === 1 ? `${hours} hour ago` : `${hours} hours ago`;
-        } else {
+        } else if (timeDifference < 2592000) { // Less than 30 days
             const days = Math.floor(timeDifference / 86400);
             return days === 1 ? `${days} day ago` : `${days} days ago`;
+        } else if (timeDifference < 31536000) { // Less than 365 days
+            const months = Math.floor(timeDifference / 2592000); // Approximate months
+            return months === 1 ? `${months} month ago` : `${months} months ago`;
+        } else {
+            const years = Math.floor(timeDifference / 31536000); // Approximate years
+            return years === 1 ? `${years} year ago` : `${years} years ago`;
         }
     }
     

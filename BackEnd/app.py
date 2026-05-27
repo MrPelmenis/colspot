@@ -8,6 +8,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from functools import wraps
 
+from datetime import datetime, timezone
 
 CLIENT_ID = '304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com'
 
@@ -369,7 +370,10 @@ def add_spot():
     user = get_user_info_by_email(email)
     user_id = user["id"]
     images = data.get('images')
-    timestamp = datetime.now().isoformat()
+
+    
+    timestamp = datetime.now(timezone.utc).isoformat()
+    
     categories = data.get('categories')
 
 
@@ -429,7 +433,7 @@ def update_spot(spot_id):
     description = data.get('Description')
     geolocation = f"{data['Geolocation']['lat']},{data['Geolocation']['lng']}" if data.get('Geolocation') else None
     images = data.get('images')  
-    timestamp = datetime.now().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
     categories = data.get('categories')
 
     db = get_db()
@@ -539,7 +543,8 @@ def add_comment(spot_id):
     user = get_user_info_by_email(userEmail)
     user_id = user["id"]
     comment = data.get('comment')
-    timestamp = data.get('timestamp')
+
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     # Check if the spot exists
     cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
@@ -610,6 +615,8 @@ def update_comment(comment_id):
     comment_text = data.get('comment')
     cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id, ))
     comment = cursor.fetchone()
+    
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     if comment is None:
         return jsonify({"error": "comment doesn't exist."}), 400
@@ -619,7 +626,7 @@ def update_comment(comment_id):
         return jsonify({"error": "Text is unchanged. There is nothing to edit."}), 400
     else:
         print(comment_text)
-        cursor.execute('''UPDATE comments SET comment = ? WHERE id = ?''', (comment_text, comment_id))
+        cursor.execute('''UPDATE comments SET comment = ?, timestamp = ? WHERE id = ?''', (comment_text, timestamp, comment_id))
         db.commit()
         return jsonify({"message": "Comment was updated."}), 200
     
