@@ -9,7 +9,7 @@ function ViewSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
   const { visible } = windowStates.viewSpotWindow;
 
-  const { getSingleSpotById, setSelectedSpotID, selectedSpotID } = useContext(SpotsContext);
+  const { getSingleSpotById, setSelectedSpotID, selectedSpotID, fetchSpots } = useContext(SpotsContext);
 
   const [spotInfo, setSpotInfo] = useState(null);
 
@@ -23,6 +23,7 @@ function ViewSpotWindow() {
   const onClose = () => {
     setSpotInfo(null)
     updateWindowState('viewSpotWindow', { visible: false });
+    fetchSpots();
   };
 
   const handleClickOutside = (e) => {

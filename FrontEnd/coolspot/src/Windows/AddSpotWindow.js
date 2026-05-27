@@ -3,6 +3,7 @@ import { WindowContext } from '../ContextProviders/WindowContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 import CategorySelector from '../CategorySelector';
+import heic2any from 'heic2any';
 
 function AddSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -13,10 +14,11 @@ function AddSpotWindow() {
   const [errorMessage, setErrorMessage] = useState('');
   const { currentUser } = useContext(CurrentUserContext);
   const { setSpotsUpdated, fetchSpots } = useContext(SpotsContext);
-
-  const addSpotWindow = windowStates.addSpotWindow;
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+  const TARGET_HEIGHT = 600;
 
   useEffect(() => {
     if (visible) {
@@ -25,131 +27,160 @@ function AddSpotWindow() {
       setImages([]);
       setErrorMessage('');
       setSelectedCategories([]);
+      setIsSubmitting(false);
     }
   }, [visible]);
 
+  const processImage = async (file) => {
+    // Convert HEIC/HEIF to JPEG
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+      file = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.8
+      }).then(convertedBlob => new File([convertedBlob], `${file.name.split('.')[0]}.jpg`, {
+        type: 'image/jpeg',
+        lastModified: new Date().getTime()
+      }));
+    }
 
-  const onClose = () => {
-    updateWindowState('addSpotWindow', { visible: false });
+    // Skip processing if under size limit and correct dimensions
+    const img = await createImageBitmap(file);
+    if (file.size <= MAX_FILE_SIZE && img.height <= TARGET_HEIGHT) {
+      img.close();
+      return file;
+    }
+
+    // Calculate new dimensions
+    const scaleFactor = TARGET_HEIGHT / img.height;
+    const width = img.width * scaleFactor;
+    img.close();
+
+    // Resize using canvas
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = TARGET_HEIGHT;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, TARGET_HEIGHT);
+          
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: new Date().getTime()
+            }));
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleImageChange = (e) => {
-    const validImageTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/bmp',
-      'image/svg+xml',
-      'image/heic',
-      'image/heif',
-      'image/tiff'
-    ];
-    
-    const files = Array.from(e.target.files);
-    for (const file of files) {
-      if (!validImageTypes.includes(file.type)) {
-        setErrorMessage(
-          'You can only upload valid image files: JPEG, JPG, PNG, GIF, WebP, BMP, SVG, HEIC, HEIF, or TIFF.'
-        );
+  const handleImageChange = async (e) => {
+    try {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      if (images.length + files.length > 3) {
+        setErrorMessage('Maximum of 3 images allowed');
         return;
       }
+
+      setIsSubmitting(true);
+      const processedFiles = await Promise.all(files.map(processImage));
+      setImages(prev => [...prev, ...processedFiles]);
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setErrorMessage('Error processing images. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-  
-    // Check file limit
-    if (images.length + files.length > 3) {
-      setErrorMessage('You can upload a maximum of 3 images.');
-      return;
-    }
-  
-    setImages((prevImages) => [...prevImages, ...files]);
-    setErrorMessage('');
-  };
-  
-  const handleRemoveImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const handlePublishSpot = async () => {
-    if (spotName.length < 3) {
-      setErrorMessage('Spot name must be at least 3 characters long.');
-      return;
-    } else if (spotName.length > 30) {
-      setErrorMessage('Spot name must not exceed 30 characters.');
-      return;
-    }
-    if (!description || images.length === 0) {
-      setErrorMessage('Please provide a description and upload at least one image.');
+    if (isSubmitting) return;
+
+    // Validation checks
+    if (spotName.length < 3 || spotName.length > 30) {
+      setErrorMessage('Spot name must be between 3-30 characters');
       return;
     }
-  
-    // Check if at least one category is selected
+    if (!description || description.length > 250) {
+      setErrorMessage('Description is required (max 250 characters)');
+      return;
+    }
+    if (images.length === 0) {
+      setErrorMessage('Please upload at least one image');
+      return;
+    }
     if (selectedCategories.length === 0) {
-      setErrorMessage('Please select at least one category.');
+      setErrorMessage('Please select at least one category');
       return;
     }
-  
+
     try {
-      const convertToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
+      setIsSubmitting(true);
+      const jwtToken = localStorage.getItem('JWT');
+      
+      // Convert images to base64
+      const base64Images = await Promise.all(images.map(file => {
+        return new Promise((resolve) => {
           const reader = new FileReader();
-          reader.readAsDataURL(file);
           reader.onload = () => resolve(reader.result);
-          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
         });
-      };
-  
-      const base64Images = await Promise.all(
-        images.map((image) => convertToBase64(image))
-      );
-  
-      // Prepare the jsonData object
-      const jsonData = {
+      }));
+
+      // Prepare payload
+      const payload = {
         spotName,
         Description: description,
         user_id: currentUser.userID,
         images: base64Images,
         userName: currentUser.nickname,
         userEmail: currentUser.email,
-        Geolocation: addSpotWindow.geoLocation,
-        categories: selectedCategories,  // Add selected categories here
+        Geolocation: windowStates.addSpotWindow.geoLocation,
+        categories: selectedCategories,
       };
-  
-      // Alert and console log the categories
-      //alert(`Categories added: ${selectedCategories.join(', ')}`);
-      //console.log('jsonData:', jsonData);
 
-      const jwtToken = localStorage.getItem('JWT');
-
-  
-      // Send the data to the server
+      // Submit data
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify(jsonData),
+        body: JSON.stringify(payload),
       });
-  
-      if (!response.ok) {
-        throw new Error('Error publishing spot');
-      }
-  
+
+      if (!response.ok) throw new Error('Submission failed');
+
+      // Reset on success
       updateWindowState('addSpotWindow', { visible: false });
       setSpotsUpdated(true);
       fetchSpots();
     } catch (error) {
-      console.error('Error uploading spot:', error);
-      setErrorMessage('An error occurred while publishing your spot.');
+      console.error('Submission error:', error);
+      setErrorMessage('Failed to publish spot. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  
+  const handleRemoveImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleClickOutside = (e) => {
     if (e.target.id === 'modal-overlay') {
-      onClose();
+      updateWindowState('addSpotWindow', { visible: false });
     }
   };
 
@@ -157,59 +188,57 @@ function AddSpotWindow() {
     <div
       id="modal-overlay"
       className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 
-        transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        transition-opacity duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
       onClick={handleClickOutside}
     >
       <div
         className={`relative bg-white p-6 rounded-lg shadow-lg z-100 
-        w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transform scale-95 opacity-0 transition-opacity duration-500 
+        w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transform transition-transform duration-500 
         ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
       >
         <button
           className="absolute top-0 right-0 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500"
           style={{ width: '30px', height: '30px' }}
-          onClick={onClose}
+          onClick={() => updateWindowState('addSpotWindow', { visible: false })}
         >
           &times;
         </button>
+
         <h2 className="text-2xl font-bold mb-4 text-center">Add New Spot</h2>
 
         <input
           type="text"
-          className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-1"
+          className="w-full p-1 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 mb-0"
           placeholder="Spot Name"
           value={spotName}
-          onChange={(e) => {
-            if (e.target.value.length <= 30) {
-              setSpotName(e.target.value); setErrorMessage('');
-            }
-          }}
+          onChange={(e) => setSpotName(e.target.value.slice(0, 30))}
         />
 
         <textarea
-          className="w-full p-2 border-b-2 border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-500 transition-colors duration-300 mb-4"
-          placeholder="Spot Description"
+          className="w-full p-1 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 mb-4"
+          placeholder="Spot Description (max 250 characters)"
           value={description}
-          onChange={(e) => {
-            if (e.target.value.length <= 250) {
-              setDescription(e.target.value);
-              setErrorMessage('');
-            }
-          }}
           style={{ resize: 'none', height: '100px', overflowY: 'auto' }}
+          
+          onChange={(e) => setDescription(e.target.value.slice(0, 250))}
+          rows="4"
         />
 
-        <CategorySelector 
-        visible={windowStates.addSpotWindow.visible}
-        selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
+        <CategorySelector
+          visible={visible}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
         />
 
-        <div className="overflow-x-auto overflow-y-hidden mb-4 flex items-center space-x-4">
-          <div className="flex flex-nowrap gap-4">
+        <div className="my-4">
+          <div className="flex gap-4 overflow-x-auto pb-2">
             {images.map((image, index) => (
-              <div key={index} className="relative flex-shrink-0 border border-gray-300 rounded-lg" style={{ height: '100px' }}>
-                <img src={URL.createObjectURL(image)} alt={`Uploaded ${index}`} className="object-cover" style={{ height: '100px', width: 'auto' }} />
+              <div key={index} className="relative flex-shrink-0">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt={`Preview ${index}`}
+                  className="h-24 w-24 object-cover rounded-lg border-black border-2"
+                />
                 <button
                   onClick={() => handleRemoveImage(index)}
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-md w-6 h-6 flex items-center justify-center"
@@ -219,7 +248,7 @@ function AddSpotWindow() {
                 </button>
               </div>
             ))}
-
+            
             {images.length < 3 && (
               <div
                 className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
@@ -244,20 +273,24 @@ function AddSpotWindow() {
           </div>
         </div>
 
-        {errorMessage && <p className="text-red-500 mt-1 text-sm">{errorMessage}</p>}
+        {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
 
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end gap-4">
           <button
-            onClick={onClose}
-            className="mr-4 bg-gray-300 text-black px-4 py-2 rounded-lg shadow hover:bg-gray-400 transition-colors"
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            onClick={() => updateWindowState('addSpotWindow', { visible: false })}
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
+            className={`px-4 py-2 bg-blue-600 text-white rounded-lg ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+            }`}
             onClick={handlePublishSpot}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors"
+            disabled={isSubmitting}
           >
-            Publish Spot
+            {isSubmitting ? 'Publishing...' : 'Publish Spot'}
           </button>
         </div>
       </div>

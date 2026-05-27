@@ -27,7 +27,6 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [address, updateAddress] = useState(null);
 
   useEffect(() => {
-    //console.log(spot);
   const fetchAddress = async () => {
       if (spot.Geolocation) {
         const coords = spot.Geolocation.split(",");
@@ -249,7 +248,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
           src={spot.Images[0]}
           alt={`Thumbnail for ${spot.Name}`}
           className={`absolute right-2 h-14 rounded-md transition-all duration-500
-                      top-12 sm:top-10 md:top-8
+                      top-12 sm:top-10 md:top-8 border-2 border-black
                       ${expanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
           style={{
             width: 'auto',
@@ -314,7 +313,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
               src={image}
               onClick={() => handleImageClick(image)}
               alt={`Spot ${spot.Name} - Image ${index + 1}`}
-              className="h-[200px] object-contain rounded-md transition-transform duration-500 ease-in-out"
+              className="h-[200px] object-contain rounded-md transition-transform duration-500 border-2 border-black ease-in-out"
               style={{ transform: expanded && !isShrinking ? 'scale(1)' : 'scale(0)' }}
             />
           ))}

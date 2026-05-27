@@ -3,6 +3,7 @@ import { WindowContext } from '../ContextProviders/WindowContext';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 import { SpotsContext } from '../ContextProviders/SpotsContext';
 import CategorySelector from '../CategorySelector';
+import heic2any from 'heic2any';
 
 function EditSpotWindow() {
   const { windowStates, updateWindowState } = useContext(WindowContext);
@@ -13,67 +14,98 @@ function EditSpotWindow() {
   const [images, setImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const { currentUser } = useContext(CurrentUserContext);
-
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+  const TARGET_HEIGHT = 600;
 
   useEffect(() => {
     if (visible && spotToEdit) {
-      //console.log("spot to edit:", spotToEdit.categories);
       setSpotName(spotToEdit.Name);
       setDescription(spotToEdit.Description);
       setImages(spotToEdit.Images || []);
-      setSelectedCategories(spotToEdit.categories || []);  // Load existing categories
+      setSelectedCategories(spotToEdit.categories || []);
       setErrorMessage('');
     }
   }, [visible, spotToEdit]);
 
-  const onClose = () => {
-    updateWindowState('editSpotWindow', { visible: false });
+  const processImage = async (file) => {
+    // Convert HEIC/HEIF to JPEG
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+      file = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.8
+      }).then(convertedBlob => new File([convertedBlob], `${file.name.split('.')[0]}.jpg`, {
+        type: 'image/jpeg',
+        lastModified: new Date().getTime()
+      }));
+    }
+
+    // Skip processing if under size limit and correct dimensions
+    const img = await createImageBitmap(file);
+    if (file.size <= MAX_FILE_SIZE && img.height <= TARGET_HEIGHT) {
+      img.close();
+      return file;
+    }
+
+    // Calculate new dimensions
+    const scaleFactor = TARGET_HEIGHT / img.height;
+    const width = img.width * scaleFactor;
+    img.close();
+
+    // Resize using canvas
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = TARGET_HEIGHT;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, TARGET_HEIGHT);
+          
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: new Date().getTime()
+            }));
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-  
-    const validImageTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/bmp',
-      'image/svg+xml',
-      'image/heic',
-      'image/heif',
-      'image/tiff'
-    ];
-    
+  const handleImageChange = async (e) => {
+    try {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
 
-    // Check the maximum limit of images
-    if (images.length + files.length > 3) {
-      setErrorMessage('You can only upload a maximum of 3 images.');
-      return;
-    }
-  
-    // Validate file types
-    for (const file of files) {
-      if (!validImageTypes.includes(file.type)) {
-        setErrorMessage(
-          'Invalid file type. You can only upload images'
-        );
+      if (images.length + files.length > 3) {
+        setErrorMessage('Maximum of 3 images allowed');
         return;
       }
-    }
-  
-    // Update images if all validations pass
-    setImages((prevImages) => [...prevImages, ...files]);
-  };
 
-  
-  const handleRemoveImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+      setIsSubmitting(true);
+      const processedFiles = await Promise.all(files.map(processImage));
+      setImages(prev => [...prev, ...processedFiles]);
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setErrorMessage('Error processing images. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleUpdateSpot = async () => {
+    if (isSubmitting) return;
+
     if (spotName.length < 3 || spotName.length > 60) {
       setErrorMessage('Spot name must be between 3 and 60 characters.');
       return;
@@ -86,47 +118,38 @@ function EditSpotWindow() {
       setErrorMessage('Please provide a description and upload at least one image.');
       return;
     }
-
-    // Check if at least one category is selected
     if (selectedCategories.length === 0) {
       setErrorMessage('Please select at least one category.');
       return;
     }
 
     try {
-      const convertToBase64 = (file) =>
-        new Promise((resolve, reject) => {
+      setIsSubmitting(true);
+      const convertToBase64 = (file) => {
+        if (typeof file === 'string') return file; // Keep existing base64 strings
+        return new Promise((resolve) => {
           const reader = new FileReader();
-          reader.readAsDataURL(file);
           reader.onload = () => resolve(reader.result);
-          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
         });
+      };
 
-      const base64Images = await Promise.all(
-        images.map((image) => (image instanceof File ? convertToBase64(image) : image))
-      );
+      const base64Images = await Promise.all(images.map(convertToBase64));
 
-      // Update the geolocation (split the coordinates string into an object)
       let geoLoc = spotToEdit.Geolocation.split(",");
       let geoCoordJSON = { lat: geoLoc[0], lng: geoLoc[1] };
 
-      // Prepare the edited spot object
       const updatedSpotData = {
         spotName,
         Description: description,
         images: base64Images,
         Geolocation: geoCoordJSON,
-        userEmail: spotToEdit.userEmail, // Assuming userEmail is part of spotToEdit
-        categories: selectedCategories,  // Add selected categories here
+        userEmail: spotToEdit.userEmail,
+        categories: selectedCategories,
       };
-
-      // Alert and console log the categories and the updated spot data
-      //alert(`Categories updated: ${selectedCategories.join(', ')}`);
-      //console.log('Updated Spot Data:', updatedSpotData);
 
       const jwtToken = localStorage.getItem('JWT');
 
-      // Send the data to the server
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${spotToEdit.Id}`, {
         method: 'PUT',
         headers: {
@@ -136,20 +159,27 @@ function EditSpotWindow() {
         body: JSON.stringify(updatedSpotData),
       });
 
-      if (!response.ok) {
-        throw new Error('Error updating spot');
-      }
+      if (!response.ok) throw new Error('Error updating spot');
 
       const result = await response.json();
       console.log(result.message);
       updateWindowState('viewSpotWindow', { visible: false });
-      fetchSpots();  // Re-fetch the updated spots list
-      onClose();     // Close the modal
-      
+      fetchSpots();
+      onClose();
     } catch (error) {
       console.error('Error updating spot:', error);
       setErrorMessage('An error occurred while updating the spot.');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  const onClose = () => {
+    updateWindowState('editSpotWindow', { visible: false });
   };
 
   const handleClickOutside = (e) => {
@@ -158,6 +188,7 @@ function EditSpotWindow() {
     }
   };
 
+  // Keep your existing JSX structure below - only added isSubmitting checks
   return (
     <div
       id="modal-overlay"
@@ -214,9 +245,12 @@ function EditSpotWindow() {
         <div className="overflow-x-auto overflow-y-hidden mb-4 flex items-center space-x-4">
           <div className="flex flex-nowrap gap-4">
             {images.map((image, index) => (
-              <div key={index} className="relative flex-shrink-0 border border-gray-300 rounded-lg" style={{ height: '100px' }}>
-                <img src={typeof image === 'string' ? image : URL.createObjectURL(image)} alt={`Uploaded ${index}`} className="object-cover" style={{ height: '100px', width: 'auto' }} />
-
+              <div key={index} className="relative flex-shrink-0">
+                <img
+                  src={typeof image === 'string' ? image : URL.createObjectURL(image)} 
+                  alt={`Preview ${index}`}
+                  className="h-24 w-24 object-cover rounded-lg border-black border-2"
+                />
                 <button
                   onClick={() => handleRemoveImage(index)}
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-md w-6 h-6 flex items-center justify-center"
@@ -226,6 +260,7 @@ function EditSpotWindow() {
                 </button>
               </div>
             ))}
+            
             {images.length < 3 && (
                 <div
                 className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
@@ -238,12 +273,14 @@ function EditSpotWindow() {
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   id="image-upload"
                   onChange={handleImageChange}
+                  disabled={isSubmitting}
+                  capture="environment"
                 />
                 <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
                   <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
                   </svg>
-                  <span className="text-blue-500">Upload</span>
+                  <span className="text-blue-500">Add Images</span>
                 </label>
               </div>
             )}
@@ -259,14 +296,18 @@ function EditSpotWindow() {
           <button
             onClick={onClose}
             className="mr-4 bg-gray-300 text-black px-4 py-2 rounded-lg shadow hover:bg-gray-400 transition-colors"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             onClick={handleUpdateSpot}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors"
+            className={`bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition-colors ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+            }`}
+            disabled={isSubmitting}
           >
-            Update Spot
+            {isSubmitting ? 'Updating...' : 'Update Spot'}
           </button>
         </div>
       </div>

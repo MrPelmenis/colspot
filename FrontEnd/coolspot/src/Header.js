@@ -94,8 +94,9 @@ function Header() {
           <GoogleLogin
             onSuccess={handleLoginSuccess}
             onError={() => alert('Login Failed')}
-            useOneTap
-            auto_select
+            ux_mode="popup"
+            prompt="select_account"
+            use_fedcm_for_prompt={false}
           />
         )}
       </header>
