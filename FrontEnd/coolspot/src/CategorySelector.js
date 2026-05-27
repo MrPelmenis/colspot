@@ -53,7 +53,7 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
       {selectedCategories.length < 3 && (
         <div>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2"
+            className="bg-blue-500 text-white px-4 py-2 rounded select-none hover:bg-blue-600 flex items-center gap-2"
             onClick={() => setShowDropdown((prev) => !prev)}
           >
             <FaPlusCircle />
@@ -66,7 +66,7 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
       {(showDropdown)&& (
         <div
           ref={dropdownRef}
-          className="absolute bg-white border border-gray-300 rounded-md shadow-md p-2 mt-2 w-64 max-h-48 overflow-y-auto z-10"
+          className="absolute bg-white border select-none border-gray-300 rounded-md shadow-md p-2 mt-2 w-64 max-h-48 overflow-y-auto z-10"
         >
           <ul>
             {allCategories
@@ -74,7 +74,7 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
               .map((category) => (
                 <li
                   key={category}
-                  className="p-2 cursor-pointer flex justify-between items-center border-b border-gray-300 hover:border-b-2 hover:border-gray-400 transition-colors duration-200"
+                  className="p-2 cursor-pointer select-none flex justify-between items-center border-b border-gray-300 hover:border-b-2 hover:border-gray-400 transition-colors duration-200"
                   onClick={() => {
                     handleAddCategory(category);
                     setShowDropdown(false); // Close dropdown after selection
@@ -93,12 +93,12 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
           selectedCategories.map((category) => (
             <div
               key={category}
-              className="flex items-center gap-2 border border-gray-800 text-gray-800 px-4 py-2 rounded-lg"
+              className="flex items-center gap-2 select-none border border-gray-800 text-gray-800 px-4 py-2 rounded-lg"
             >
               <span>{category}</span>
               <button
                 onClick={() => handleRemoveCategory(category)}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 select-none"
               >
                 <FaTimes />
               </button>

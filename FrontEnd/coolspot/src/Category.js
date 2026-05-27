@@ -43,7 +43,7 @@ const Category = ({ name, isVisible }) => {
                   ${isVisible ? 'opacity-100' : 'opacity-0'}`}
     >
       {Icon && <Icon className="text-lg text-gray-600" />}
-      <span className="text-sm font-semibold">{name}</span>
+      <span className="text-sm select-none font-semibold">{name}</span>
     </div>
   );
 };

@@ -16,7 +16,6 @@ export class ExtraFunctions {
     
 
     static getTimeAgo(dateTimeString) {
-        console.log(dateTimeString);
     
         // Ensure correct parsing by removing fractional seconds (if necessary)
         const givenDateTime = new Date(dateTimeString);
