@@ -19,7 +19,8 @@ function SpotList() {
   const [categoryFilter, setCategoryFilter] = useState(''); // State for category filter
   const [selectedSpot, setSelectedSpot] = useState(null);
 
-  const { category, updateCategory } = useContext(SpotSelectionContext);
+  
+  const { category, updateCategory, spotSort, updateSpotSort } = useContext(SpotSelectionContext);
 
 
 
@@ -30,12 +31,13 @@ function SpotList() {
   ];
 
   useEffect(() => {
-    fetchSpots();
+    //fetchSpots();
   }, [setSpots]);
 
   useEffect(() => {
     if (spotsUpdated) {
       setSortOption('recent');
+      updateSpotSort("recent");
       setSpotsUpdated(false);
     }
   }, [spotsUpdated]);
@@ -74,7 +76,11 @@ function SpotList() {
     return spots.filter((spot) => spot.categories.includes(category));
   };
 
-  const handleSortChange = (e) => setSortOption(e.target.value);
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+    updateSpotSort(e.target.value);
+  };
+
   
   const handleCategoryChange = (e) => {
     setCategoryFilter(e.target.value);

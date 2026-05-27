@@ -32,18 +32,21 @@ const iconMap = {
 };
 
 const Category = ({ name, isVisible }) => {
-  const Icon = iconMap[name]; 
+  const Icon = iconMap[name];
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-2 select-none rounded-md border 
+      className={`flex items-center justify-center gap-2 px-4 py-2 select-none rounded-md border 
                   border-gray-300 shadow-sm hover:shadow-lg 
                   transition-all duration-300 cursor-pointer 
                   text-gray-800 bg-white hover:bg-gray-50 
+                  min-w-[120px] max-w-[150px] truncate
                   ${isVisible ? 'opacity-100' : 'opacity-0'}`}
     >
-      {Icon && <Icon className="text-lg text-gray-600" />}
-      <span className="text-sm select-none font-semibold">{name}</span>
+      {Icon && <Icon className="text-lg text-gray-600 shrink-0" />}
+      <span className="text-sm select-none font-semibold truncate whitespace-nowrap">
+        {name}
+      </span>
     </div>
   );
 };

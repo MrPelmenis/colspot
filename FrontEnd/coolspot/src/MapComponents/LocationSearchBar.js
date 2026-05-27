@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
-import { FaLocationArrow } from 'react-icons/fa';
+import locateButton from '../images/locateButtonIcon.png';
 
-
-import { FaMapMarkerAlt } from 'react-icons/fa';
 function LocationSearchBar({ onLocate, onSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [isLocating, setIsLocating] = useState(false);
 
   const handleLocateMe = () => {
     if (navigator.geolocation) {
+      setIsLocating(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           onLocate(latitude, longitude);
+          setIsLocating(false);
         },
         (error) => {
           console.error('Geolocation error:', error);
+          setIsLocating(false);
         }
       );
-    } else {
-      //('Geolocation is not supported by this browser.');
     }
   };
 
@@ -53,7 +53,6 @@ function LocationSearchBar({ onLocate, onSearch }) {
 
   const calculateZoom = (bounds) => {
     if (!bounds) return 13;
-
     const latDiff = Math.abs(bounds.northeast.lat - bounds.southwest.lat);
     const lngDiff = Math.abs(bounds.northeast.lng - bounds.southwest.lng);
     const maxDiff = Math.max(latDiff, lngDiff);
@@ -99,12 +98,14 @@ function LocationSearchBar({ onLocate, onSearch }) {
 
       <button
         onClick={handleLocateMe}
-        className="bg-gray-800 text-white px-4 py-3 rounded-md shadow-md hover:bg-gray-700 transition-all flex items-center justify-center ml-2"
-        style={{ height: '100%' }}
-        title="Locate Me"
+        disabled={isLocating}
+        className={`p-2 h-full rounded-md shadow-md transition-all flex items-center justify-center ${isLocating ? 'bg-gray-500' : 'bg-gray-800 hover:bg-gray-700'} text-white`}
+        style={{ width: '3rem' }}
+        title={isLocating ? "Locating..." : "Locate Me"}
       >
-        <FaMapMarkerAlt />
+        <img src={locateButton} className={`w-4/5 h-4/5 object-contain transition-all ${isLocating ? 'grayscale' : ''}`}  />
       </button>
+
     </div>
   );
 }

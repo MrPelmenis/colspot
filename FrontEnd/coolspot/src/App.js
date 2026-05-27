@@ -25,10 +25,10 @@ function App() {
   return (
     <CurrentUserProvider>
       <WindowProvider>
+      <SpotSelectionProvider>
         <SpotsProvider> 
           <CommentProvider>
             <MapProvider>
-              <SpotSelectionProvider>
                 <div className="flex flex-col items-center bg-gray-800 min-h-screen">
                   <SignInWindow />
                   <ProfileWindow />
@@ -48,10 +48,11 @@ function App() {
                   </div>
                   <Footer />
                 </div>
-              </SpotSelectionProvider>
+              
             </MapProvider>
           </CommentProvider>
         </SpotsProvider>
+        </SpotSelectionProvider>
       </WindowProvider>
     </CurrentUserProvider>
   );

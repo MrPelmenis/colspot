@@ -53,14 +53,29 @@ function MapDiv() {
 
   const { spots, fetchSpots, setSpots, selectedSpotID, setSelectedSpotID } = useContext(SpotsContext);
 
-  const [zoomLevel, setZoomLevel] = useState(9);
+  const [zoomLevel, setZoomLevel] = useState(11);
 
   const mapRef = useRef(null);
 
   const { mapCoords, updateMapCoords } = useContext(MapContext);
 
 
-  const { category, updateCategory } = useContext(SpotSelectionContext);
+  const { category, updateCategory, spotSort, setSpotSort, mapBoundaries, updateMapBoundaries } = useContext(SpotSelectionContext);
+  
+  // Add refs to track current values
+  const categoryRef = useRef(category);
+  const spotSortRef = useRef(spotSort);
+
+  // Update refs when values change
+  useEffect(() => {
+    categoryRef.current = category;
+  }, [category]);
+
+  useEffect(() => {
+    spotSortRef.current = spotSort;
+  }, [spotSort]);
+
+  const timeoutRef = useRef(null);
 
   const bounds = [
     [-90, -180], // Southwest corner of the world
@@ -123,25 +138,9 @@ function MapDiv() {
     updateWindowState('viewSpotWindow', { visible: true });
   };
 
-  // Scroll to the selected spot when the selectedSpotID changes
-  /*useEffect(() => {
-    if (selectedSpotID) {
-      const element = document.getElementById('spot-' + selectedSpotID);
-      if (element) {
-        setTimeout(() => {
-          const offsetTop = element.getBoundingClientRect().top + window.scrollY - 800;
-          window.scrollTo({
-            top: offsetTop,
-            behavior: 'smooth'
-          });
-        }, 100);
-      }
-    }
-  }, [selectedSpotID]);*/
-
   const handleLocate = (latitude, longitude) => {
     setMapCenter([latitude, longitude]);
-    setZoomLevel(13);
+    setZoomLevel(16);
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
@@ -150,7 +149,43 @@ function MapDiv() {
     setZoomLevel(zoom); 
   };
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
+  const handleMapReady = (map) => {
+    map.target.on("zoomend", () => {
+      const currentZoom = map.target.getZoom();
+      if (currentZoom < 2) {
+        map.target.setZoom(2);
+      }
+    });
+
+    // New moveend handler
+    map.target.on('moveend', () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      const bounds = map.target.getBounds();
+        
+        const northWest = bounds.getNorthWest(); // Get northwest corner
+        const southEast = bounds.getSouthEast(); // Get southeast corner
+      
+      updateMapBoundaries({ nw:northWest, se:southEast }); // Update boundaries with new values
+      
+      timeoutRef.current = setTimeout(() => {
+        console.log('Map Boundaries:', { northWest, southEast });
+        console.log('Category:', categoryRef.current);
+        console.log('spotSort:', spotSortRef.current);
+        fetchSpots();
+      }, 1000);
+    });
+  };
 
 
   return (
@@ -175,6 +210,9 @@ function MapDiv() {
           maxBoundsViscosity={1}
           key={zoomLevel}
           whenReady={(map) => {
+            //prikes spotu fetch
+            handleMapReady(map);
+
             map.target.on("zoomend", () => {
               const currentZoom = map.target.getZoom();
               //console.log(currentZoom);

@@ -4,15 +4,28 @@ import React, { createContext, useState } from 'react';
 export const SpotSelectionContext = createContext();
 
 const SpotSelectionProvider = (props) => {
-  const [category, updateSelection] = useState({ category: "" });
+  const [category, setCategory] = useState(""); // Now a string
+  const [spotSort, setSpotSort] = useState("recent"); // Now a string
+  const [mapBoundaries, setMapBoundaries] = useState({
+    nw: { lat: 0, lng: 0 }, // Northwest corner
+    se: { lat: 0, lng: 0 }, // Southeast corner
+  });
+  const updateSpotSort = (sort) => {
+    setSpotSort(sort); // Directly set string
+  }
 
-  const updateCategory = (coords) => {
-    updateSelection(coords);
-  };
+  const updateCategory = (category) => {
+    setCategory(category); // Directly set string
+  }
+
+  const updateMapBoundaries = (boundries) => {
+    setMapBoundaries(boundries);
+  }
+
 
   return (
     // Use the correct context provider
-    <SpotSelectionContext.Provider value={{ category, updateCategory }}>
+    <SpotSelectionContext.Provider value={{ category, updateCategory, spotSort, updateSpotSort, mapBoundaries, updateMapBoundaries }}>
       {props.children}
     </SpotSelectionContext.Provider>
   );
