@@ -16,8 +16,11 @@ export class ExtraFunctions {
     
 
     static getTimeAgo(dateTimeString) {
-        const givenDateTime = new Date(dateTimeString); // Remove convertUTCtoLocal if not necessary
-        const currentDateTime = new Date();
+        console.log(dateTimeString);
+    
+        // Ensure correct parsing by removing fractional seconds (if necessary)
+        const givenDateTime = new Date(dateTimeString);
+        const currentDateTime = new Date(); // Browser's local time
     
         const timeDifference = Math.floor((currentDateTime - givenDateTime) / 1000); // Difference in seconds
     
@@ -34,6 +37,7 @@ export class ExtraFunctions {
             return days === 1 ? `${days} day ago` : `${days} days ago`;
         }
     }
+    
     
     
 }

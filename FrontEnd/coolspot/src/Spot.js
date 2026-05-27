@@ -132,7 +132,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
 
 
   const handleCommentClick = async (event) => {
-    event.stopPropagation();
+    event.stopPropagation(); 
     if(!isThisSpotSelected){
       //handleCloseSpot();
     }
@@ -270,7 +270,7 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
 
       <div className="flex justify-between items-center mb-1">
         <div className="sm:items-start">
-          <p className="text-md sm:text-xl md:text-2xl font-semibold">{spot.Name}</p>
+        <p className="text-md sm:text-lg md:text-2xl font-semibold">{spot.Name}</p>
           <p className="text-sm sm:text-base text-gray-500">{spot.nickname}</p>
           
           <p className="text-sm sm:text-base text-gray-500">{address || "Loading..."}</p>

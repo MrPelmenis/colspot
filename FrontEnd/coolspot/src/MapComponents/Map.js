@@ -108,7 +108,7 @@ function MapDiv() {
 
   const getButtonMessage = () => {
     if (!isLoggedIn) {
-      return 'Log in to add spots';
+      return 'Sign in required to add spots';
     }
     return isAdding ? buttonMessage : 'Add Your Spot';
   };
