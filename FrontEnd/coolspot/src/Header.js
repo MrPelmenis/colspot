@@ -15,17 +15,18 @@ function Header() {
   const { currentUser, updateCurrentUser, fetchUserData } = useContext(CurrentUserContext);
   const [userEmail, setUserEmail] = useState("");
 
-  const [isLoggedIn, setIsLoggedIn] = useState((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
+  let isLoggedIn = (ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false;
 
 
   useEffect(()=>{
-    setIsLoggedIn((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
-  }, [updateCurrentUser, currentUser]);
+      //console.log("current user:", currentUser);
+      //console.log((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
+  }, [currentUser])
 
   
   useEffect(() => {
     fetchUserData();
-    setIsLoggedIn((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
+    isLoggedIn = ((ExtraFunctions.isUserLoggedIn() && localStorage.getItem('JWT') != null) ? true : false);
   }, []);
  
 
@@ -93,6 +94,8 @@ function Header() {
           <GoogleLogin
             onSuccess={handleLoginSuccess}
             onError={() => alert('Login Failed')}
+            useOneTap
+            auto_select
           />
         )}
       </header>
