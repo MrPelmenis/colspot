@@ -23,7 +23,6 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, setCommentSpotID } = useContext(CommentContext);
   const { windowStates, updateWindowState } = useContext(WindowContext);
 
-
   const [address, updateAddress] = useState(null);
 
   useEffect(() => {
