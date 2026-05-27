@@ -81,7 +81,7 @@ function MapDiv() {
   useEffect(() => {
     if (mapCoords.lat && mapCoords.lng) {
       setMapCenter([mapCoords.lat, mapCoords.lng]);
-      setZoomLevel(12);
+      setZoomLevel(15);
     }
   }, [mapCoords]);
 

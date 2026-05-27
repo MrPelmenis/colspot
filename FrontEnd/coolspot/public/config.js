@@ -5,6 +5,8 @@ window.websiteSetting ={
     
     Should you, in a moment of weakness or worldly distraction, wish to part ways with us, profile deletion is a solemn ritual now permitted. However, we urge you to think twice before relinquishing your membership in the cult of CoolSpot, for the act of deletion is as irreversible as forsaking a sacred oath. Once completed, your profile will vanish into the digital ether, leaving only whispers of your presence behind. Choose wisely, fellow devotee, as the void of the unmarked map is not easily filled.`,
     
-    serverURL: "https://coolspot.lol",
+    about:'CoolSpot is a community-driven platform designed to help people discover unique, budget-friendly places to enjoy quality free time. We connect users to diverse locations—from cozy cafes to scenic trails—through shared descriptions, photos, and categories. Our goal is to inspire exploration, foster community, and make hidden gems accessible to everyone, without the pressure of high costs. Join us in redefining how we discover and share meaningful experiences!',
+    
+    serverURL: "http://localhost:5000",
     OPEN_CAGE_KEY: "9b00bb6a439d4d16b83a0bb9650de885"
 };
