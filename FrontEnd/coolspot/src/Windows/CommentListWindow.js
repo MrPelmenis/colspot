@@ -4,6 +4,8 @@ import Comment from '../Comment';
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
 import heic2any from 'heic2any';
 
+
+
 function CommentListWindow() {
   const { visibleComments, setVisibleComments, fetchComment, commentInfo, commentSpotID } = useContext(CommentContext);
   const [newComment, setNewComment] = useState('');
@@ -136,7 +138,7 @@ function CommentListWindow() {
   return (
     <div
       id="modal-overlay"
-      className={`fixed inset-0 flex items-center justify-center z-50 ${visibleComments ? 'visible' : 'invisible'}`}
+      className={`fixed inset-0 flex items-center justify-center z-40 ${visibleComments ? 'visible' : 'invisible'}`}
       style={{
         backgroundColor: visibleComments ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
         opacity: visibleComments ? 1 : 0,
@@ -145,7 +147,7 @@ function CommentListWindow() {
       onClick={handleClickOutside}
     >
       <div
-        className={`relative bg-white p-6 rounded-lg shadow-lg z-100 w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/3 transition-transform duration-300 ${visibleComments ? 'scale-100' : 'scale-95'}`}
+        className={`relative bg-white p-6 rounded-lg shadow-lg z-100 w-11/12 sm:w-5/6 md:w-4/5 lg:w-1/2 xl:w-1/2 transition-transform duration-300 ${visibleComments ? 'scale-100' : 'scale-95'}`}
       >
         <button
           className="absolute top-0 right-0 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold flex items-center justify-center hover:bg-red-500"
@@ -196,7 +198,7 @@ function CommentListWindow() {
                 <input
                   type="file"
                   accept="image/*"
-                  title="Comment Images Coming Soon!"
+                  title="Add your memories here"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   id="image-upload"
                   onChange={handleImageChange}
@@ -234,7 +236,7 @@ function CommentListWindow() {
           </button>
         </div>
 
-        <div className="space-y-4 overflow-y-auto max-h-[200px] mt-4">
+        <div className="space-y-4 overflow-y-auto max-h-[400px] mt-4">
           {commentInfo && commentInfo.length > 0 ? (
             commentInfo.sort((a, b) => sortOption === 'mostLiked' ? b.likes - a.likes : new Date(b.time) - new Date(a.time)).map((comment, index) => (
               <Comment

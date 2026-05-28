@@ -15,6 +15,7 @@ export const CommentProvider = ({ children }) => {
       }
       
       const data = await response.json();
+      console.log(data);
       const formattedComments = data.map(comment => ({
         id: comment.id,
         userName: comment.userName,
@@ -23,7 +24,8 @@ export const CommentProvider = ({ children }) => {
         text: comment.comment, 
         time: comment.timestamp,
         likes: comment.likes,
-        liked_by: comment.liked_by
+        liked_by: comment.liked_by,
+        image: comment.image
       }));
 
       setCommentInfo(formattedComments);

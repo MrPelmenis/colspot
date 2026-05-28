@@ -703,8 +703,22 @@ def get_comments(spot_id):
         user_id = comment["user_id"]
         user = get_user_info_by_id(user_id)
 
+        # Get likes
         cursor.execute("SELECT user_id FROM comment_likes WHERE comment_id = ?", (comment["id"],))
         likes = cursor.fetchall()
+
+        # Get image path (if exists)
+        cursor.execute("SELECT file_path FROM comment_images WHERE comment_id = ?", (comment["id"],))
+        image_record = cursor.fetchone()
+        image_base64 = None
+
+        if image_record:
+            image_path = image_record["file_path"]
+            try:
+                with open(image_path, "rb") as image_file:
+                    image_base64 = f"data:image/{image_path.split('.')[-1]};base64," + base64.b64encode(image_file.read()).decode('utf-8')
+            except Exception as e:
+                print(f"Error loading image {image_path}: {e}")
 
         comment_data = {
             "id": comment["id"],
@@ -712,26 +726,50 @@ def get_comments(spot_id):
             "userEmail": user["email"],
             "comment": comment["comment"],
             "timestamp": comment["timestamp"],
-            "likes": len(likes), 
-            "liked_by": [like["user_id"] for like in likes]
+            "likes": len(likes),
+            "liked_by": [like["user_id"] for like in likes],
+            "image": image_base64  # Base64 encoded image
         }
         comments_list.append(comment_data)
 
     return jsonify(comments_list)
+
 
 @app.route('/api/spots/<int:comment_id>/comment', methods=['DELETE'])
 @google_oauth_required
 def delete_comment(comment_id):
     conn = get_db()
     cursor = conn.cursor()
-    
+
+    # Retrieve the image file path (if exists)
+    cursor.execute("SELECT file_path FROM comment_images WHERE comment_id = ?", (comment_id,))
+    image_record = cursor.fetchone()
+
+    if image_record:
+        image_path = image_record["file_path"]
+        # Delete the image file from disk
+        if os.path.exists(image_path):
+            try:
+                os.remove(image_path)
+            except Exception as e:
+                print(f"Error deleting image file {image_path}: {e}")
+
+        # Delete image entry from database
+        cursor.execute("DELETE FROM comment_images WHERE comment_id = ?", (comment_id,))
+
+    # Delete the comment itself
     cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
     conn.commit()
-    
+
     if cursor.rowcount > 0:
-        return jsonify({"message": "Comment deleted successfully"}), 200
+        return jsonify({"message": "Comment and associated image deleted successfully"}), 200
     else:
         return jsonify({"error": "Comment not found"}), 404
+
+import os
+import base64
+
+import os
 
 @app.route('/api/spots/<int:comment_id>/comment', methods=['PATCH'])
 @google_oauth_required
@@ -740,24 +778,49 @@ def update_comment(comment_id):
     cursor = db.cursor()
 
     data = request.json
-    comment_text = data.get('comment')
-    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id, ))
+    comment_text = data.get('comment', None)
+    image_base64 = data.get('image', None)  # Can be new image, "null", or None
+
+    # Fetch existing comment
+    cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id,))
     comment = cursor.fetchone()
-    
+
+    if not comment:
+        return jsonify({"error": "Comment doesn't exist."}), 400
+
+    # Get existing image path (if any)
+    cursor.execute("SELECT file_path FROM comment_images WHERE comment_id = ?", (comment_id,))
+    image_record = cursor.fetchone()
+    old_image_path = image_record["file_path"] if image_record else None
+
+    # Validate input: At least text or an image must exist
+    if (comment_text is None or comment_text.strip() == "") and image_base64 is None:
+        return jsonify({"error": "Comment must contain either text or an image"}), 400
+
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    if comment is None:
-        return jsonify({"error": "comment doesn't exist."}), 400
-    elif comment_text is None or comment_text.replace(" ", "") == "":
-        return jsonify({"error": "provided message is empty."})
-    elif comment["comment"] == comment_text:
-        return jsonify({"error": "Text is unchanged. There is nothing to edit."}), 400
-    else:
-        print(comment_text)
-        cursor.execute('''UPDATE comments SET comment = ?, timestamp = ? WHERE id = ?''', (comment_text, timestamp, comment_id))
-        db.commit()
-        return jsonify({"message": "Comment was updated."}), 200
-    
+    # **1. Handle Image Updates**
+    if image_base64 is None:  # User explicitly removed the image
+        if old_image_path and os.path.exists(old_image_path):
+            os.remove(old_image_path)  # Delete old image file
+        cursor.execute("DELETE FROM comment_images WHERE comment_id = ?", (comment_id,))
+    elif image_base64 is not None:  # New image uploaded
+        if old_image_path and os.path.exists(old_image_path):
+            os.remove(old_image_path)  # Remove old image file
+
+        new_image_path = save_base64_comment_image(image_base64, comment_id)  # Save new image
+        if old_image_path:
+            cursor.execute("UPDATE comment_images SET file_path = ? WHERE comment_id = ?", (new_image_path, comment_id))
+        else:
+            cursor.execute("INSERT INTO comment_images (comment_id, file_path) VALUES (?, ?)", (comment_id, new_image_path))
+
+    # **2. Handle Text Updates**
+    if comment_text and comment_text.strip() != comment["comment"]:
+        cursor.execute("UPDATE comments SET comment = ?, timestamp = ? WHERE id = ?", (comment_text, timestamp, comment_id))
+
+    db.commit()
+    return jsonify({"message": "Comment updated successfully"}), 200
+
 
 
 #LIKES COMMENTS
