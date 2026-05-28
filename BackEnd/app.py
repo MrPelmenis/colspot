@@ -190,7 +190,6 @@ def check_user():
     conn.commit()
 
     if user:
-        #print("exists",user["is_admin"])
         return jsonify(message="User exists", user={
             "email": user["email"],
             "nickname": user["nickname"],
@@ -206,7 +205,30 @@ def check_user():
         return jsonify(message="User created", user={
             "email": email,
             "name": nickname
-        }), 201  # HTTP status code for Created
+        }), 201  
+
+@app.route('/api/check_user_by_nickname', methods=['POST'])
+def check_user_by_nickname():
+    data = request.json
+    nickname = data.get('nickname').strip()
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE nickname = ?", (nickname,))
+    user = cursor.fetchone()
+    conn.commit()
+
+    if user:
+        return jsonify(message="User exists", user={
+            "email": user["email"],
+            "nickname": user["nickname"],
+            "description": user["description"],
+            "profile_pic": user["profile_pic"],
+            "user_id": user["id"],
+            "is_admin": user["is_admin"]
+        }), 200
+    else: 
+        return jsonify(message="User wit such nickname doesn't exist"), 201  
 
 def save_base64_image(base64_image, spot_id, index):
     # Extract image type and base64 data
