@@ -1,39 +1,98 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { CommentContext } from '../ContextProviders/CommentProvider';
 import Comment from '../Comment';
-
 import { CurrentUserContext } from '../ContextProviders/CurrentUserContext';
+import heic2any from 'heic2any';
 
 function CommentListWindow() {
-  const { visibleComments, setVisibleComments, fetchComment, commentInfo, setCommentInfo, commentSpotID, setCommentSpotID } = useContext(CommentContext);
+  const { visibleComments, setVisibleComments, fetchComment, commentInfo, commentSpotID } = useContext(CommentContext);
   const [newComment, setNewComment] = useState('');
-  const [error, setError] = useState(''); // State to hold validation error
-
-  const [sortOption, setSortOption] = useState('recent'); // State to track selected sorting option
+  const [error, setError] = useState('');
+  const [sortOption, setSortOption] = useState('recent');
+  const [image, setImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { currentUser } = useContext(CurrentUserContext);
 
-  // Sort comments function
-  const sortComments = (comments, option) => {
-    switch (option) {
-      case 'mostLiked':
-        return [...comments].sort((a, b) => b.likes - a.likes); // Sort by likes
-      case 'recent':
-        return [...comments].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sort by time
-      default:
-        return comments;
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+  const TARGET_HEIGHT = 400;
+
+  const processImage = async (file) => {
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+      file = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.8
+      }).then(convertedBlob => new File([convertedBlob], `${file.name.split('.')[0]}.jpg`, {
+        type: 'image/jpeg',
+        lastModified: new Date().getTime()
+      }));
+    }
+
+    const img = await createImageBitmap(file);
+    if (file.size <= MAX_FILE_SIZE && img.height <= TARGET_HEIGHT) {
+      img.close();
+      return file;
+    }
+
+    const scaleFactor = TARGET_HEIGHT / img.height;
+    const width = img.width * scaleFactor;
+    img.close();
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = TARGET_HEIGHT;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, TARGET_HEIGHT);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: new Date().getTime()
+            }));
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageChange = async (e) => {
+    if (e.target.files[0]) {
+      try {
+        const processedFile = await processImage(e.target.files[0]);
+        setImage(processedFile);
+      } catch (error) {
+        console.error('Image processing error:', error);
+        setError('Error processing image. Please try again.');
+      }
     }
   };
 
   const handleAddComment = async () => {
-    if (newComment.trim().length < 3) {
+    if (newComment.trim().length < 3 && !image) {
       setError('Comment must be between 3 and 250 characters');
       return;
     }
 
     const jwtToken = localStorage.getItem('JWT');
+    setIsSubmitting(true);
 
     try {
+      let imageBase64 = '';
+      if (image) {
+        imageBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(image);
+        });
+      }
+
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${commentSpotID}/comment`, {
         method: 'POST',
         headers: {
@@ -43,33 +102,31 @@ function CommentListWindow() {
         body: JSON.stringify({
           userName: currentUser.nickname,
           userEmail: currentUser.email,
-          comment: newComment
+          comment: newComment,
+          image: imageBase64
         }),
       });
 
       if (response.ok) {
-        setNewComment(''); // Clear the input after adding
-        setError(''); // Clear any previous errors
-        //setCommentInfo([]);
-        await fetchComment(commentSpotID); // Refresh comments
+        setNewComment('');
+        setImage(null);
+        setError('');
+        await fetchComment(commentSpotID);
       } else {
-        console.error('Failed to add comment');
+        throw new Error('Failed to add comment');
       }
     } catch (error) {
       console.error('Error:', error);
+      setError('Failed to add comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSortChange = (e) => setSortOption(e.target.value);
-
-  const onClose = () => {
-    setVisibleComments(false);
-  };
-
+  const onClose = () => setVisibleComments(false);
   const handleClickOutside = (e) => {
-    if (e.target.id === 'modal-overlay') {
-      onClose();
-    }
+    if (e.target.id === 'modal-overlay') onClose();
   };
 
   return (
@@ -105,8 +162,54 @@ function CommentListWindow() {
             setNewComment(e.target.value);
             setError('');
           }}
-          rows="2" // Sets the number of rows in the textarea
+          rows="2"
         />
+
+        <div className="my-4">
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {image && (
+              <div className="relative flex-shrink-0">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt="Preview"
+                  className="h-24 w-24 object-cover rounded-lg border-black border-2"
+                />
+                <button
+                  onClick={() => setImage(null)}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-md w-6 h-6 flex items-center justify-center"
+                  style={{ width: '20px', height: '20px' }}
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+
+            {!image && (
+              <div
+                className="relative border-2 border-gray-500 rounded-lg text-center cursor-pointer flex-none hover:bg-gray-100 transition-colors"
+                style={{ width: '40px', height: '40px' }}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  title="Comment Images Coming Soon!"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  id="image-upload"
+                  onChange={handleImageChange}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevents the file dialog from opening
+                    alert("Comment Images Coming Soon!");
+                  }}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
+                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </label>
+              </div>
+            )}
+          </div>
+        </div>
 
         {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
 
@@ -122,19 +225,18 @@ function CommentListWindow() {
 
           <button
             onClick={handleAddComment}
-            disabled={!currentUser.nickname}
+            disabled={!currentUser.nickname || isSubmitting}
             className={`${
               !currentUser.nickname ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
             } text-white text-sm px-3 py-1 rounded-lg shadow transition-colors`}
           >
-            {!currentUser.nickname ? 'Log in to comment' : 'Comment'}
+            {!currentUser.nickname ? 'Log in to comment' : isSubmitting ? 'Posting...' : 'Comment'}
           </button>
         </div>
 
         <div className="space-y-4 overflow-y-auto max-h-[200px] mt-4">
           {commentInfo && commentInfo.length > 0 ? (
-            // Apply sorting directly in JSX
-            sortComments(commentInfo, sortOption).map((comment, index) => (
+            commentInfo.sort((a, b) => sortOption === 'mostLiked' ? b.likes - a.likes : new Date(b.time) - new Date(a.time)).map((comment, index) => (
               <Comment
                 key={`${comment.userName}-${index}`}
                 comment={comment}

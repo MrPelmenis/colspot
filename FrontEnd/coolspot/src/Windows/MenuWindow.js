@@ -14,10 +14,10 @@ function MenuWindow() {
             contactWindow: { visible: true },
             aboutWindow: { visible: true },
             deleteCommentWindow: { visible: false, commentID: null },
-            viewSpotWindow: { visible: false },
+            /*viewSpotWindow: { visible: false },
             viewImageWindow: { visible: false, imageSRC: null },
             viewProfileWindow: { visible: false, nickname: "" },
-            menuWindow: { visible: false }, 
+            menuWindow: { visible: false },*/ 
             termsOfServiceWindow: { visible: true },
         };
 

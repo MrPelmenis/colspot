@@ -332,72 +332,119 @@ def get_user_info_by_id(user_id):
     return user
 
 
-#SPOTS
 @app.route('/api/spots', methods=['GET'])
 def get_spots():
-    
+    category = request.args.get('category', '').strip()
+    sort = request.args.get('sort', '').strip()
+    nw_lat = request.args.get('nw_lat')
+    nw_lng = request.args.get('nw_lng')
+    se_lat = request.args.get('se_lat')
+    se_lng = request.args.get('se_lng')
+
+    params = []
+
+    # Base SQL query
+    sql = """
+    SELECT 
+        spots.id,
+        spots.name,
+        spots.description,
+        spots.geolocation,
+        spots.user_id,
+        users.nickname AS nickname,
+        spots.timestamp,
+        COUNT(DISTINCT spot_likes.user_id) AS likes_count,
+        COUNT(DISTINCT comments.id) AS comments_count,
+        GROUP_CONCAT(DISTINCT tags.tag_name) AS categories,
+        GROUP_CONCAT(DISTINCT spot_likes.user_id) AS liked_by_user_ids,
+        GROUP_CONCAT(DISTINCT spot_images.file_path) AS image_paths
+    FROM spots
+    LEFT JOIN spot_likes ON spots.id = spot_likes.spot_id
+    LEFT JOIN comments ON spots.id = comments.spot_id
+    LEFT JOIN users ON spots.user_id = users.id
+    LEFT JOIN spot_images ON spots.id = spot_images.spot_id
+    """
+
+    # Add joins for category if applicable
+    if category:
+        sql += """
+        INNER JOIN spot_tags ON spots.id = spot_tags.spot_id
+        INNER JOIN tags ON spot_tags.tag_id = tags.id AND tags.tag_name = ?
+        """
+        params.append(category)
+    else:
+        sql += """
+        LEFT JOIN spot_tags ON spots.id = spot_tags.spot_id
+        LEFT JOIN tags ON spot_tags.tag_id = tags.id
+        """
+
+    # Add WHERE clause for map boundaries
+    sql += """
+    WHERE 
+        (CAST(substr(spots.geolocation, 1, instr(spots.geolocation, ',') - 1) AS REAL) BETWEEN ? AND ?)
+        AND 
+        (CAST(substr(spots.geolocation, instr(spots.geolocation, ',') + 1) AS REAL) BETWEEN ? AND ?)
+    """
+    params.extend([se_lat, nw_lat, nw_lng, se_lng])
+
+    sql += "GROUP BY spots.id"
+
+    # Determine ORDER BY
+    if sort == 'mostLiked':
+        sql += " ORDER BY likes_count DESC"
+    elif sort == 'newest':
+        sql += " ORDER BY spots.timestamp DESC"
+    else:
+        sql += " ORDER BY spots.timestamp DESC"  # Default sorting
+
+    sql += " LIMIT 15"
+
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM spots")
+    cursor.execute(sql, params)
     spots = cursor.fetchall()
-    
+
     spots_list = []
-    
-    for spot in spots:
-        cursor.execute("SELECT file_path FROM spot_images WHERE spot_id = ?", (spot["id"],))
-        images = cursor.fetchall()
-        cursor.execute("SELECT nickname FROM users WHERE id = ?", (spot["user_id"],))
-        nickName_result = cursor.fetchone()
-        nickName = nickName_result[0] if nickName_result else "Unknown"
-
-        cursor.execute("SELECT * FROM comments WHERE spot_id = ?", (spot["id"],))
-        comments = len(cursor.fetchall())
-
-        # Convert image files to Base64 and store them in a list
-        # try:
+    for row in spots:
+        # Process image paths
+        image_paths = row['image_paths'].split(',') if row['image_paths'] else []
         base64_images = []
-        for image in images:
-            image_path = image["file_path"]
+        for image_path in image_paths:
             try:
                 with open(image_path, "rb") as image_file:
-                    # Read the image file and encode it in base64
                     encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-                    # Prepend the appropriate data URL prefix
-                    mime_type = image_path.split('.')[-1]  # Extract file extension
+                    mime_type = image_path.split('.')[-1].lower()
+                    if mime_type not in ['jpg', 'jpeg', 'png', 'gif']:
+                        mime_type = 'jpeg'  # default to jpeg if unknown
                     base64_image = f"data:image/{mime_type};base64,{encoded_image}"
                     base64_images.append(base64_image)
             except FileNotFoundError:
                 pass
-                #print(f"Image file {image_path} not found.")
-        # except TypeError: #if there is no photo
-        #     pass
 
-        cursor.execute("SELECT user_id FROM spot_likes WHERE spot_id = ?", (spot["id"],))
-        likes = cursor.fetchall()
+        # Process categories
+        categories = row['categories'].split(',') if row['categories'] else []
 
-        cursor.execute("SELECT tag_id FROM spot_tags WHERE spot_id = ?", (spot["id"],))
-        tags = cursor.fetchall()
-        #print(tags)
-        categories = []
-        for tag in tags:
-            cursor.execute("SELECT tag_name FROM tags WHERE id = ?", (tag[0], ))
-            category = cursor.fetchone()
-            categories.append(category[0])
+        # Process liked_by user IDs
+        liked_by = []
+        if row['liked_by_user_ids']:
+            liked_by = list(map(int, row['liked_by_user_ids'].split(',')))
 
-        spots_list.append({ 
-            "Id": spot["id"],
-            "Name": spot["name"],
-            "Description": spot["description"],
-            "Geolocation": spot["geolocation"],
-            "user_id": spot["user_id"],
-            "nickname": nickName,
-            "Time": spot["timestamp"],
-            "Images": base64_images, 
-            "likes": len(likes), 
-            "liked_by": [like["user_id"] for like in likes],
+        spot_data = {
+            "Id": row['id'],
+            "Name": row['name'],
+            "Description": row['description'],
+            "Geolocation": row['geolocation'],
+            "user_id": row['user_id'],
+            "nickname": row['nickname'] or "Unknown",
+            "Time": row['timestamp'],
+            "Images": base64_images,
+            "likes": row['likes_count'],
+            "liked_by": liked_by,
             "categories": categories,
-            "comments": comments
-        })
+            "comments": row['comments_count']
+        }
+        spots_list.append(spot_data)
+
     return jsonify(spots_list)
 
 @app.route('/api/spots', methods=['POST'])
