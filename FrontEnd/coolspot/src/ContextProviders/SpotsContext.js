@@ -33,9 +33,21 @@ export const SpotsProvider = ({ children }) => {
       });
 
 
-      const response = await fetch( `${window.websiteSetting.serverURL}/api/spots`);
+      const queryParams = new URLSearchParams({
+        category: category || "", // Fallback to empty string if undefined
+        sort: spotSort || "", // Fallback to empty string if undefined
+        nw_lat: mapBoundaries.nw.lat, // Latitude of northwest corner
+        nw_lng: mapBoundaries.nw.lng, // Longitude of northwest corner
+        se_lat: mapBoundaries.se.lat, // Latitude of southeast corner
+        se_lng: mapBoundaries.se.lng, // Longitude of southeast corner
+      });
+
+      const url = `${window.websiteSetting.serverURL}/api/spots?${queryParams.toString()}`;
+
+      console.log("url:", url);
+
+      const response = await fetch(url);
       const data = await response.json();
-      //console.log("spots:", data);
       setSpots(data);
     } catch (error) {
       console.error('Error fetching spots:', error);

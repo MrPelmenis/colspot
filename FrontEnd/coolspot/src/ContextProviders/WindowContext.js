@@ -1,5 +1,6 @@
 import React, { createContext, useState } from 'react';
 import EditSpotWindow from '../Windows/EditSpotWindow';
+import LeaderboardWindow from '../Windows/LeaderboardWindow';
 
 export const WindowContext = createContext();
 
@@ -15,6 +16,9 @@ export const WindowProvider = ({ children }) => {
     deleteCommentWindow:{visible:false, commentID: null},
     viewSpotWindow:{visible:false},
     viewImageWindow :{visible:false, imageSRC: null},
+    viewProfileWindow: { visible: false, nickname: "" },
+    leaderboardWindow: { visible: false },
+    menuWindow: { visible: false },
   });
 
   const updateWindowState = (windowName, newState) => {

@@ -158,6 +158,8 @@ function MapDiv() {
   }, []);
 
   const handleMapReady = (map) => {
+    let firstTime = true;
+
     map.target.on("zoomend", () => {
       const currentZoom = map.target.getZoom();
       if (currentZoom < 2) {
@@ -170,20 +172,17 @@ function MapDiv() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-
+      firstTime = false;
       const bounds = map.target.getBounds();
         
-        const northWest = bounds.getNorthWest(); // Get northwest corner
-        const southEast = bounds.getSouthEast(); // Get southeast corner
+      const northWest = bounds.getNorthWest();
+      const southEast = bounds.getSouthEast();
       
-      updateMapBoundaries({ nw:northWest, se:southEast }); // Update boundaries with new values
+      updateMapBoundaries({ nw:northWest, se:southEast });
       
       timeoutRef.current = setTimeout(() => {
-        console.log('Map Boundaries:', { northWest, southEast });
-        console.log('Category:', categoryRef.current);
-        console.log('spotSort:', spotSortRef.current);
         fetchSpots();
-      }, 1000);
+      }, !firstTime ? 0 : 1000); 
     });
   };
 

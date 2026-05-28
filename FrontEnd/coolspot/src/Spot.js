@@ -15,6 +15,8 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 
 import { GrMapLocation } from "react-icons/gr";
 
+import ProfileImage from './ProfileImage'; 
+
 function Spot({ spot, isThisSpotSelected, closeWindow }) {
   const [expanded, setExpanded] = useState(isThisSpotSelected);
   const [isShrinking, setIsShrinking] = useState(false);
@@ -206,7 +208,6 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
     
   };
 
-
   const handleCloseSpot = () => { 
     if(isThisSpotSelected && closeWindow){
       closeWindow();
@@ -223,13 +224,24 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
     updateWindowState('viewImageWindow', { visible: true, imageSRC: src });
   } 
 
+  const handleProfileClick = (nickname) => {
+    if(nickname == currentUser.nickname){
+      updateWindowState('profileWindow', { visible: true });
+    }else{
+      if(nickname != "deleted"){
+        updateWindowState('viewProfileWindow', { visible: true, nickname: nickname });
+      }
+    }
+    
+  }
+
 
   return (
     <div
       id={"spot-" + spot.Id}
       ref={spotRef}
       className={`relative w-full min-w-[300px] bg-white rounded-md shadow-md p-4 transition-all duration-500 ease-in-out cursor-pointer
-        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[180px]'}`} ${!isThisSpotSelected ? "mb-4" : ""} `}
+        ${expanded ? 'h-auto' : `${isShrinking ? '' : 'h-[190px]'}`} ${!isThisSpotSelected ? "mb-4" : ""} `}
       onClick={handleSpotClick}
     >
       <button
@@ -271,8 +283,10 @@ function Spot({ spot, isThisSpotSelected, closeWindow }) {
       <div className="flex justify-between items-center mb-1">
         <div className="sm:items-start">
         <p className="text-md sm:text-lg md:text-2xl font-semibold">{spot.Name}</p>
-          <p className="text-sm sm:text-base text-gray-500">{spot.nickname}</p>
-          
+          <div className='flex items-center hover:underline' onClick={()=>{handleProfileClick(spot.nickname)}}>
+            <ProfileImage nickname={spot.nickname} inSpot={true} w={8} h={8} ></ProfileImage>
+            <p className="text-sm ml-2 sm:text-base text-gray-500 ">{spot.nickname}</p>
+          </div>
           <p className="text-sm sm:text-base text-gray-500">{address || "Loading..."}</p>
 
           <div 

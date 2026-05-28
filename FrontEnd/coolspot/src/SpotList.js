@@ -22,17 +22,11 @@ function SpotList() {
   
   const { category, updateCategory, spotSort, updateSpotSort } = useContext(SpotSelectionContext);
 
-
-
   const availableCategories = [
     "Chill", "Socializing", "Dangerous", "Scenic", "Pay", "Historical", 
     "Foodie", "Hidden Gem", "Outdoor Activities", "Nightlife", 
     "Pet-Friendly", "Family-Friendly", "Artistic", "Romantic"
   ];
-
-  useEffect(() => {
-    //fetchSpots();
-  }, [setSpots]);
 
   useEffect(() => {
     if (spotsUpdated) {
@@ -41,15 +35,6 @@ function SpotList() {
       setSpotsUpdated(false);
     }
   }, [spotsUpdated]);
-
-  useEffect(() => {
-    if (selectedSpotID) {
-      const foundSpot = spots.find((spot) => spot.Id == selectedSpotID);
-      setSelectedSpot(foundSpot);
-    } else {
-      setSelectedSpot(null);
-    }
-  }, [selectedSpotID, spots, fetchSpots]);
 
   const sortSpots = (spots, option) => {
     let sortedSpots;
@@ -79,12 +64,18 @@ function SpotList() {
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
     updateSpotSort(e.target.value);
+    setTimeout(() => {
+      fetchSpots();
+    }, 1000);
   };
 
   
   const handleCategoryChange = (e) => {
     setCategoryFilter(e.target.value);
     updateCategory(e.target.value);
+    setTimeout(() => {
+      fetchSpots();
+    }, 1000);
   };
 
   const sortedSpots = sortSpots(spots, sortOption);
@@ -131,7 +122,7 @@ function SpotList() {
       </div>
 
       {filteredSpots.length === 0 ? (
-        <p className="text-white">No available spots...</p>
+        <p className="text-white">No available spots here...</p>
       ) : (
         filteredSpots.map((spot, index) => (
           <Spot

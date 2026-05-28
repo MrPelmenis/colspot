@@ -4,7 +4,7 @@ import { CurrentUserContext } from './ContextProviders/CurrentUserContext';
 
 import defaultProfilePic from './images/DefaultProfilePic.png';
 
-const ProfileImage = ({ nickname }) => {
+const ProfileImage = ({ nickname, inSpot, w, h }) => {
     const [profilePic, setProfilePic] = useState(defaultProfilePic);
     const { currentUser, updateCurrentUser } = useContext(CurrentUserContext);
 
@@ -58,12 +58,12 @@ const ProfileImage = ({ nickname }) => {
 
 
 
-
+    //loti stulbs className jo reusoju komponentu gan headerii gan spotos
     return (
         <img
               src={profilePic}
               alt={"PIC"}
-              className="w-12 h-12 rounded-full ml-3 object-cover border-gray-500 border-[1px] hover:border-[2px]"
+              className={`w-${w} h-${h} rounded-full ${!inSpot ? 'ml-3' : ''} object-cover border-gray-500 border-[1px] ${!inSpot ? 'hover:border-[2px]' : ''}`}
             />
     );
 

@@ -20,6 +20,9 @@ import ViewSpotWindow from './Windows/ViewSpotWindow.js';
 import MapProvider from './ContextProviders/MapContext.js';
 import ViewImageWindow from './Windows/ViewImageWindow.js';
 import SpotSelectionProvider from './ContextProviders/SpotSelectionProvider.js';
+import ViewProfileWindow from './Windows/ViewProfileWindow.js';
+import LeaderboardWindow from './Windows/LeaderboardWindow.js';
+import MenuWindow from './Windows/MenuWindow.js';
 
 function App() {
   return (
@@ -40,7 +43,9 @@ function App() {
                   <DeleteCommentWindow />
                   <ViewSpotWindow />
                   <ViewImageWindow />
-
+                  <ViewProfileWindow/>
+                  <LeaderboardWindow/>
+                  <MenuWindow/>
                   <Header />
                   <div className="flex flex-col gap-8 my-8">
                     <MapDiv />

@@ -274,7 +274,6 @@ function EditSpotWindow() {
                   id="image-upload"
                   onChange={handleImageChange}
                   disabled={isSubmitting}
-                  capture="environment"
                 />
                 <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
                   <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

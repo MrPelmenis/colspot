@@ -42,7 +42,7 @@ function Footer() {
   }, [showAbout]);
 
   return (
-    <div className="relative bg-gray-200 py-4 w-full rounded-t-lg shadow-inner flex items-center justify-between px-4">
+    <div className="relative bottom-0 bg-gray-200 py-4 w-full rounded-t-lg shadow-inner flex items-center justify-between px-4">
       {/* Left Section - About */}
       <button 
         onMouseDown={(e) => e.stopPropagation()}
