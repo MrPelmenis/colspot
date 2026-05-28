@@ -17,7 +17,7 @@ import base64
 
 DATABASE = "main_db.db"
 UPLOAD_FOLDER = 'uploads/spot_images/'
-app = Flask(__name__, static_folder='../Frontend/coolspot/build')
+app = Flask(__name__, static_folder='../FrontEnd/coolspot/build')
 # app.config['SECRET_KEY'] = 'your_strong_secret_key'
 # app.config["JWT_SECRET_KEY"] = 'your_jwt_secret_key'
 # app.config['JWT_TOKEN_LOCATION'] = ['headers']
@@ -25,6 +25,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 def google_oauth_required(f):
     @wraps(f)
@@ -239,15 +240,31 @@ def get_profile_image():
     if user:
         return jsonify({"profile_pic": user["profile_pic"]}), 200 
     else:
-        # default_image_path = "DefaultProfilePic.png"
-        # if os.path.exists(default_image_path):
-        #     with open(default_image_path, "rb") as image_file:
-        #         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-        #         # print("encoded data:")
-        #         # print(encoded_string)
-        #         return jsonify({"profile_pic": f"data:image/png;base64,{encoded_string}"}), 200
-        # else:
         return jsonify({"error": "Default image not found"}), 500
+
+@app.route('/api/users/top-posters', methods=["GET"])
+def get_top_posters():
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""SELECT users.id, users.nickname, COUNT(spots.id)
+                FROM users
+                JOIN spots ON users.id = spots.user_id
+                WHERE users.nickname != 'deleted'
+                GROUP BY users.id
+                ORDER BY COUNT(spots.id) DESC
+                LIMIT 10;
+                """)
+    res = cursor.fetchall()
+    resp = []
+    for user in res:
+        resp.append({
+            "user_id": user["id"],
+            "nickname": user["nickname"],
+            "spots": user[2]})
+    return jsonify(resp), 200
+    
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
 @google_oauth_required
