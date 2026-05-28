@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { WindowContext } from '../ContextProviders/WindowContext';
-import { FaTrophy, FaEnvelope, FaPhone, FaInfoCircle } from 'react-icons/fa';
+import { FaTrophy, FaEnvelope, FaPhone, FaInfoCircle, FaFileContract } from 'react-icons/fa';
 import { transformation } from 'leaflet';
 
 function MenuWindow() {
@@ -13,12 +13,12 @@ function MenuWindow() {
             messagesWindow: { visible: true },
             contactWindow: { visible: true },
             aboutWindow: { visible: true },
-            // Hide other windows
             deleteCommentWindow: { visible: false, commentID: null },
             viewSpotWindow: { visible: false },
             viewImageWindow: { visible: false, imageSRC: null },
             viewProfileWindow: { visible: false, nickname: "" },
-            menuWindow: { visible: false }, // Close the menu after clicking
+            menuWindow: { visible: false }, 
+            termsOfServiceWindow: { visible: true },
         };
 
         updateWindowState(windowName, windowStates[windowName]);
@@ -35,13 +35,9 @@ function MenuWindow() {
     transition-opacity duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
     onClick={(e) => e.target.id === 'modal-overlay' && closeMenu()} // Close when clicking outside
     >
-
-        
         <div className="bg-white p-6 rounded-lg shadow-lg 
             w-full max-w-[90%] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl
             absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            
-            {/* Close Button */}
             <button
                 className="absolute top-2 right-2 w-8 h-8 rounded-tr-lg rounded-bl-lg text-2xl bg-red-600 text-white font-bold 
                     flex items-center justify-center hover:bg-red-500 transition-all"
@@ -67,16 +63,36 @@ function MenuWindow() {
                     <span className="text-lg font-semibold text-gray-800">Leaderboard</span>
                 </button>
 
-                {/* Disabled Buttons */}
+
+                <button
+                    onClick={() => handleMenuClick('aboutWindow')}
+                    className="flex items-center justify-center gap-4 p-3 w-full text-left 
+                        border-b-2 border-gray-300 hover:border-gray-400 
+                        transition-all duration-300 group"
+                >
+                    <FaInfoCircle className="text-gray-600 group-hover:text-gray-800" />
+                    <span className="text-lg font-semibold text-gray-800">About</span>
+                </button>
+
+                <button
+                    onClick={() => handleMenuClick('termsOfServiceWindow')}
+                    className="flex items-center justify-center gap-4 p-3 w-full text-left 
+                        border-b-2 border-gray-300 hover:border-gray-400 
+                        transition-all duration-300 group"
+                >
+                    <FaFileContract className="text-gray-600 group-hover:text-gray-800" />
+                    <span className="text-lg font-semibold text-gray-800">Terms of Service</span>
+                </button>
+
+
                 {[
                     { name: 'Messages', icon: <FaEnvelope /> },
                     { name: 'Contact', icon: <FaPhone /> },
-                    { name: 'About', icon: <FaInfoCircle /> },
                 ].map(({ name, icon }) => (
                     <button
                         key={name}
                         disabled
-                        className="flex items-center justify-center gap-4 p-3 w-full text-left 
+                        className="flex items-center justify-center gap-4 p-2 w-full text-left 
                             border-b-2  border-gray-300 
                             transition-all duration-300 cursor-not-allowed
                             opacity-50"

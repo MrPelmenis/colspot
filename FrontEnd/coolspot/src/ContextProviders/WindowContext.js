@@ -19,6 +19,8 @@ export const WindowProvider = ({ children }) => {
     viewProfileWindow: { visible: false, nickname: "" },
     leaderboardWindow: { visible: false },
     menuWindow: { visible: false },
+    aboutWindow: {visible:false},
+    termsOfServiceWindow: {visible:false},
   });
 
   const updateWindowState = (windowName, newState) => {

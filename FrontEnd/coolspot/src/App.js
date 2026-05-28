@@ -23,6 +23,9 @@ import SpotSelectionProvider from './ContextProviders/SpotSelectionProvider.js';
 import ViewProfileWindow from './Windows/ViewProfileWindow.js';
 import LeaderboardWindow from './Windows/LeaderboardWindow.js';
 import MenuWindow from './Windows/MenuWindow.js';
+import AboutWindow from './Windows/AboutWindow.js';
+import TermsOfServiceWindow from './Windows/TermsOfServiceWindow.js';
+
 
 function App() {
   return (
@@ -45,7 +48,11 @@ function App() {
                   <ViewImageWindow />
                   <ViewProfileWindow/>
                   <LeaderboardWindow/>
+                  <AboutWindow/>
+                  <TermsOfServiceWindow/>
                   <MenuWindow/>
+
+
                   <Header />
                   <div className="flex flex-col gap-8 my-8">
                     <MapDiv />

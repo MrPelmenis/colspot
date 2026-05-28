@@ -18,33 +18,35 @@ function ViewProfileWindow() {
             setLoading(true);
             try {
                 const response = await fetch(
-                    `${window.websiteSetting.serverURL}/api/users/${encodeURIComponent(nickname)}`
+                    `${window.websiteSetting.serverURL}/api/check_user_by_nickname`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ nickname: nickname }),
+                    }
                 );
                 
-                if (!response.ok) {
-                    throw new Error('User not found');
-                }
-                
                 const data = await response.json();
-                setUserData({
-                    profilePic: data.profile_pic || defaultProfilePic,
-                    username: data.nickname,
-                    description: data.description,
-                    spotsCount: data.spots_count || 0,
-                    isAdmin: data.is_admin,
-                    rank: data.rank
-                });
-                setError("");
+                
+                if (response.status === 200) {
+                    setUserData({
+                        profilePic: data.user.profile_pic || defaultProfilePic,
+                        username: data.user.nickname,
+                        description: data.user.description,
+                        isAdmin: data.user.is_admin,
+                    });
+                    setError("");
+                } else if (response.status === 201) {
+                    setError("User with such nickname doesn't exist");
+                    setUserData(null);
+                } else {
+                    throw new Error('Unexpected response');
+                }
             } catch (err) {
                 setError("Failed to load user profile");
-                setUserData({
-                    profilePic: defaultProfilePic,
-                    username: "temp user",
-                    description: "chill guy spot creator",
-                    spotsCount: 2,
-                    isAdmin: 0,
-                    rank: "-",
-                });
+                setUserData(null);
             } finally {
                 setLoading(false);
             }
@@ -61,12 +63,15 @@ function ViewProfileWindow() {
         alert(`Coming soon!`);
     };
 
+    const handleImageClick = (src) =>{
+        updateWindowState('viewImageWindow', { visible: true, imageSRC: src });
+    } 
 
     return (
         <div
             id="modal-overlay"
-            className={`fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 
-                transition-opacity transition-visibility duration-500 ${(visible)  ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+            className={`fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-40 
+                transition-opacity transition-visibility duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
             onClick={(e) => e.target.id === 'modal-overlay' && handleClose()}
         >
             <div className="relative bg-white p-6 rounded-lg shadow-lg w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3">
@@ -86,12 +91,12 @@ function ViewProfileWindow() {
                                 src={userData.profilePic}
                                 alt="Profile"
                                 className="w-16 h-16 rounded-full border-2 border-gray-300 object-cover"
+                                onClick={() => handleImageClick(userData.profilePic)}
                             />
                             <div>
                                 <h2 className={`text-2xl font-bold ${userData.isAdmin ? 'text-red-800' : 'text-gray-800'}`}>
                                     {userData.username}
                                 </h2>
-                                <p className="text-gray-600">Ranked #{userData.rank}</p>
                             </div>
                         </div>
 
@@ -102,13 +107,9 @@ function ViewProfileWindow() {
                         </div>
 
                         <div className="flex justify-between items-center text-gray-600">
-                            <div className="text-center">
-                                <p className="font-bold">{userData.spotsCount}</p>
-                                <p className="text-sm">Spots Posted</p>
-                            </div>
                             <button
                                 onClick={handleMessage}
-                                className="bg-blue-500 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 hover:bg-gray-600 transition-colors flex items-center"
+                                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
                             >
                                 <FaComment className="mr-2" />
                                 Message

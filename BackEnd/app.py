@@ -266,25 +266,28 @@ def get_profile_image():
 
 @app.route('/api/users/top-posters', methods=["GET"])
 def get_top_posters():
-
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("""SELECT users.id, users.nickname, COUNT(spots.id)
-                FROM users
-                JOIN spots ON users.id = spots.user_id
-                WHERE users.nickname != 'deleted'
-                GROUP BY users.id
-                ORDER BY COUNT(spots.id) DESC
-                LIMIT 10;
-                """)
+    cursor.execute("""
+        SELECT users.id, users.nickname, users.profile_pic, 
+        COUNT(spots.id) AS spot_count
+        FROM users
+        LEFT JOIN spots ON users.id = spots.user_id
+        WHERE users.nickname != 'deleted'
+        GROUP BY users.id
+        ORDER BY spot_count DESC
+        LIMIT 10;
+    """)
     res = cursor.fetchall()
-    resp = []
-    for user in res:
-        resp.append({
-            "user_id": user["id"],
-            "nickname": user["nickname"],
-            "spots": user[2]})
+    
+    resp = [{
+        "user_id": user[0],
+        "nickname": user[1],
+        "profile_pic": user[2],
+        "spots": user[3]
+    } for user in res]
+    
     return jsonify(resp), 200
     
 

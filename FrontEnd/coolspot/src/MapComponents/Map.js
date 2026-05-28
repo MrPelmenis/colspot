@@ -144,7 +144,6 @@ function MapDiv() {
   };
   
   const handleSearch = (name, lat, lng, zoom) => {
-    //console.log("name, ", name, " zoom: ", zoom);
     setMapCenter([lat, lng]);
     setZoomLevel(zoom); 
   };
@@ -172,7 +171,7 @@ function MapDiv() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      firstTime = false;
+      firstTime = true;
       const bounds = map.target.getBounds();
         
       const northWest = bounds.getNorthWest();
