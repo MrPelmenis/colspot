@@ -34,7 +34,6 @@ function Comment({ comment }) {
 
   const handleLikeClick = async (event) => {
     event.stopPropagation();
-
     const jwtToken = localStorage.getItem('JWT');
 
     try {
@@ -99,7 +98,6 @@ function Comment({ comment }) {
         return;
     }
 
-    //console.log("id:", comment, "new text:", editText);
     setIsEditing(false);
     setError('');
 
@@ -138,6 +136,11 @@ function Comment({ comment }) {
     setEditText(comment.text);
     setError('');
   };
+
+
+  useEffect(()=>{
+    //console.log(comment);
+  }, [])
 
   return (
     <div

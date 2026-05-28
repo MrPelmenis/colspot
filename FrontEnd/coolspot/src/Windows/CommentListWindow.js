@@ -93,18 +93,22 @@ function CommentListWindow() {
         });
       }
 
+      let data = JSON.stringify({
+        userName: currentUser.nickname,
+        userEmail: currentUser.email,
+        comment: newComment,
+        image: imageBase64
+      });
+
+      console.log(data);
+
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${commentSpotID}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify({
-          userName: currentUser.nickname,
-          userEmail: currentUser.email,
-          comment: newComment,
-          image: imageBase64
-        }),
+        body: data,
       });
 
       if (response.ok) {
@@ -186,7 +190,7 @@ function CommentListWindow() {
 
             {!image && (
               <div
-                className="relative border-2 border-gray-500 rounded-lg text-center cursor-pointer flex-none hover:bg-gray-100 transition-colors"
+                className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"
                 style={{ width: '40px', height: '40px' }}
               >
                 <input
@@ -196,13 +200,9 @@ function CommentListWindow() {
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   id="image-upload"
                   onChange={handleImageChange}
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevents the file dialog from opening
-                    alert("Comment Images Coming Soon!");
-                  }}
                 />
                 <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
                   </svg>
                 </label>

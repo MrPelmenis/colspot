@@ -25,12 +25,12 @@ export const SpotsProvider = ({ children }) => {
     try {
       const { category, spotSort, mapBoundaries } = fetchParamsRef.current;
       
-      console.log("Fetching with:", { 
+      /*console.log("Fetching with:", { 
         category, 
         spotSort, 
         nw: mapBoundaries.nw, 
         se: mapBoundaries.se 
-      });
+      });*/
 
 
       const queryParams = new URLSearchParams({
@@ -44,7 +44,7 @@ export const SpotsProvider = ({ children }) => {
 
       const url = `${window.websiteSetting.serverURL}/api/spots?${queryParams.toString()}`;
 
-      console.log("url:", url);
+      //console.log("url:", url);
 
       const response = await fetch(url);
       const data = await response.json();

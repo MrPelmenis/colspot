@@ -10,6 +10,8 @@ from functools import wraps
 
 from datetime import datetime, timezone
 
+from werkzeug.utils import secure_filename
+
 CLIENT_ID = '304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com'
 
 import os
@@ -244,6 +246,27 @@ def save_base64_image(base64_image, spot_id, index):
         f.write(base64.b64decode(base64_data))
 
     return image_path
+
+def save_base64_comment_image(base64_image, comment_id):
+    # Extract image type and base64 data
+    header, base64_data = base64_image.split(';base64,')
+    image_extension = header.split('/')[-1]  # Example: 'jpeg', 'png'
+
+    # Ensure the upload folder exists
+    comment_upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], "comments")
+    if not os.path.exists(comment_upload_folder):
+        os.makedirs(comment_upload_folder)
+
+    image_filename = f'comment_{comment_id}_.{image_extension}'
+    image_path = os.path.join(comment_upload_folder, secure_filename(image_filename))
+
+    # Decode and save the image
+    with open(image_path, 'wb') as f:
+        f.write(base64.b64decode(base64_data))
+
+    return image_path
+
+
 
 @app.route('/api/get_profile_image', methods=['GET'])
 def get_profile_image():
@@ -632,6 +655,7 @@ def add_comment(spot_id):
     user = get_user_info_by_email(userEmail)
     user_id = user["id"]
     comment = data.get('comment')
+    image_base64 = data.get('image')
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -642,13 +666,28 @@ def add_comment(spot_id):
     if spot is None:
         return jsonify({"error": "Spot not found"}), 404
 
+    db.commit() 
+
     # Insert the new comment into the comments table
     cursor.execute(
         "INSERT INTO comments (spot_id, user_id, comment, timestamp) VALUES (?, ?, ?, ?)",
         (spot_id, user_id, comment, timestamp)
     )
-    db.commit()
+    comment_id = cursor.lastrowid
 
+    if image_base64:
+        try:
+            image_path = save_base64_comment_image(image_base64, comment_id)
+            cursor.execute(
+                "INSERT INTO comment_images (comment_id, file_path) VALUES (?, ?)",
+                (comment_id, image_path)
+            )
+        except Exception as e:
+            return jsonify({"error": f"Failed to save image: {str(e)}"}), 500
+
+
+
+    db.commit()
     return jsonify({"message": "Comment added successfully"}), 201
 
 @app.route('/api/spots/<int:spot_id>/comments', methods=['GET'])
