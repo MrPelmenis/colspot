@@ -17,7 +17,7 @@ CoolSpot is a full-stack web application for discovering and sharing interesting
 
 **Backend** — Flask, SQLite, Flask-CORS
 
-**Frontend** — React, Leaflet, Axios
+**Frontend** — React, Leaflet
 
 ## Contact
 normundsmalnacs@gmail.com  
