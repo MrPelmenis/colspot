@@ -1,56 +1,24 @@
-
 # CoolSpot
 
-CoolSpot is a web application that allows users to discover and share interesting locations (or "spots"). The app consists of a backend built with Flask (Python) for API and data management, and a frontend powered by React (JavaScript) for an interactive user interface.
+CoolSpot is a full-stack web application for discovering and sharing interesting locations. Built with Flask and React, it lets users explore spots on an interactive map, contribute their own, and connect with others.
 
-Users can add spots with descriptions, see spots on a map, and view additional details. The spots range from secluded ones to have smoke to loudy places when you can always find a company.
+🌐 **Live demo: [coolspot.lv](https://coolspot.lv)**
 
 ## Features
 
-- Add and view spots on a map.
-- Geolocation-based spot additions.
-- User spot descriptions and interaction.
-- REST API for managing spots.
-- Modular, component-based frontend architecture.
+- Interactive map with spot discovery and adding
+- Geolocation-based spot creation
+- Google OAuth2 authentication
+- Spot descriptions, categories, comments and images
+- User profiles and admin controls
+- REST API backend
 
-## Technologies
+## Tech Stack
 
-### Backend
-- Flask (Python)
-- SQLite (Database)
-- Flask-CORS (Cross-origin support)
+**Backend** — Flask, SQLite, Flask-CORS
 
-### Frontend
-- React (JavaScript)
-- Leaflet (Interactive Maps)
-- Axios (HTTP Requests)
+**Frontend** — React, Leaflet, Axios
 
-## Installation and Setup
-
-### Prerequisites:
-- Python 3.x installed
-- Node.js and npm/yarn installed
-- Docker (optional)
-
-### Backend Setup
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/username/coolspot.git
-   cd coolspot/BackEnd
-
-pip install -r requirements.txt
-npm run build
-flask db upgrade ?
-
-python app.py 
-
-
-### **Contact**
-
+## Contact
+normundsmalnacs@gmail.com  
 shrustermaksimilian@gmail.com
-normundsmalnacs@gmail.com
-
-
-
-

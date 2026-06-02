@@ -236,7 +236,7 @@ function ProfileWindow() {
                                 onBlur={handleUsernameSave}
                                 autoFocus
                                 style={{
-                                    height: `${Math.min(Math.max(newUsername.split('\n').length, 1), 3) * 1.5}rem`, // Adjust height based on content
+                                    height: `${Math.min(Math.max(newUsername.split('\n').length, 1), 3) * 1.5}rem`, 
                                 }}
                             />
 

@@ -15,7 +15,6 @@ export const SpotsProvider = ({ children }) => {
 
   const fetchParamsRef = useRef({ category, spotSort, mapBoundaries });
 
-  // Update ref when context changes
   useEffect(() => {
     fetchParamsRef.current = { category, spotSort, mapBoundaries };
   }, [category, spotSort, mapBoundaries]);
@@ -25,21 +24,13 @@ export const SpotsProvider = ({ children }) => {
     try {
       const { category, spotSort, mapBoundaries } = fetchParamsRef.current;
       
-      /*console.log("Fetching with:", { 
-        category, 
-        spotSort, 
-        nw: mapBoundaries.nw, 
-        se: mapBoundaries.se 
-      });*/
-
-
       const queryParams = new URLSearchParams({
-        category: category || "", // Fallback to empty string if undefined
-        sort: spotSort || "", // Fallback to empty string if undefined
-        nw_lat: mapBoundaries.nw.lat, // Latitude of northwest corner
-        nw_lng: mapBoundaries.nw.lng, // Longitude of northwest corner
-        se_lat: mapBoundaries.se.lat, // Latitude of southeast corner
-        se_lng: mapBoundaries.se.lng, // Longitude of southeast corner
+        category: category || "", 
+        sort: spotSort || "", 
+        nw_lat: mapBoundaries.nw.lat, 
+        nw_lng: mapBoundaries.nw.lng,
+        se_lat: mapBoundaries.se.lat,
+        se_lng: mapBoundaries.se.lng,
       });
 
       const url = `${window.websiteSetting.serverURL}/api/spots?${queryParams.toString()}`;

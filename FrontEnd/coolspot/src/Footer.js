@@ -11,7 +11,6 @@ function Footer() {
   const toggleAbout = () => setShowAbout((prev) => !prev);
   const closeAbout = () => setShowAbout(false);
 
-  // Handle click outside for TOS
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (TOSRef.current && !TOSRef.current.contains(event.target)) {
@@ -26,7 +25,6 @@ function Footer() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTOS]);
 
-  // Handle click outside for About
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (aboutRef.current && !aboutRef.current.contains(event.target)) {
@@ -52,10 +50,8 @@ function Footer() {
         {showAbout ? 'About' : 'About'}
       </button>
 
-      {/* Middle Section */}
-      <p className="text-gray-600 text-sm text-center">© 2025 CoolSpot</p>
+      <p className="text-gray-600 text-sm text-center">© 2026 CoolSpot</p>
       
-      {/* Right Section - TOS */}
       <button 
         onMouseDown={(e) => e.stopPropagation()}
         onClick={toggleTOS} 
@@ -64,7 +60,6 @@ function Footer() {
         {showTOS ? 'Hide Terms Of Service' : 'Show Terms Of Service'}
       </button>
 
-      {/* About Modal */}
       {showAbout && (
         <div 
           ref={aboutRef}
@@ -83,7 +78,6 @@ function Footer() {
         </div>
       )}
 
-      {/* TOS Modal */}
       {showTOS && (
         <div 
           ref={TOSRef}

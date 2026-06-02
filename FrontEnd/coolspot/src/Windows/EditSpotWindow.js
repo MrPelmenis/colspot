@@ -31,7 +31,7 @@ function EditSpotWindow() {
   }, [visible, spotToEdit]);
 
   const processImage = async (file) => {
-    // Convert HEIC/HEIF to JPEG
+    // Convert 
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
       file = await heic2any({
         blob: file,
@@ -43,19 +43,18 @@ function EditSpotWindow() {
       }));
     }
 
-    // Skip processing if under size limit and correct dimensions
+    //too big- >skip 
     const img = await createImageBitmap(file);
     if (file.size <= MAX_FILE_SIZE && img.height <= TARGET_HEIGHT) {
       img.close();
       return file;
     }
 
-    // Calculate new dimensions
     const scaleFactor = TARGET_HEIGHT / img.height;
     const width = img.width * scaleFactor;
     img.close();
 
-    // Resize using canvas
+    // Resize  
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -126,7 +125,7 @@ function EditSpotWindow() {
     try {
       setIsSubmitting(true);
       const convertToBase64 = (file) => {
-        if (typeof file === 'string') return file; // Keep existing base64 strings
+        if (typeof file === 'string') return file; 
         return new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
@@ -188,7 +187,6 @@ function EditSpotWindow() {
     }
   };
 
-  // Keep your existing JSX structure below - only added isSubmitting checks
   return (
     <div
       id="modal-overlay"

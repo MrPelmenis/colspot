@@ -60,18 +60,18 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
         db.execute('PRAGMA foreign_keys = ON')
-        db.row_factory = sqlite3.Row  # Set the row factory to return dictionaries
+        db.row_factory = sqlite3.Row  
     
     return db
 
 @app.after_request
 def set_headers(response):
-    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"  # Allow cross-origin interaction
-    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"  # Allow resources from other origins
-    response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"  # Allow cross-origin resources
-    response.headers["Access-Control-Allow-Origin"] = "*"  # Allow any origin to access your API
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"  # Allow specific HTTP methods
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"  # Allow necessary headers
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"  
+    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"  
+    response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
+    response.headers["Access-Control-Allow-Origin"] = "*"  
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"  
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"  
     return response
 
 @app.route('/')
@@ -201,9 +201,6 @@ def check_user():
             "is_admin": user["is_admin"]
         }), 200
     else: # UZTAISIT ATSEVISKO FUNKCIJU LAI LAI UZTAISAS AKKAUNTS
-        # print("trying create")
-        # # User does not exist, create a new user
-        # cursor.execute("INSERT INTO users (email, nickname) VALUES (?, ?)", (email, nickname))
         return jsonify(message="User created", user={
             "email": email,
             "name": nickname
@@ -248,11 +245,9 @@ def save_base64_image(base64_image, spot_id, index):
     return image_path
 
 def save_base64_comment_image(base64_image, comment_id):
-    # Extract image type and base64 data
     header, base64_data = base64_image.split(';base64,')
     image_extension = header.split('/')[-1]  # Example: 'jpeg', 'png'
 
-    # Ensure the upload folder exists
     comment_upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], "comments")
     if not os.path.exists(comment_upload_folder):
         os.makedirs(comment_upload_folder)
@@ -260,7 +255,6 @@ def save_base64_comment_image(base64_image, comment_id):
     image_filename = f'comment_{comment_id}_.{image_extension}'
     image_path = os.path.join(comment_upload_folder, secure_filename(image_filename))
 
-    # Decode and save the image
     with open(image_path, 'wb') as f:
         f.write(base64.b64decode(base64_data))
 
@@ -330,13 +324,13 @@ def delete_user(user_id):
         cursor.execute("UPDATE comments SET user_id = 0 WHERE user_id = ?", (user_id,))
         db.commit()
 
-        # Now delete the user
         cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
         db.commit()
 
         return jsonify({"message": "User deleted successfully; related records reassigned to 'deleted' user"}), 200
     else:
         return jsonify({"error": "User not found"}), 404
+
 
 def get_user_info_by_email(email):
     conn = get_db()
@@ -355,6 +349,8 @@ def get_user_info_by_id(user_id):
     return user
 
 
+#insane function that takes in the coordinates in the map + adds filters/order and constructs a massiive query based on it
+#+ a lot of post processing (for images categories likes) so that its easier on frontend
 @app.route('/api/spots', methods=['GET'])
 def get_spots():
     category = request.args.get('category', '').strip()
@@ -366,7 +362,6 @@ def get_spots():
 
     params = []
 
-    # Base SQL query
     sql = """
     SELECT 
         spots.id,
@@ -388,7 +383,6 @@ def get_spots():
     LEFT JOIN spot_images ON spots.id = spot_images.spot_id
     """
 
-    # Add joins for category if applicable
     if category:
         sql += """
         INNER JOIN spot_tags ON spots.id = spot_tags.spot_id
@@ -401,7 +395,6 @@ def get_spots():
         LEFT JOIN tags ON spot_tags.tag_id = tags.id
         """
 
-    # Add WHERE clause for map boundaries
     sql += """
     WHERE 
         (CAST(substr(spots.geolocation, 1, instr(spots.geolocation, ',') - 1) AS REAL) BETWEEN ? AND ?)
@@ -412,13 +405,12 @@ def get_spots():
 
     sql += "GROUP BY spots.id"
 
-    # Determine ORDER BY
     if sort == 'mostLiked':
         sql += " ORDER BY likes_count DESC"
     elif sort == 'newest':
         sql += " ORDER BY spots.timestamp DESC"
     else:
-        sql += " ORDER BY spots.timestamp DESC"  # Default sorting
+        sql += " ORDER BY spots.timestamp DESC"  
 
     sql += " LIMIT 15"
 
@@ -427,9 +419,9 @@ def get_spots():
     cursor.execute(sql, params)
     spots = cursor.fetchall()
 
+    #add images as base 64 so that the front-end doesnt have to query each one
     spots_list = []
     for row in spots:
-        # Process image paths
         image_paths = row['image_paths'].split(',') if row['image_paths'] else []
         base64_images = []
         for image_path in image_paths:
@@ -438,16 +430,15 @@ def get_spots():
                     encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
                     mime_type = image_path.split('.')[-1].lower()
                     if mime_type not in ['jpg', 'jpeg', 'png', 'gif']:
-                        mime_type = 'jpeg'  # default to jpeg if unknown
+                        mime_type = 'jpeg'  
                     base64_image = f"data:image/{mime_type};base64,{encoded_image}"
                     base64_images.append(base64_image)
             except FileNotFoundError:
                 pass
 
-        # Process categories
+        #categories in a pretty format
         categories = row['categories'].split(',') if row['categories'] else []
 
-        # Process liked_by user IDs
         liked_by = []
         if row['liked_by_user_ids']:
             liked_by = list(map(int, row['liked_by_user_ids'].split(',')))
@@ -568,13 +559,10 @@ def update_spot(spot_id):
     db.commit()
 
 
-    # Handle images update if new images are provided
     if images:
-        # Optional: Remove old images if replacing them entirely
         cursor.execute("DELETE FROM spot_images WHERE spot_id = ?", (spot_id,))
         db.commit()
         
-        # Save each new image and add it to the database
         for index, base64_image in enumerate(images):
             image_path = save_base64_image(base64_image, spot_id, index)
             cursor.execute('INSERT INTO spot_images (spot_id, file_path) VALUES (?, ?)', (spot_id, image_path))
@@ -591,7 +579,6 @@ def add_like(spot_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    # Get user_id from request body
     data = request.json
     user_id = data.get('user_id')
 
@@ -605,7 +592,6 @@ def add_like(spot_id):
     if user is None:
         return jsonify({"error": "User not found"}), 404
 
-    # Check if the like already exists to prevent duplicate likes
     cursor.execute("SELECT * FROM spot_likes WHERE spot_id = ? AND user_id = ?", (spot_id, user_id))
     like = cursor.fetchone()
     if like:
@@ -659,7 +645,6 @@ def add_comment(spot_id):
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    # Check if the spot exists
     cursor.execute("SELECT * FROM spots WHERE id = ?", (spot_id,))
     spot = cursor.fetchone()
 
@@ -668,7 +653,6 @@ def add_comment(spot_id):
 
     db.commit() 
 
-    # Insert the new comment into the comments table
     cursor.execute(
         "INSERT INTO comments (spot_id, user_id, comment, timestamp) VALUES (?, ?, ?, ?)",
         (spot_id, user_id, comment, timestamp)
@@ -703,11 +687,9 @@ def get_comments(spot_id):
         user_id = comment["user_id"]
         user = get_user_info_by_id(user_id)
 
-        # Get likes
         cursor.execute("SELECT user_id FROM comment_likes WHERE comment_id = ?", (comment["id"],))
         likes = cursor.fetchall()
 
-        # Get image path (if exists)
         cursor.execute("SELECT file_path FROM comment_images WHERE comment_id = ?", (comment["id"],))
         image_record = cursor.fetchone()
         image_base64 = None
@@ -728,7 +710,7 @@ def get_comments(spot_id):
             "timestamp": comment["timestamp"],
             "likes": len(likes),
             "liked_by": [like["user_id"] for like in likes],
-            "image": image_base64  # Base64 encoded image
+            "image": image_base64  # Base64  bilde
         }
         comments_list.append(comment_data)
 
@@ -747,17 +729,14 @@ def delete_comment(comment_id):
 
     if image_record:
         image_path = image_record["file_path"]
-        # Delete the image file from disk
         if os.path.exists(image_path):
             try:
                 os.remove(image_path)
             except Exception as e:
                 print(f"Error deleting image file {image_path}: {e}")
 
-        # Delete image entry from database
         cursor.execute("DELETE FROM comment_images WHERE comment_id = ?", (comment_id,))
 
-    # Delete the comment itself
     cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
     conn.commit()
 
@@ -779,42 +758,39 @@ def update_comment(comment_id):
 
     data = request.json
     comment_text = data.get('comment', None)
-    image_base64 = data.get('image', None)  # Can be new image, "null", or None
+    image_base64 = data.get('image', None)  
 
-    # Fetch existing comment
     cursor.execute("SELECT * FROM comments WHERE id = ?", (comment_id,))
     comment = cursor.fetchone()
 
     if not comment:
         return jsonify({"error": "Comment doesn't exist."}), 400
 
-    # Get existing image path (if any)
     cursor.execute("SELECT file_path FROM comment_images WHERE comment_id = ?", (comment_id,))
     image_record = cursor.fetchone()
     old_image_path = image_record["file_path"] if image_record else None
 
-    # Validate input: At least text or an image must exist
     if (comment_text is None or comment_text.strip() == "") and image_base64 is None:
         return jsonify({"error": "Comment must contain either text or an image"}), 400
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    # **1. Handle Image Updates**
-    if image_base64 is None:  # User explicitly removed the image
+    #image updates 
+    if image_base64 is None:
         if old_image_path and os.path.exists(old_image_path):
-            os.remove(old_image_path)  # Delete old image file
+            os.remove(old_image_path)  
         cursor.execute("DELETE FROM comment_images WHERE comment_id = ?", (comment_id,))
-    elif image_base64 is not None:  # New image uploaded
+    elif image_base64 is not None:  
         if old_image_path and os.path.exists(old_image_path):
-            os.remove(old_image_path)  # Remove old image file
+            os.remove(old_image_path) 
 
-        new_image_path = save_base64_comment_image(image_base64, comment_id)  # Save new image
+        new_image_path = save_base64_comment_image(image_base64, comment_id)  
         if old_image_path:
             cursor.execute("UPDATE comment_images SET file_path = ? WHERE comment_id = ?", (new_image_path, comment_id))
         else:
             cursor.execute("INSERT INTO comment_images (comment_id, file_path) VALUES (?, ?)", (comment_id, new_image_path))
 
-    # **2. Handle Text Updates**
+    #text updates
     if comment_text and comment_text.strip() != comment["comment"]:
         cursor.execute("UPDATE comments SET comment = ?, timestamp = ? WHERE id = ?", (comment_text, timestamp, comment_id))
 

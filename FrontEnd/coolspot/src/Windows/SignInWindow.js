@@ -10,13 +10,12 @@ function SignInWindow() {
   
 
   const [username, setUsername] = useState(windowStates.signInWindow.nickname);
-  const [errorMessage, setErrorMessage] = useState(''); // State for error message
+  const [errorMessage, setErrorMessage] = useState(''); 
   const [showTOS, setShowTOS] = useState(false); 
 
-  // Sync the username state with the nickname whenever it changes
   useEffect(() => {
     setUsername(nickname || '');
-    setErrorMessage(''); // Reset error message when nickname changes
+    setErrorMessage(''); 
   }, [nickname]);
 
   useEffect(() => {}, [visible]);
@@ -115,11 +114,11 @@ function SignInWindow() {
         className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                    focus:border-transparent transition-colors duration-300"
         placeholder="Nickname"
-        value={username} // Controlled input value
-        onChange={handleUsernameChange} // Updated onChange handler
+        value={username} 
+        onChange={handleUsernameChange}
       />
 
-      {errorMessage && ( // Conditionally render error message
+      {errorMessage && ( 
         <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
       )}
 
@@ -136,7 +135,7 @@ function SignInWindow() {
         </button>
       </div>
 
-      {showTOS && ( // Conditionally render TOS text
+      {showTOS && ( 
         <div className="mt-4 text-gray-700 border p-4 rounded-lg" style={{ maxHeight: '200px', overflowY: 'auto', width: '100%' }}>
           <h3 className="text-lg font-bold mb-2">Terms of Service</h3>
           {window.websiteSetting.TOS}

@@ -62,11 +62,9 @@ function MapDiv() {
 
   const { category, updateCategory, spotSort, setSpotSort, mapBoundaries, updateMapBoundaries } = useContext(SpotSelectionContext);
   
-  // Add refs to track current values
   const categoryRef = useRef(category);
   const spotSortRef = useRef(spotSort);
 
-  // Update refs when values change
   useEffect(() => {
     categoryRef.current = category;
   }, [category]);
@@ -78,8 +76,8 @@ function MapDiv() {
   const timeoutRef = useRef(null);
 
   const bounds = [
-    [-90, -180], // Southwest corner of the world
-    [90, 180],   // Northeast corner of the world
+    [-90, -180], 
+    [90, 180],  
   ];
 
 
@@ -166,7 +164,6 @@ function MapDiv() {
       }
     });
 
-    // New moveend handler
     map.target.on('moveend', () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -195,7 +192,6 @@ function MapDiv() {
         </div>
       </div>
       
-      {/* Map Container */}
       <div className="relative w-full h-[90vw] sm:h-[80vw] md:h-[70vw] lg:h-[60vw] xl:h-[40vw]">
         <MapContainer
           center={mapCenter}
@@ -240,7 +236,6 @@ function MapDiv() {
             });
           }}
         >
-          {/* Integrate MapUpdater */}
           <MapUpdater center={mapCenter} zoomLevel={zoomLevel} />
 
           {mapView === 'satellite' ? (
@@ -300,7 +295,6 @@ function MapDiv() {
           {getButtonMessage()}
         </button>
 
-        {/* Buttons to toggle map view */}
         <div className="absolute bottom-4 left-4 flex flex-col space-y-2">
           <img
             src={streetViewIMG}

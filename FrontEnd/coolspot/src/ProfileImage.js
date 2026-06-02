@@ -19,14 +19,13 @@ const ProfileImage = ({ nickname, inSpot, w, h }) => {
                     }
                 } catch (error) {
                     console.error('Error fetching user image:', error);
-                    // Fallback to default image on error
                     setProfilePic(defaultProfilePic);
                 }
             }
         };
 
         fetchProfileImage();
-    }, [currentUser]); // Re-fetch if nickname changes
+    }, [currentUser]); 
 
 
 
@@ -44,16 +43,15 @@ const ProfileImage = ({ nickname, inSpot, w, h }) => {
                     throw new Error('Failed to fetch user profile');
                 }
     
-                // Since the server now returns the image data directly, we use res.text()
-                const imageUrl = await res.json(); // Get the image data as plain text
-                return imageUrl || "/images/DefaultProfilePic.png"; // Fallback if not found
+                const imageUrl = await res.json(); 
+                return imageUrl || "/images/DefaultProfilePic.png"; 
     
             } catch (error) {
                 console.error('Error fetching user image:', error);
-                return defaultProfilePic; // Fallback in case of error
+                return defaultProfilePic; 
             }
         }
-        return defaultProfilePic; // Fallback if no nickname is provided
+        return defaultProfilePic; 
     }
 
 

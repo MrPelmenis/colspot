@@ -58,7 +58,6 @@ function DeleteCommentWindow() {
       fetchComment(commentSpotID);
   
     } catch (error) {
-      // Handle any errors during the fetch
       console.error('Error deleting the comment:', error);
       setErrorMessage('An error occurred while deleting the comment.');
     }

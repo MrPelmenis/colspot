@@ -32,7 +32,7 @@ function AddSpotWindow() {
   }, [visible]);
 
   const processImage = async (file) => {
-    // Convert HEIC/HEIF to JPEG
+    // Convert 
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
       file = await heic2any({
         blob: file,
@@ -44,7 +44,7 @@ function AddSpotWindow() {
       }));
     }
 
-    // Skip processing if under size limit and correct dimensions
+    //tooo big -> skipp
     const img = await createImageBitmap(file);
     if (file.size <= MAX_FILE_SIZE && img.height <= TARGET_HEIGHT) {
       img.close();
@@ -107,7 +107,6 @@ function AddSpotWindow() {
   const handlePublishSpot = async () => {
     if (isSubmitting) return;
 
-    // Validation checks
     if (spotName.length < 3 || spotName.length > 30) {
       setErrorMessage('Spot name must be between 3-30 characters');
       return;
@@ -129,7 +128,6 @@ function AddSpotWindow() {
       setIsSubmitting(true);
       const jwtToken = localStorage.getItem('JWT');
       
-      // Convert images to base64
       const base64Images = await Promise.all(images.map(file => {
         return new Promise((resolve) => {
           const reader = new FileReader();
@@ -138,7 +136,6 @@ function AddSpotWindow() {
         });
       }));
 
-      // Prepare payload
       const payload = {
         spotName,
         Description: description,
@@ -150,7 +147,6 @@ function AddSpotWindow() {
         categories: selectedCategories,
       };
 
-      // Submit data
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots`, {
         method: 'POST',
         headers: {
@@ -162,7 +158,6 @@ function AddSpotWindow() {
 
       if (!response.ok) throw new Error('Submission failed');
 
-      // Reset on success
       updateWindowState('addSpotWindow', { visible: false });
       setSpotsUpdated(true);
       fetchSpots();

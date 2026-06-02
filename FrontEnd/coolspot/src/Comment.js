@@ -83,7 +83,6 @@ function Comment({ comment }) {
       try {
         const processedFile = await processImage(e.target.files[0]);
         setNewImage(processedFile);
-        // When adding new image, mark original for removal if it exists
         if (comment.image) setRemoveImage(true);
       } catch (error) {
         console.error('Image processing error:', error);
@@ -94,13 +93,11 @@ function Comment({ comment }) {
 
   const handleRemoveNewImage = () => {
     setNewImage(null);
-    // If original image existed, keep it removed when new image is removed
     if (comment.image) setRemoveImage(true);
   };
 
   const handleRemoveOriginalImage = () => {
     setRemoveImage(true);
-    // If adding new image while removing original, clear new image
     if (newImage) setNewImage(null);
   };
 
@@ -162,7 +159,7 @@ function Comment({ comment }) {
   const handleSaveClick = async (event) => {
     event.stopPropagation();
 
-    // Validate either text or image must be present
+    //vainu teksts vai bilde vismaz 
     if (editText.trim() === '' && !newImage && (removeImage || !comment.image)) {
       setError('Comment must contain either text or an image');
       return;
@@ -172,8 +169,6 @@ function Comment({ comment }) {
 
     try {
       let imageBase64 = null;
-      
-      // Case 1: New image uploaded
       if (newImage) {
         imageBase64 = await new Promise((resolve) => {
           const reader = new FileReader();
@@ -181,9 +176,8 @@ function Comment({ comment }) {
           reader.readAsDataURL(newImage);
         });
       } 
-      // Case 2: Keeping original image (no changes)
+
       else if (comment.image && !removeImage) {
-        // Fetch the original image as base64
         const response = await fetch(comment.image);
         const blob = await response.blob();
         imageBase64 = await new Promise((resolve) => {
@@ -192,11 +186,10 @@ function Comment({ comment }) {
           reader.readAsDataURL(blob);
         });
       }
-      // Case 3: Removing image (imageBase64 remains null)
   
       const data = {
         comment: editText.trim(),
-        image: imageBase64 // Always send the image data (null if removed)
+        image: imageBase64 
       };
   
       console.log(data);
@@ -278,7 +271,7 @@ function Comment({ comment }) {
 
           <div className="my-4">
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {/* Existing image - only show if not removed and no new image */}
+              {/* bilde */}
               {comment.image && !removeImage && !newImage && (
                 <div className="relative flex-shrink-0">
                   <img
@@ -296,7 +289,6 @@ function Comment({ comment }) {
                 </div>
               )}
 
-              {/* New image preview */}
               {newImage && (
                 <div className="relative flex-shrink-0">
                   <img
@@ -314,7 +306,6 @@ function Comment({ comment }) {
                 </div>
               )}
 
-              {/* Add image button */}
               {(removeImage || !comment.image) && !newImage && (
                 <div
                   className="relative border-2 border-blue-500 rounded-lg text-center cursor-pointer flex-none hover:bg-blue-100 transition-colors"

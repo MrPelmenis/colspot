@@ -16,7 +16,7 @@ function SpotList() {
   } = useContext(SpotsContext);
   const { currentUser } = useContext(CurrentUserContext);
   const [sortOption, setSortOption] = useState('recent');
-  const [categoryFilter, setCategoryFilter] = useState(''); // State for category filter
+  const [categoryFilter, setCategoryFilter] = useState(''); 
   const [selectedSpot, setSelectedSpot] = useState(null);
 
   
@@ -83,7 +83,6 @@ function SpotList() {
 
   return (
     <div className="w-[90vw] sm:w-[90vw] md:w-[80vw] lg:w-[60vw] mx-auto">
-      {/* Spot Menu */}
       <div className="mb-4 flex flex-col justify-center sm:flex-row sm:items-center bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-lg transition-colors duration-300 space-y-4 sm:space-y-0">
         <div className="text-gray-700 font-semibold text-lg flex-grow">
           <span>Find Spots</span>

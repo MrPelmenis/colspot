@@ -12,7 +12,6 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
   const [errorMessage, setErrorMessage] = useState('');
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,7 +29,6 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
     setShowDropdown(false);
   }, [visible]);
 
-  // Add category to selected list
   const handleAddCategory = (category) => {
     if (selectedCategories.length >= 3) {
       setErrorMessage('You can select a maximum of 3 categories.');
@@ -42,14 +40,12 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
     }
   };
 
-  // Remove category from selected list
   const handleRemoveCategory = (category) => {
     setSelectedCategories((prev) => prev.filter((cat) => cat !== category));
   };
 
   return (
     <div className="flex flex-col items-start space-y-2 pb-2">
-      {/* Add Category Button */}
       {selectedCategories.length < 3 && (
         <div>
           <button
@@ -62,7 +58,6 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
         </div>
       )}
 
-      {/* Dropdown */}
       {(showDropdown)&& (
         <div
           ref={dropdownRef}
@@ -77,7 +72,7 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
                   className="p-2 cursor-pointer select-none flex justify-between items-center border-b border-gray-300 hover:border-b-2 hover:border-gray-400 transition-colors duration-200"
                   onClick={() => {
                     handleAddCategory(category);
-                    setShowDropdown(false); // Close dropdown after selection
+                    setShowDropdown(false); 
                   }}
                 >
                   <span>{category}</span>
@@ -87,7 +82,6 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
         </div>
       )}
 
-      {/* Selected Categories */}
       <div className="flex flex-wrap gap-2">
         {selectedCategories.length > 0 ? (
           selectedCategories.map((category) => (
@@ -109,7 +103,6 @@ const CategorySelector = ({ visible, setSelectedCategories, selectedCategories }
         )}
       </div>
 
-      {/* Error Message */}
       {errorMessage && (
         <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
       )}

@@ -38,7 +38,6 @@ export const CurrentUserProvider = ({ children }) => {
           throw new Error('Failed to fetch user profile');
         }
 
-        // Get the server's response
         const data = await res.json();
         //console.log("kaads ir mans useris: ", data);
         //console.log(data);
@@ -57,7 +56,7 @@ export const CurrentUserProvider = ({ children }) => {
       } catch (error) {
         console.error('Error fetching user data:', error);
         updateCurrentUser({});
-        localStorage.removeItem('JWT');  // Remove invalid JWT
+        localStorage.removeItem('JWT');  
         return {result:false, message: "Error fetching user data"};
       }
     }

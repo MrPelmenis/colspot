@@ -33,7 +33,7 @@ function MenuWindow() {
     id="modal-overlay"
     className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center z-20 p-4 sm:p-6
     transition-opacity duration-500 ${visible ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-    onClick={(e) => e.target.id === 'modal-overlay' && closeMenu()} // Close when clicking outside
+    onClick={(e) => e.target.id === 'modal-overlay' && closeMenu()} 
     >
         <div className="bg-white p-6 rounded-lg shadow-lg 
             w-full max-w-[90%] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl

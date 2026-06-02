@@ -19,12 +19,11 @@ function DeleteSpotWindow() {
     return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
   };
 
-  // Sync the confirmation input and generate new random numbers when the window becomes visible
   useEffect(() => {
     if (visible) {
       setConfirmationText('');
       setErrorMessage('');
-      setRequiredNumbers(generateRandomNumbers()); // Generate new random numbers
+      setRequiredNumbers(generateRandomNumbers()); 
     }
   }, [visible]);
 
@@ -41,7 +40,6 @@ function DeleteSpotWindow() {
     const jwtToken = localStorage.getItem('JWT');
 
     try {
-      // Perform the delete request
       const response = await fetch(`${window.websiteSetting.serverURL}/api/spots/${spotID}`, {
         method: 'DELETE',
         headers: {
@@ -61,9 +59,7 @@ function DeleteSpotWindow() {
       fetchSpots();
 
     } catch (error) {
-      // Handle any errors during the fetch
       console.error('Error deleting the spot:', error);
-      setErrorMessage('An error occurred while deleting the spot.');
     }
   };
 

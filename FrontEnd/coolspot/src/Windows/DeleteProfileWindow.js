@@ -20,12 +20,11 @@ function DeleteProfileWindow() {
     return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
   };
 
-  // Sync the confirmation input and generate new random numbers when the window becomes visible
   useEffect(() => {
     if (visible) {
       setConfirmationText('');
       setErrorMessage('');
-      setRequiredNumbers(generateRandomNumbers()); // Generate new random numbers
+      setRequiredNumbers(generateRandomNumbers()); 
     }
   }, [visible]);
 
