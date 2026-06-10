@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 DATABASE = "main_db.db"
 app = Flask(__name__)
-app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
+app.secret_key = "...."
 
 # JWT setup
 app.config['JWT_SECRET_KEY'] = 'your-jwt-secret'

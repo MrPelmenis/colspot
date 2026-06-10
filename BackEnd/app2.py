@@ -10,7 +10,7 @@ app = Flask(__name__, static_folder='../Frontend/coolspot/build', template_folde
 CORS(app)  # Enables Cross-Origin Resource Sharing to allow requests from different ports (e.g., React on port 3000)
 DATABASE = "main_db.db"
 
-app.secret_key = "2klj53b3ocdy7v928oiuvgvbfv20v8c"
+app.secret_key = "..."
 
 # JWT setup
 app.config['JWT_SECRET_KEY'] = 'your-jwt-secret'

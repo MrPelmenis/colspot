@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from werkzeug.utils import secure_filename
 
-CLIENT_ID = '304862924981-o5ghsqptv2e8jjbkvli6cm0rov256ahv.apps.googleusercontent.com'
+#CLIENT_ID = ''
 
 import os
 import base64
